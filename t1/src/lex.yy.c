@@ -360,8 +360,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 2
-#define YY_END_OF_BUFFER 3
+#define YY_NUM_RULES 4
+#define YY_END_OF_BUFFER 5
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -371,24 +371,24 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[11] =
     {   0,
-        0,    0,    3,    2,    2,    0,    0,    0,    1,    0
+        0,    0,    5,    3,    4,    1,    0,    1,    2,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
     {   0,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    2,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    3,    1,    4,    4,    4,
+        4,    4,    4,    4,    4,    4,    4,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
 
-        2,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    3,    4,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -408,31 +408,31 @@ static yyconst flex_int32_t yy_ec[256] =
 
 static yyconst flex_int32_t yy_meta[5] =
     {   0,
-        1,    2,    3,    4
+        1,    1,    1,    2
     } ;
 
-static yyconst flex_int16_t yy_base[16] =
+static yyconst flex_int16_t yy_base[12] =
     {   0,
-        7,    6,    9,   12,    0,    0,    0,    0,   12,   12,
-        0,    6,    4,    2,    3
+        0,    0,    8,    9,    9,    2,    0,    0,    0,    9,
+        5
     } ;
 
-static yyconst flex_int16_t yy_def[16] =
+static yyconst flex_int16_t yy_def[12] =
     {   0,
-       11,   11,   10,   10,   12,   13,   14,   15,   10,    0,
-       10,   10,   10,   10,   10
+       10,    1,   10,   10,   10,   10,   11,    6,   11,    0,
+       10
     } ;
 
-static yyconst flex_int16_t yy_nxt[17] =
+static yyconst flex_int16_t yy_nxt[14] =
     {   0,
-        4,    4,    4,    4,    9,    8,    7,    6,   10,    5,
-        5,    3,   10,   10,   10,   10
+        4,    5,    4,    6,    7,    8,    9,   10,    3,   10,
+       10,   10,   10
     } ;
 
-static yyconst flex_int16_t yy_chk[17] =
+static yyconst flex_int16_t yy_chk[14] =
     {   0,
-       11,   11,   11,   11,   15,   14,   13,   12,    3,    2,
-        1,   10,   10,   10,   10,   10
+        1,    1,    1,    1,    6,    6,   11,    3,   10,   10,
+       10,   10,   10
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -449,7 +449,7 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 ".lex"
+#line 1 "rules.lex"
 #line 454 "lex.yy.c"
 
 #define INITIAL 0
@@ -632,7 +632,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 1 ".lex"
+#line 1 "rules.lex"
 
 #line 638 "lex.yy.c"
 
@@ -693,7 +693,7 @@ yy_match:
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 12 );
+		while ( yy_base[yy_current_state] != 9 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -719,15 +719,25 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 2 ".lex"
-return 'a';
+#line 2 "rules.lex"
+{ return TK_INT;	}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 3 ".lex"
+#line 3 "rules.lex"
+{ return TK_FLOAT;	}
+	YY_BREAK
+case 3:
+YY_RULE_SETUP
+#line 4 "rules.lex"
+{ return TK_ERR;	}
+	YY_BREAK
+case 4:
+YY_RULE_SETUP
+#line 5 "rules.lex"
 ECHO;
 	YY_BREAK
-#line 731 "lex.yy.c"
+#line 741 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1724,6 +1734,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 3 ".lex"
+#line 5 "rules.lex"
 
 
