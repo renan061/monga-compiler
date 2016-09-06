@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <limits.h>
 
 enum TOKEN {
-	TK_INT = 256,
+	TK_INT = UCHAR_MAX + 1,
 	TK_FLOAT,
 	TK_ERR
 };
