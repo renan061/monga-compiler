@@ -1,9 +1,16 @@
 #!bin/bash
-clear
 sh clean.sh
-flex rules.lex
-gcc main.c -Wall -ll
-./a.out program.monga
+clear
 
-# gcc -o lex.o lex.yy.c
-# gcc lex.o main.c
+# Compile lex module
+flex rules.lex
+gcc -c lex.yy.c -o lex.o
+rm lex.yy.c
+
+# Link with main
+gcc lex.o main.c -ll
+rm lex.o
+
+# Run main
+./a.out program.monga
+rm a.out

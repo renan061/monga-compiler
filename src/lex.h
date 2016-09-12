@@ -1,5 +1,7 @@
-#if !defined(a_h)
-#define a_h
+#if !defined(lex_h)
+#define lex_h
+
+#include <limits.h>
 
 extern int yylex(void);
 
@@ -9,12 +11,12 @@ typedef enum Token {
 	TK_ERR
 } Token;
 
-typedef union SemInfo {
-	int i;
-	double f;
-	const char *s;
-} SemInfo;
+// typedef union SemInfo {
+// 	int i;
+// 	double f;
+// 	const char *s;
+// } SemInfo;
 
-extern SemInfo seminfo;
+// extern SemInfo seminfo;
 
 #endif
