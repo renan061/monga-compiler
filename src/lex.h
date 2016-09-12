@@ -8,9 +8,22 @@ extern FILE * yyin;
 extern int yylex(void);
 
 typedef enum Token {
+	// Numbers
 	TK_INT = UCHAR_MAX + 1,
 	TK_FLOAT,
-	TK_ERR
+	// TODO: É preciso fazer num novo TK para numerais?
+	// TK_HEXA_INT ???
+
+	// Reserved words
+	TK_KEY_INT,
+	TK_KEY_FLOAT,
+	TK_KEY_CHAR,
+	TK_KEY_IF,
+	TK_KEY_ELSE,
+	TK_KEY_WHILE,
+	TK_KEY_NEW,
+	TK_KEY_RETURN,
+	TK_KEY_VOID
 } Token;
 
 typedef union SemInfo {

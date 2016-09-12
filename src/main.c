@@ -22,20 +22,20 @@ int main(int argc, char *argv[]) {
 		case TK_FLOAT:
 			printf("%lf", seminfo.f);
 			break;
+		case TK_KEY_INT:
+			printf("int");
+			break;
 		default:
-			printf("Default");
+			printf(".");
 		}
 
 		printf("\n");
 
-		// TODO: Onde parar ??? EOF ???
+		// TODO: When to stop ??? EOF ???
 		if (token == 0) {
 			break;
 		}
 	}
 
-	printf("Hi");
-
-	// fclose(yyin);
     return 0;
 }
