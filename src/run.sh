@@ -1,5 +1,4 @@
 #!bin/bash
-sh clean.sh
 clear
 
 # Compile lex module
