@@ -13,7 +13,20 @@ int main(int argc, char *argv[]) {
 
 	while(1) {
 		token = yylex();
-		printf("\n%d", token);
+
+		printf("%d - ", token);
+		switch (token) {
+		case TK_INT:
+			printf("%d", seminfo.i);
+			break;
+		case TK_FLOAT:
+			printf("%lf", seminfo.f);
+			break;
+		default:
+			printf("Default");
+		}
+
+		printf("\n");
 
 		// TODO: Onde parar ??? EOF ???
 		if (token == 0) {

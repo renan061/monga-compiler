@@ -13,12 +13,12 @@ typedef enum Token {
 	TK_ERR
 } Token;
 
-// typedef union SemInfo {
-// 	int i;
-// 	double f;
-// 	const char *s;
-// } SemInfo;
+typedef union SemInfo {
+	int i;
+	double f;
+	const char *s;
+} SemInfo;
 
-// extern SemInfo seminfo;
+extern SemInfo seminfo;
 
 #endif
