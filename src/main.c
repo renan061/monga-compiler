@@ -1,29 +1,24 @@
 #include <stdio.h>
 #include "lex.h"
-// #include "lex.yy.c"
-
-// TODO yyin
-// #define YY_STDINIT "program.monga"
 
 int main(int argc, char *argv[]) {
 	int token;
 
-	printf("Hi");
+	// FIXME: Should this be here?
+	yyin = fopen(argv[1], "r");
+	if (yyin == NULL) {
+		printf ("Error opening file...");
+		return 1;
+	}
 
-	// TODO: Como remover o yyin?
-	// yyin = fopen(argv[0], "r");
-	// if (yyin == NULL) {
-	// 	printf ("Error opening file...");
-	// 	return 1;
-	// }
-	token = yylex();
-	printf("%d", token);
-
-	printf("Hi");
-	
-    for(int i = 0; i < 10; i++) { // TODO
+	while(1) {
 		token = yylex();
 		printf("\n%d", token);
+
+		// TODO: Onde parar ??? EOF ???
+		if (token == 0) {
+			break;
+		}
 	}
 
 	printf("Hi");

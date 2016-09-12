@@ -1,8 +1,10 @@
 #if !defined(lex_h)
 #define lex_h
 
+#include <stdlib.h>
 #include <limits.h>
 
+extern FILE * yyin;
 extern int yylex(void);
 
 typedef enum Token {
