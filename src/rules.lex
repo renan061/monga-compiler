@@ -20,6 +20,13 @@
 "return"			{ return TK_KEY_RETURN;	}
 "void"				{ return TK_KEY_VOID;	}
 
+"=="				{ return TK_EQUAL;	}
+"!="				{ return TK_NEQUAL;	}
+"<="				{ return TK_LEQUAL;	}
+">="				{ return TK_GEQUAL;	}
+"&&"				{ return TK_AND;	}
+"||"				{ return TK_OR;		}
+
 [0-9]+				{ 
 						// TODO: Expoente
 						// TODO

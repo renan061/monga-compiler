@@ -23,7 +23,16 @@ typedef enum Token {
 	TK_KEY_WHILE,
 	TK_KEY_NEW,
 	TK_KEY_RETURN,
-	TK_KEY_VOID
+	TK_KEY_VOID,
+
+	// Logical operators
+	TK_EQUAL,
+	TK_NEQUAL, 
+	TK_LEQUAL,
+	TK_GEQUAL,
+	TK_AND,
+	TK_OR
+
 } Token;
 
 typedef union SemInfo {
