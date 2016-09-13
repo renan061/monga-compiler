@@ -3,6 +3,9 @@
 	SemInfo seminfo;
 %}
 %%
+"\n"				{
+						// TODO: ?
+					}
 "\t"				{
 						// TODO: ?
 					}

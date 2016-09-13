@@ -11,7 +11,7 @@ typedef enum Token {
 	// Numbers
 	TK_INT = UCHAR_MAX + 1,
 	TK_FLOAT,
-	// TODO: É preciso fazer num novo TK para numerais?
+	// TODO: É preciso fazer num novo TK para hexas? (Don't think so)
 	// TK_HEXA_INT ???
 
 	// Reserved words

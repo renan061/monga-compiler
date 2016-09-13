@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	while(1) {
+	do {
 		token = yylex();
 
 		printf("%d - ", token);
@@ -30,12 +30,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		printf("\n");
-
-		// TODO: When to stop ??? EOF ???
-		if (token == 0) {
-			break;
-		}
-	}
+	} while(token != 0); // TODO: When to stop ??? EOF ???
 
     return 0;
 }
