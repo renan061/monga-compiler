@@ -5,7 +5,7 @@
 %%
 "\n"				{ }
 "\t"				{ }
-" "					{ /* TODO: Why not ' '? */ }
+" "					{ }
 
 "int"				{ return TK_KEY_INT;	}
 "float"				{ return TK_KEY_FLOAT;	}

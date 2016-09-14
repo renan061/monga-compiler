@@ -32,7 +32,6 @@ typedef enum Token {
 	TK_OR,
 
 	TK_ID,
-
 	TK_INT,
 	TK_FLOAT
 	// TODO: É preciso fazer num novo TK para hexas? (Don't think so)

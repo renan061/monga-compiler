@@ -1,4 +1,3 @@
-#!bin/bash
 clear
 
 # Compile lex module
@@ -12,4 +11,5 @@ rm lex.o
 
 # Run main
 ./a.out < teste1.in
+./a.out < teste2.in
 rm a.out
