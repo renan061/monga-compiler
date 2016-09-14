@@ -1,3 +1,4 @@
+#!/bin/sh
 clear
 
 # Compile lex module
@@ -9,18 +10,37 @@ rm lex.yy.c
 gcc lex.o main.c -ll
 rm lex.o
 
-# Testing
-./a.out < test_1.in > test_result_1.txt
-diff -a --suppress-common-lines -y test_answer_1.txt test_result_1.txt > diff.txt
-if [ -s temp.txt ]
+# Removing old diff test files
+DIFF_DIR="$PWD/tests/diff/"
+if [ $(ls -1 $DIFF_DIR | wc -l) != 0 ]
 then
-	echo "TEST 1 - FAIL"
-	mv diff.txt test_diff_1.txt
-else
-    echo "TEST 1 - OK"
-    rm diff.txt
+	for DIFF_FILE in $DIFF_DIR"*.txt"
+	do
+		rm $DIFF_FILE
+	done
 fi
 
-[ -s temp.txt ]  || 
-# TODO: Compare temp
+# Testing
+i=1
+for INPUT_FILE in $PWD/tests/input/*.in
+do
+	RESULT_FILE="test_result_"$i".txt"
+	./a.out < $INPUT_FILE > $RESULT_FILE
+	ANSWER_FILE="tests/answers/test_answer_"$i".txt"
+	diff -a --suppress-common-lines -y $ANSWER_FILE $RESULT_FILE > diff.txt
+	if [ -s diff.txt ]
+	then
+		echo "TEST "$i" - FAIL"
+		mv diff.txt "tests/diff/test_diff_"$i".txt"
+	else
+	    echo "TEST "$i" - OK"
+	    rm diff.txt
+	fi
+
+	# Cleaning up
+	rm $RESULT_FILE
+
+	((i++))
+done
+
 rm a.out
