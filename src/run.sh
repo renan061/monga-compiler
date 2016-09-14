@@ -9,7 +9,18 @@ rm lex.yy.c
 gcc lex.o main.c -ll
 rm lex.o
 
-# Run main
-./a.out < teste1.in
-./a.out < teste2.in
+# Testing
+./a.out < test_1.in > test_result_1.txt
+diff -a --suppress-common-lines -y test_answer_1.txt test_result_1.txt > diff.txt
+if [ -s temp.txt ]
+then
+	echo "TEST 1 - FAIL"
+	mv diff.txt test_diff_1.txt
+else
+    echo "TEST 1 - OK"
+    rm diff.txt
+fi
+
+[ -s temp.txt ]  || 
+# TODO: Compare temp
 rm a.out

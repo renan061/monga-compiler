@@ -6,7 +6,6 @@ int main(int argc, char *argv[]) {
 	do {
 		token = yylex();
 
-		// printf("%d - ", token);
 		switch (token) {
 		case TK_KEY_INT:		printf("TK_KEY_INT");		break;
 		case TK_KEY_FLOAT:		printf("TK_KEY_FLOAT");		break;
@@ -17,19 +16,16 @@ int main(int argc, char *argv[]) {
 		case TK_KEY_NEW:		printf("TK_KEY_NEW");		break;
 		case TK_KEY_RETURN:		printf("TK_KEY_RETURN");	break;
 		case TK_KEY_VOID:		printf("TK_KEY_VOID");		break;
-
 		case TK_EQUAL:			printf("TK_EQUAL");			break;
 		case TK_NEQUAL:			printf("TK_NEQUAL");		break;
 		case TK_LEQUAL:			printf("TK_LEQUAL");		break;
 		case TK_GEQUAL:			printf("TK_GEQUAL");		break;
 		case TK_AND:			printf("TK_AND");			break;
 		case TK_OR:				printf("TK_OR");			break;
-
 		case TK_ID:				printf("TK_ID - %s", seminfo.s);		break;
 		case TK_INT:			printf("TK_INT - %d", seminfo.i);		break;
-		case TK_FLOAT:			printf("TK_FLOAT - %lf", seminfo.f);	break;	
-
-		case 0:		break;
+		case TK_FLOAT:			printf("TK_FLOAT - %lf", seminfo.f);	break;
+		case 0:		return 0;
 		default:	printf("%c", token);
 		}
 
