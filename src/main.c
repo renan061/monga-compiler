@@ -4,15 +4,6 @@
 int main(int argc, char *argv[]) {
 	int token;
 
-	// FIXME: Should this be here?
-	// Resposta: usar prog < teste.in, ou seja redirecionar a
-	// entrada no próprio terminal
-	yyin = fopen(argv[1], "r");
-	if (yyin == NULL) {
-		printf ("Error opening file...");
-		return 1;
-	}
-
 	do {
 		token = yylex();
 

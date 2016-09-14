@@ -11,5 +11,5 @@ gcc lex.o main.c -ll
 rm lex.o
 
 # Run main
-./a.out program.monga
+./a.out < teste1.in
 rm a.out

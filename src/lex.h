@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <limits.h>
 
-extern FILE * yyin;
 extern int yylex(void);
 
 typedef union SemInfo {
