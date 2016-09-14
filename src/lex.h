@@ -7,15 +7,15 @@
 extern FILE * yyin;
 extern int yylex(void);
 
-typedef enum Token {
-	// Numbers
-	TK_INT = UCHAR_MAX + 1,
-	TK_FLOAT,
-	// TODO: É preciso fazer num novo TK para hexas? (Don't think so)
-	// TK_HEXA_INT ???
+typedef union SemInfo {
+	int i;
+	double f;
+	const char *s;
+} SemInfo;
+extern SemInfo seminfo;
 
-	// Reserved words
-	TK_KEY_INT,
+typedef enum Token {
+	TK_KEY_INT = UCHAR_MAX + 1,
 	TK_KEY_FLOAT,
 	TK_KEY_CHAR,
 	TK_KEY_IF,
@@ -25,22 +25,20 @@ typedef enum Token {
 	TK_KEY_RETURN,
 	TK_KEY_VOID,
 
-	// Logical operators
 	TK_EQUAL,
 	TK_NEQUAL, 
 	TK_LEQUAL,
 	TK_GEQUAL,
 	TK_AND,
-	TK_OR
+	TK_OR,
+
+	TK_ID,
+
+	TK_INT,
+	TK_FLOAT
+	// TODO: É preciso fazer num novo TK para hexas? (Don't think so)
+	// TK_HEXA_INT ???
 
 } Token;
-
-typedef union SemInfo {
-	int i;
-	double f;
-	const char *s;
-} SemInfo;
-
-extern SemInfo seminfo;
 
 #endif

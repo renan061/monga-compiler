@@ -5,6 +5,8 @@ int main(int argc, char *argv[]) {
 	int token;
 
 	// FIXME: Should this be here?
+	// Resposta: usar prog < teste.in, ou seja redirecionar a
+	// entrada no próprio terminal
 	yyin = fopen(argv[1], "r");
 	if (yyin == NULL) {
 		printf ("Error opening file...");
@@ -22,11 +24,17 @@ int main(int argc, char *argv[]) {
 		case TK_FLOAT:
 			printf("%lf", seminfo.f);
 			break;
+		case TK_ID:
+			printf("%s", seminfo.s);
+			break;
 		case TK_KEY_INT:
 			printf("int");
 			break;
+		case 0:
+			printf("Done");
+			break;
 		default:
-			printf(".");
+			printf("%d $-$ %lf $-$ %s", seminfo.i, seminfo.f, seminfo.s);
 		}
 
 		printf("\n");

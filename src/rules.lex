@@ -3,15 +3,9 @@
 	SemInfo seminfo;
 %}
 %%
-"\n"				{
-						// TODO: ?
-					}
-"\t"				{
-						// TODO: ?
-					}
-" "					{
-						// Why not ' ' ? 
-					}
+"\n"				{ }
+"\t"				{ }
+" "					{ /* TODO: Why not ' '? */ }
 
 "int"				{ return TK_KEY_INT;	}
 "float"				{ return TK_KEY_FLOAT;	}
@@ -30,18 +24,25 @@
 "&&"				{ return TK_AND;	}
 "||"				{ return TK_OR;		}
 
-[0-9]+				{ 
-						// TODO: Expoente
-						// TODO
-						seminfo.i = strtoul(yytext, NULL, 10);
-						return TK_INT;
-					}
-[0-9]+"."[0-9]+		{
-						// TODO: Que função usar?
-						// Essa tem precisão de 5 casas decimais...
-						seminfo.f = strtod(yytext, NULL);
-						return TK_FLOAT;
-					}
-
-.					{ return yytext[0]; }
+[A-Za-z_][A-Za-z_0-9]*		{
+								seminfo.s = yytext;
+								return TK_ID;
+							}
+[0-9]+						{ 
+								// TODO: Expoente
+								// TODO
+								seminfo.i = strtoul(yytext, NULL, 10);
+								return TK_INT;
+							}
+[0-9]+"."[0-9]+				{
+								// TODO: Que função usar?
+								// Essa tem precisão de 5 casas decimais...
+								seminfo.f = strtod(yytext, NULL);
+								return TK_FLOAT;
+							}
+"0"[xX][0-9a-fA-F]+			{
+								seminfo.i = strtoul(yytext, NULL, 16);
+								return TK_INT; // TODO: Return TK_HEX_INT?
+							}
+.							{ return yytext[0]; }
 %%
