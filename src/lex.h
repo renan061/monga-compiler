@@ -25,7 +25,6 @@ typedef enum Token {
 	TK_KEY_VOID,
 
 	TK_EQUAL,
-	TK_NEQUAL, 
 	TK_LEQUAL,
 	TK_GEQUAL,
 	TK_AND,

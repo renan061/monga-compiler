@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
 		case TK_KEY_RETURN:		printf("TK_KEY_RETURN");	break;
 		case TK_KEY_VOID:		printf("TK_KEY_VOID");		break;
 		case TK_EQUAL:			printf("TK_EQUAL");			break;
-		case TK_NEQUAL:			printf("TK_NEQUAL");		break;
 		case TK_LEQUAL:			printf("TK_LEQUAL");		break;
 		case TK_GEQUAL:			printf("TK_GEQUAL");		break;
 		case TK_AND:			printf("TK_AND");			break;
@@ -29,7 +28,6 @@ int main(int argc, char *argv[]) {
 		}
 
 		printf("\n");
-	} while(token != 0); // TODO: When to stop ??? EOF ???
-
+	} while(token != 0);
     return 0;
 }

@@ -19,7 +19,6 @@
 "void"				{ return TK_KEY_VOID;	}
 
 "=="				{ return TK_EQUAL;	}
-"!="				{ return TK_NEQUAL;	}
 "<="				{ return TK_LEQUAL;	}
 ">="				{ return TK_GEQUAL;	}
 "&&"				{ return TK_AND;	}
