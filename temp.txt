@@ -1,3 +1,12 @@
+TODO:
+	 - Hexadecimal com expoente? Só int tem hexa, float não precisa ter hexa
+	 - Strings
+	 - main.c - } while(token != 0); // TODO: When to stop ??? EOF ???
+	 - Erros do léxico
+		- Escapes errados em strings
+		- String não fechada - aborta o programa e printa "String não fechada"
+	- Existe != ? Não
+
 "0"[xX][0-9a-fA-F]+"."[0-9a-fA-F]+([Ee][-+]?[0-9]+)?	{
 															seminfo.f = strtod(yytext, NULL);
 															return TK_FLOAT;

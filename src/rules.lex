@@ -1,3 +1,4 @@
+%x IN_COMMENT
 %{
 	#include "lex.h"
 	SemInfo seminfo;
@@ -41,6 +42,14 @@
 										seminfo.f = strtod(yytext, NULL);
 										return TK_FLOAT;
 									}
+
+"/*"					BEGIN(IN_COMMENT);
+<IN_COMMENT>"*/"		BEGIN(INITIAL);
+<IN_COMMENT><<EOF>>	{	
+							printf("LEXICAL ERROR - Open commentary");
+							exit(1);
+						}
+<IN_COMMENT>.			{ }
 
 . { return yytext[0]; }
 %%

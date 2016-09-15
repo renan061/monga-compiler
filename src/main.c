@@ -33,7 +33,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-// TODO: Erros do léxico
-// - Escapes errados em strings
-// - String não fechada - aborta o programa e printa "String não fechada"
