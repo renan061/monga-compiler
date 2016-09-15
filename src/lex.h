@@ -7,7 +7,7 @@
 extern int yylex(void);
 
 typedef union SemInfo {
-	int i; // TODO: Tamanho desse inteiro e desse float?
+	int i;
 	double f;
 	const char *s;
 } SemInfo;
@@ -33,9 +33,7 @@ typedef enum Token {
 
 	TK_ID,
 	TK_INT,
-	TK_FLOAT 	// TODO: %a? Problema das 5 casas decimais é do printf.
-				// Fazer com casas decimais que passem do máximo (17~)
-				// ??? %g ao invés de %f
+	TK_FLOAT
 } Token;
 
 #endif

@@ -24,23 +24,23 @@
 "&&"				{ return TK_AND;	}
 "||"				{ return TK_OR;		}
 
-[A-Za-z_][A-Za-z_0-9]*		{
-								seminfo.s = yytext;
-								return TK_ID;
-							}
-[0-9]+						{ 
-								// TODO: Expoente
-								seminfo.i = strtoul(yytext, NULL, 10);
-								return TK_INT;
-							}
-"0"[xX][0-9a-fA-F]+			{
-								// TODO: Hexa float com expoente
-								seminfo.i = strtoul(yytext, NULL, 16);
-								return TK_INT;
-							}
-[0-9]+"."[0-9]+				{
-								seminfo.f = strtod(yytext, NULL);
-								return TK_FLOAT;
-							}
-.							{ return yytext[0]; }
+[A-Za-z_][A-Za-z_0-9]*				{
+										seminfo.s = yytext;
+										return TK_ID;
+									}
+[0-9]+								{ 
+										seminfo.i = strtoul(yytext, NULL, 10);
+										return TK_INT;
+									}
+"0"[xX][0-9a-fA-F]+					{
+										seminfo.i = strtoul(yytext, NULL, 16);
+										return TK_INT;
+									}
+[0-9]+"."[0-9]+([Ee][-+]?[0-9]+)?	{
+										// TODO: Hexa float with `e`?
+										seminfo.f = strtod(yytext, NULL);
+										return TK_FLOAT;
+									}
+
+. { return yytext[0]; }
 %%

@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 		case TK_OR:				printf("TK_OR");			break;
 		case TK_ID:				printf("TK_ID - %s", seminfo.s);		break;
 		case TK_INT:			printf("TK_INT - %d", seminfo.i);		break;
-		case TK_FLOAT:			printf("TK_FLOAT - %lf", seminfo.f);	break;
+		case TK_FLOAT:			printf("TK_FLOAT - %.16g", seminfo.f);	break;
 		case 0:		return 0;
 		default:	printf("%c", token);
 		}
