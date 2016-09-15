@@ -1,7 +1,9 @@
 TODO:
-	- Fazer função e setar errno em comentário não fechado
 	- Strings
 		- Erros do léxico
 			- Escapes errados em strings
 			- String não fechada: aborta o programa e printa
 				"erro" setando errno
+
+DÚVIDAS:
+	- Tipos em SemInfo: int e double mesmo?

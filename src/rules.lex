@@ -1,7 +1,32 @@
 %x IN_COMMENT
 %{
+	#include <errno.h>
 	#include "lex.h"
+
 	SemInfo seminfo;
+
+	// Types of lexical errors
+	typedef enum ErrorType {
+		ERR_COMMENTARY_OPEN,
+		ERR_STRING_INVALID_ESCAPE
+	} ErrorType;
+
+	// Error dealing function
+	static void error(int err) {
+		switch (err) {
+		case ERR_COMMENTARY_OPEN:
+			printf("LEXICAL ERROR - Open commentary");
+			break;
+		case ERR_STRING_INVALID_ESCAPE:
+			printf("LEXICAL ERROR - Invalid escape");
+			break;
+		default:
+			exit(2);
+		}
+
+		errno = err;
+		exit(1);
+	}
 %}
 %%
 "\n"				{ }
@@ -37,17 +62,13 @@
 										return TK_INT;
 									}
 [0-9]+"."[0-9]+([Ee][-+]?[0-9]+)?	{
-										// TODO: Hexa float with `e`?
 										seminfo.f = strtod(yytext, NULL);
 										return TK_FLOAT;
 									}
 
 "/*"					BEGIN(IN_COMMENT);
 <IN_COMMENT>"*/"		BEGIN(INITIAL);
-<IN_COMMENT><<EOF>>	{	
-							printf("LEXICAL ERROR - Open commentary");
-							exit(1);
-						}
+<IN_COMMENT><<EOF>>		{ error(ERR_COMMENTARY_OPEN); }
 <IN_COMMENT>.			{ }
 
 . { return yytext[0]; }
