@@ -5,7 +5,6 @@ int main(int argc, char *argv[]) {
 	int token;
 	do {
 		token = yylex();
-
 		switch (token) {
 		case TK_KEY_INT:		printf("TK_KEY_INT");		break;
 		case TK_KEY_FLOAT:		printf("TK_KEY_FLOAT");		break;
@@ -34,3 +33,7 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+// TODO: Erros do léxico
+// - Escapes errados em strings
+// - String não fechada - aborta o programa e printa "String não fechada"

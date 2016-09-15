@@ -30,17 +30,15 @@
 							}
 [0-9]+						{ 
 								// TODO: Expoente
-								// TODO
 								seminfo.i = strtoul(yytext, NULL, 10);
 								return TK_INT;
 							}
 "0"[xX][0-9a-fA-F]+			{
+								// TODO: Hexa float com expoente
 								seminfo.i = strtoul(yytext, NULL, 16);
-								return TK_INT; // TODO: Return TK_HEX_INT?
+								return TK_INT;
 							}
 [0-9]+"."[0-9]+				{
-								// TODO: Que função usar?
-								// Essa tem precisão de 5 casas decimais...
 								seminfo.f = strtod(yytext, NULL);
 								return TK_FLOAT;
 							}

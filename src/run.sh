@@ -10,7 +10,7 @@ rm lex.yy.c
 gcc lex.o main.c -ll
 rm lex.o
 
-# Removing old diff test files
+# Removing old diff test files (just so it doesn't do error)
 DIFF_DIR="$PWD/tests/diff/"
 if [ $(ls -1 $DIFF_DIR | wc -l) != 0 ]
 then
