@@ -32,7 +32,8 @@ typedef enum Token {
 
 	TK_ID,
 	TK_INT,
-	TK_FLOAT
+	TK_FLOAT,
+	TK_STR
 } Token;
 
 #endif

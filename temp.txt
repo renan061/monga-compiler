@@ -1,9 +1,6 @@
 TODO:
-	- Strings
-		- Erros do léxico
-			- Escapes errados em strings
-			- String não fechada: aborta o programa e printa
-				"erro" setando errno
+	- Strings: string muito grande
+	- Tamanho da string correto com o malloc
 
 DÚVIDAS:
 	- Tipos em SemInfo: int e double mesmo?

@@ -7,18 +7,22 @@
 
 	// Types of lexical errors
 	typedef enum ErrorType {
-		ERR_COMMENTARY_OPEN,
-		ERR_STRING_INVALID_ESCAPE
+		ERR_COMMENT,
+		ERR_STR_ESCAPE,
+		ERR_STR_OPEN
 	} ErrorType;
 
 	// Error dealing function
-	static void error(int err) {
+	static void lex_error(int err) {
 		switch (err) {
-		case ERR_COMMENTARY_OPEN:
+		case ERR_COMMENT:
 			printf("LEXICAL ERROR - Open commentary");
 			break;
-		case ERR_STRING_INVALID_ESCAPE:
+		case ERR_STR_ESCAPE:
 			printf("LEXICAL ERROR - Invalid escape");
+			break;
+		case ERR_STR_OPEN:
+			printf("LEXICAL ERROR - Open string");
 			break;
 		default:
 			exit(2);
@@ -66,10 +70,42 @@
 										return TK_FLOAT;
 									}
 
-"/*"					BEGIN(IN_COMMENT);
-<IN_COMMENT>"*/"		BEGIN(INITIAL);
-<IN_COMMENT><<EOF>>		{ error(ERR_COMMENTARY_OPEN); }
-<IN_COMMENT>.			{ }
+"/*"						BEGIN(IN_COMMENT);
+<IN_COMMENT>"*/"			BEGIN(INITIAL);
+<IN_COMMENT><<EOF>>			{ lex_error(ERR_COMMENT); }
+<IN_COMMENT>.				{ }
+
+"\""(\\.|[^\\"])*"\""		{
+								int i, k = 0, len = strlen(yytext);
+								char *str,
+									*result = (char*)malloc(len * sizeof(char));
+								// TODO: String is bigget, malloc is wrong...
+								for (i = 0; i < len; i++) {
+									str = &yytext[i];
+									if (*str == '\\') {
+										i++;
+										switch (*(str+1)) {
+											case '"':
+												result[k++] = '"';
+												break;
+											case 't':
+												result[k++] = '\t';
+												break;
+											case 'n':
+												result[k++] = '\n';
+												break;
+											default:
+												lex_error(ERR_STR_ESCAPE);
+										}
+									} else {
+										result[k++] = yytext[i];
+									}
+								}
+
+								seminfo.s = result;
+								return TK_STR;
+							}
+"\""						{ lex_error(ERR_STR_OPEN); }
 
 . { return yytext[0]; }
 %%
