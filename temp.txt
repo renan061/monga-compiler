@@ -1,6 +1,0 @@
-TODO:
-	- Strings: string muito grande
-	- Tamanho da string correto com o malloc
-
-DÚVIDAS:
-	- Tipos em SemInfo: int e double mesmo?

@@ -5,14 +5,16 @@
 
 	SemInfo seminfo;
 
-	// Types of lexical errors
+	// Auxliary enum for types of lexical errors
 	typedef enum ErrorType {
 		ERR_COMMENT,
 		ERR_STR_ESCAPE,
-		ERR_STR_OPEN
+		ERR_STR_OPEN,
+		ERR_STR_LINE,
+		ERR_STR_MEM,
 	} ErrorType;
 
-	// Error dealing function
+	// Auxiliary error dealing function
 	static void lex_error(int err) {
 		switch (err) {
 		case ERR_COMMENT:
@@ -23,6 +25,12 @@
 			break;
 		case ERR_STR_OPEN:
 			printf("LEXICAL ERROR - Open string");
+			break;
+		case ERR_STR_LINE:
+			printf("LEXICAL ERROR - Multiline string");
+			break;
+		case ERR_STR_MEM:
+			printf("LEXICAL ERROR - Insufficient memory for string");
 			break;
 		default:
 			exit(2);
@@ -75,37 +83,60 @@
 <IN_COMMENT><<EOF>>			{ lex_error(ERR_COMMENT); }
 <IN_COMMENT>.				{ }
 
-"\""(\\.|[^\\"])*"\""		{
-								int i, k = 0, len = strlen(yytext);
-								char *str,
-									*result = (char*)malloc(len * sizeof(char));
-								// TODO: String is bigget, malloc is wrong...
-								for (i = 0; i < len; i++) {
-									str = &yytext[i];
-									if (*str == '\\') {
-										i++;
-										switch (*(str+1)) {
-											case '"':
-												result[k++] = '"';
-												break;
-											case 't':
-												result[k++] = '\t';
-												break;
-											case 'n':
-												result[k++] = '\n';
-												break;
-											default:
-												lex_error(ERR_STR_ESCAPE);
-										}
-									} else {
-										result[k++] = yytext[i];
-									}
-								}
+"\""(\\.|[^\\"])*"\""	{
+							int i, k = 0;
+							int malloc_len = 0, yytext_len = strlen(yytext);
+							char c, *str, *result;
 
-								seminfo.s = result;
-								return TK_STR;
+							// Calculating malloc size
+							for (i = 0; i < yytext_len; i++) {
+								c = yytext[i];
+								if (c == '\\') {
+									continue;
+								}
+								malloc_len++;
 							}
-"\""						{ lex_error(ERR_STR_OPEN); }
+
+							// Result string malloc
+							result = (char*)malloc(malloc_len * sizeof(char));
+							if (result == NULL) {
+								lex_error(ERR_STR_MEM);
+							}
+
+							// Filling the result
+							for (i = 0; i < yytext_len; i++) {
+								str = &yytext[i];
+								if (*str == '\n') {
+									free(result);
+									lex_error(ERR_STR_LINE);
+								} else if (*str == '\\') {
+									i++;
+									switch (*(str+1)) {
+										case '"':
+											result[k++] = '"';
+											break;
+										case 't':
+											result[k++] = '\t';
+											break;
+										case 'n':
+											result[k++] = '\n';
+											break;
+										case '\\':
+											result[k++] = '\\';
+											break;
+										default:
+											free(result);
+											lex_error(ERR_STR_ESCAPE);
+									}
+								} else {
+									result[k++] = yytext[i];
+								}
+							}
+
+							seminfo.s = result;
+							return TK_STR;
+						}
+"\""					{ lex_error(ERR_STR_OPEN); }
 
 . { return yytext[0]; }
 %%

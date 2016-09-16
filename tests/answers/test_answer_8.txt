@@ -1,0 +1,19 @@
+TK_STR - "uma string"
+TK_ID - id
+TK_STR - "outra string 0."
+TK_INT - 98
+TK_STR - ""
+TK_STR - """
+TK_STR - "
+"
+TK_STR - "	"
+TK_STR - "\"
+TK_STR - "ácëntôs âñà"
+TK_STR - "umastring com	coisas
+estranhas e outra"
+TK_STR - "string"colada nessa string"
+TK_ID - id
+TK_STR - "string"
+TK_FLOAT - 29.34
+TK_STR - "\"
+LEXICAL ERROR - Open string
