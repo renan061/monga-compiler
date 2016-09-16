@@ -1,8 +1,6 @@
 #!/bin/sh
 
-clear
-
-# Removing old diff test resports
+# Removing old diff test reports
 DIFF_DIR="tests/diff/"
 if [ $(ls -1 $DIFF_DIR | wc -l) != 0 ]
 then
