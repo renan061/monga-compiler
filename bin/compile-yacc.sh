@@ -9,7 +9,7 @@ then
 fi
 
 # Compiles lex module
-flex monga.lex
+flex rules.lex
 gcc -c lex.yy.c -o lex.o
 
 rm lex.yy.c
