@@ -1,0 +1,2 @@
+- É pra por todas as declarações de Token em rules.yacc mesmo?
+- O que fazer com Token enum no lex.h
