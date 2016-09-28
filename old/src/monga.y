@@ -1,6 +1,6 @@
 %{
+	#include <stdio.h>
 	#include "lex.h"
-	printf("Bison/yacc working...\n");
 %}
 
 %token 
@@ -40,7 +40,7 @@ heat_switch:	TK_KEY_INT TK_EQUAL
 
 target_set:		TK_KEY_INT TK_KEY_INT TK_KEY_INT
 		        {
-		                printf("\tTemperature set\n");
+	                printf("\tTemperature set\n");
 		        }
 		        ;
 %%

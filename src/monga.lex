@@ -2,6 +2,7 @@
 %{
 	#include <errno.h>
 	#include "lex.h"
+	// #include "yacc.h"
 
 	SemInfo seminfo;
 
