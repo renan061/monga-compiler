@@ -7,6 +7,7 @@
 	}
 %}
 
+%start programa
 %token 
 	TK_KEY_INT
 	TK_KEY_FLOAT
@@ -28,5 +29,19 @@
 	TK_STR
 
 %%
-commands : TK_INT TK_INT
+
+programa	: definicao
+			;
+
+definicao	: defvariavel
+			| TK_INT
+			;
+
+defvariavel	: TK_KEY_INT listanomes ';'
+			;
+
+listanomes	: TK_ID
+			| listanomes ',' TK_ID
+			;
+
 %%

@@ -35,6 +35,7 @@ testlex:
 
 # TODO: Naming
 test: all
+	clear
 	@-sh testsyntax.sh
 
 clean:
