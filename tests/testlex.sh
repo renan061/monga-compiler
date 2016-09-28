@@ -17,7 +17,7 @@ do
 	ANSWER_FILE="tests/answers/test_answer_"$i".txt"
 	RESULT_FILE="test_result_"$i".txt"
 
-	bin/lex_test < $INPUT_FILE > $RESULT_FILE
+	bin/lextest < $INPUT_FILE > $RESULT_FILE
 	diff -a --suppress-common-lines -y $ANSWER_FILE $RESULT_FILE > "diff.txt"
 	if [ -s "diff.txt" ]
 	then

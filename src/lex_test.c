@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "lex.h"
+#include "yacc.h"
 
 int main(int argc, char *argv[]) {
 	int token;

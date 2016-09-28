@@ -1,1 +1,1 @@
-TK_STR - "uma string"					      |	TK_STR - "uma string"ÿ
+TK_STR - "uma string"					      |	TK_STR - "uma string"ú

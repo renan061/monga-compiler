@@ -9,19 +9,34 @@ CC := gcc
 
 program_SRCS := $(wildcard src/*.c)
 program_OBJS := $(wildcard obj/*.o)
+program_EXES := $(wildcard bin/*)
 
 all: main
 
-lex:
+yacc:
+	bison -d src/monga.y
+	@- mv monga.tab.c src/yacc.c
+	@- mv monga.tab.h src/yacc.h
+	gcc -c src/yacc.c -o obj/yacc.o
+	@- $(RM) src/yacc.c
+
+lex: yacc
 	flex src/monga.lex
 	$(CC) $(CFLAGS) -c lex.yy.c -o obj/lex.o -Isrc/
 	@- $(RM) lex.yy.c
 
-main: lex
-	$(CC) $(CFLAGS) -o bin/lex_test obj/lex.o src/lex_test.c -ll
+main: yacc lex
+	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o src/lex_test.c -ll
+	$(CC) $(CFLAGS) -o bin/sintest obj/lex.o obj/yacc.o src/yacc_test.c -ll
 
-test:
-	@- sh tests/test.sh
+# TODO: Naming
+testlex:
+	@- sh tests/testlex.sh
+
+# TODO: Naming
+test: all
+	@-sh testsyntax.sh
 
 clean:
 	@- $(RM) $(program_OBJS)
+	@- $(RM) $(program_EXES)
