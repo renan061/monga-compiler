@@ -50,11 +50,9 @@ type : base_type | type '[' ']'
 
 base_type : TK_KEY_INT | TK_KEY_FLOAT | TK_KEY_CHAR ;
 
-definition_func : return_type TK_ID '(' func_param_list ')' block
-
-return_type	: type
-			| TK_KEY_VOID
-			;
+definition_func	: type TK_ID '(' func_param_list ')' block
+				| TK_KEY_VOID TK_ID '(' func_param_list ')' block
+				;
 
 func_param_list	: param_list
 				|
@@ -66,6 +64,55 @@ param_list	:	param
 
 param : type TK_ID
 
-block: '{' '}' ;
+block : '{' block_definition_var_list block_command_list '}' ;
+
+block_definition_var_list	: definition_var_list
+							|
+							;
+
+definition_var_list	: definition_var_list definition_var
+					|
+					;
+
+block_command_list	: command_list
+					|
+					;
+
+command_list	: command
+				| command_list command
+				;
+
+command	: TK_KEY_IF '(' exp ')' command
+		| TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command
+		| TK_KEY_WHILE '(' exp ')' command
+		| var '=' exp ';'
+		| TK_KEY_RETURN ';'
+		| TK_KEY_RETURN exp ';'
+		| func_call ';'
+		| block
+		;
+
+command_x	: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
+			| TK_KEY_WHILE '(' exp ')' command_x
+			| var '=' exp ';'
+			| TK_KEY_RETURN ';'
+			| TK_KEY_RETURN exp ';'
+			| func_call ';'
+			| block
+			;
+
+var	: TK_ID
+	| exp '[' exp ']'
+	;
+
+exp: TK_INT ;
+
+func_call	: TK_ID '(' ')'
+			| TK_ID '(' exp_list ')'
+			;
+
+exp_list	: exp
+			| exp_list ',' exp
+			;
 
 %%
