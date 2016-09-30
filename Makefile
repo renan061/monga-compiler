@@ -13,30 +13,33 @@ program_EXES := $(wildcard bin/*)
 
 all: main
 
-yacc:
+parser:
 	bison -d src/monga.y
 	@- mv monga.tab.c src/yacc.c
 	@- mv monga.tab.h src/yacc.h
-	gcc -c src/yacc.c -o obj/yacc.o
+	gcc -c src/yacc.c -o obj/parser.o
 	@- $(RM) src/yacc.c
 
-lex: yacc
+lex: parser
 	flex src/monga.lex
 	$(CC) $(CFLAGS) -c lex.yy.c -o obj/lex.o -Isrc/
 	@- $(RM) lex.yy.c
 
-main: yacc lex
+main: lex parser
 	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o src/lex_test.c -ll
-	$(CC) $(CFLAGS) -o bin/sintest obj/lex.o obj/yacc.o src/yacc_test.c -ll
+	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o src/parser_test.c -ll
 
 # TODO: Naming
-testlex:
+lext_test:
 	@- sh tests/testlex.sh
+
+parser_test:
+	@- sh testparser.sh
 
 # TODO: Naming
 test: all
-	clear
-	@-sh testsyntax.sh
+	# clear
+	@- sh testparser.sh
 
 clean:
 	@- $(RM) $(program_OBJS)

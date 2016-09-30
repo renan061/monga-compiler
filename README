@@ -1,39 +1,28 @@
 /*
 	PUC-RJ - INF1715
-	Trabalho 1 - Análise léxica
+	Trabalho 2 - Parser (aceitar a sintaxe)
 	
 	Renan Almeida de Miranda Santos
 	Matrícula: 1211055
 */
 
 
-A partir da pasta do projeto, fazer:
+Gerar o executável:
 
-	sh bin/compile-lex.sh
-	sh bin/compile-test.sh
-	sh bin/test.sh
+	make
 
-Para executar todas as etapas sequencialmente, fazer:
+Testar tudo (lex e parser):
 
-	sh bin/doall.sh
+	make test
 
+Testar somente lex:
 
+	make lextest
 
-Observações:
+Testar somente parser:
 
-	- O script compile-lex gera um arquivo lex.o armazenado em pkg/.
+	make parsertest
 
-	- O script compile-test gera um arquivo lex_test.out armazenado em pkg/.
+Para limpar:
 
-	- O teste de número 14 contém um arquivo de 10mb. Por esse motivo, a
-		execução dos testes fica lenta. Para agilizar, é possível remover
-		das pastas tests/input e tests/answers o arquivo de numeração 14.
-
-	- Para adicionar um novo teste, basta criar dois novos arquivos em
-		tests/answers e tests/input, seguindo a nomenclatura dos arquivos
-		em cada pasta.
-
-	- Em caso de falha em algum dos testes, o arquivo de log pode ser
-		encontrado em tests/diff/test_diff_i.txt, onde i é o número do
-		teste que falhou.
-
+	make clean

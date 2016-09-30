@@ -33,7 +33,7 @@
 program	: definition_list ;
 
 definition_list	: definition_list definition
-				|
+				| /* empty */
 				;
 
 definition 	: definition_var
@@ -102,14 +102,59 @@ command_x	: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
 command_return	: TK_KEY_RETURN
 				| TK_KEY_RETURN exp
 				;
-
 var	: TK_ID
 	| exp '[' exp ']'
 	;
 
-exp	: TK_INT
-	| TK_STR
-	;
+/*
+ *	EXP SECTION
+ */
+
+exp	: exp_or ;
+
+exp_or	: exp_and
+		| exp_and TK_OR exp_comp
+		;
+
+exp_and	: exp_comp
+		| exp_and TK_AND exp_comp
+		;
+
+exp_comp	: exp_add
+			| exp_comp TK_EQUAL exp_add
+			| exp_comp TK_LEQUAL exp_add
+			| exp_comp TK_GEQUAL exp_add
+			| exp_comp '<' exp_add
+			| exp_comp '>' exp_add
+			;
+
+exp_add	: exp_mul
+		| exp_add '+' exp_mul
+		| exp_add '-' exp_mul
+		;
+
+exp_mul	: exp_unary
+		| exp_mul '*' exp_unary
+		| exp_mul '/' exp_unary
+		;
+
+exp_unary	: exp_simple
+			| '-' exp_simple
+			| '!' exp_simple
+			;
+
+exp_simple	: TK_INT
+			| TK_FLOAT
+			| TK_STR
+			| var
+			| '(' exp ')'
+			| func_call
+			| TK_KEY_NEW type '[' exp ']'
+			;
+
+/*
+ *	END EXP SECTION
+ */
 
 func_call	: TK_ID '(' ')'
 			| TK_ID '(' exp_list ')'
@@ -120,3 +165,47 @@ exp_list	: exp
 			;
 
 %%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

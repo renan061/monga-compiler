@@ -82,5 +82,24 @@
 /* exp */
 
 	void foo() {
-		var = "string";;
+		var = 1;
+		var = 1.0;
+		var = "string";
+		var = var;
+		var = (1);
+		var = foo(a, b, c);
+		var = new int[1];
+		var = -1;
+		var = a + b;
+		var = a - b;
+		var = a * b;
+		var = a / b;
+		var = a == b;
+		var = a <= b;
+		var = a >= b;
+		var = a < b;
+		var = a > b;
+		var = !a;
+		var = a && b;
+		var = a || b;
 	}
