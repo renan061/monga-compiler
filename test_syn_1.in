@@ -1,1 +1,25 @@
-int xxx, asd, asd, asd ;
+/* OK test */
+
+/* definition_var */
+
+	/* list_names */
+	int var;
+	int var, var, var, var;
+
+	/* type */
+	int var;
+	float var;
+	char var;
+	int[] var;
+	float[][] var;
+	char[][][][][] var;
+
+/* definition_func */
+
+	/* func_param_list */
+	void foo() {}
+	void foo(int a) {}
+
+	/* param_list */
+	void foo(float a, int b) {}
+	void foo(char a, float b, int c) {}

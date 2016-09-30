@@ -3,11 +3,11 @@
 	#include "lex.h"
 
 	void yyerror(const char* err) {
-		printf("%s\n", err);
+		fprintf(stderr, "%s\n", err);
 	}
 %}
 
-%start programa
+%start program
 %token 
 	TK_KEY_INT
 	TK_KEY_FLOAT
@@ -30,18 +30,42 @@
 
 %%
 
-programa	: definicao
+program	: definition_list ;
+
+definition_list	: definition_list definition
+				|
+				;
+
+definition 	: definition_var
+			| definition_func
 			;
 
-definicao	: defvariavel
-			| TK_INT
+definition_var : type name_list ';' ;
+
+name_list	: TK_ID
+			| name_list ',' TK_ID
 			;
 
-defvariavel	: TK_KEY_INT listanomes ';'
+type : base_type | type '[' ']'
+
+base_type : TK_KEY_INT | TK_KEY_FLOAT | TK_KEY_CHAR ;
+
+definition_func : return_type TK_ID '(' func_param_list ')' block
+
+return_type	: type
+			| TK_KEY_VOID
 			;
 
-listanomes	: TK_ID
-			| listanomes ',' TK_ID
+func_param_list	: param_list
+				|
+				;
+
+param_list	:	param
+			|	param_list ',' param
 			;
+
+param : type TK_ID
+
+block: '{' '}' ;
 
 %%
