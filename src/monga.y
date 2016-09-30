@@ -64,11 +64,7 @@ param_list	:	param
 
 param : type TK_ID
 
-block : '{' block_definition_var_list block_command_list '}' ;
-
-block_definition_var_list	: definition_var_list
-							|
-							;
+block : '{' definition_var_list block_command_list '}' ;
 
 definition_var_list	: definition_var_list definition_var
 					|

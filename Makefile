@@ -13,7 +13,7 @@ program_EXES := $(wildcard bin/*)
 all: main
 
 parser:
-	bison -d src/monga.y
+	bison -v -d src/monga.y
 	@- mv monga.tab.c src/yacc.c
 	@- mv monga.tab.h src/yacc.h
 	gcc -c src/yacc.c -o obj/parser.o
