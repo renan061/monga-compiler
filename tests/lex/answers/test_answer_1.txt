@@ -1,0 +1,15 @@
+TK_KEY_INT
+TK_KEY_FLOAT
+TK_KEY_CHAR
+TK_KEY_IF
+TK_KEY_ELSE
+TK_KEY_WHILE
+TK_KEY_NEW
+TK_KEY_RETURN
+TK_KEY_VOID
+TK_ID - intfloatchar
+TK_ID - ifelsewhilenew
+TK_ID - returnvoid
+TK_ID - int9
+TK_ID - floatfloat
+TK_ID - char_something

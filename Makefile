@@ -7,7 +7,6 @@
 
 CC := gcc
 
-program_SRCS := $(wildcard src/*.c)
 program_OBJS := $(wildcard obj/*.o)
 program_EXES := $(wildcard bin/*)
 
@@ -29,17 +28,13 @@ main: lex parser
 	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o src/lex_test.c -ll
 	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o src/parser_test.c -ll
 
-# TODO: Naming
-lext_test:
-	@- sh tests/testlex.sh
+lex_test:
+	@- sh tests/lex/testlex.sh
 
 parser_test:
-	@- sh testparser.sh
+	@- sh tests/parser/testparser.sh
 
-# TODO: Naming
-test: all
-	# clear
-	@- sh testparser.sh
+test: lex_test parser_test
 
 clean:
 	@- $(RM) $(program_OBJS)

@@ -1,0 +1,6 @@
+int main(void) {
+	int a = 2 + 3;
+	char *str = "Um programa \"muito\" complicado";
+	printf("%s\n", str);
+	return 0;
+}

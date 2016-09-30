@@ -17,11 +17,11 @@ Testar tudo (lex e parser):
 
 Testar somente lex:
 
-	make lextest
+	make lex_test
 
 Testar somente parser:
 
-	make parsertest
+	make parser_test
 
 Para limpar:
 
