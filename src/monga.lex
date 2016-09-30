@@ -4,8 +4,6 @@
 	#include "lex.h"
 	#include "yacc.h"
 
-	SemInfo seminfo;
-
 	// Auxliary enum for types of lexical errors
 	typedef enum ErrorType {
 		ERR_COMMENT,
@@ -40,9 +38,18 @@
 		errno = err;
 		exit(1);
 	}
+
+	// Holds the current line number
+	static int line_number = 1;
+
+	// Exported
+	SemInfo seminfo;
+	int current_line() {
+		return line_number;
+	}
 %}
 %%
-"\n"				{ }
+"\n"				{ line_number++; }
 "\t"				{ }
 " "					{ }
 
@@ -81,6 +88,7 @@
 
 "/*"						BEGIN(IN_COMMENT);
 <IN_COMMENT>"*/"			BEGIN(INITIAL);
+<IN_COMMENT>"/n"			{ line_number++; }
 <IN_COMMENT><<EOF>>			{ lex_error(ERR_COMMENT); }
 <IN_COMMENT>.				{ }
 

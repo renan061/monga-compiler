@@ -6,6 +6,8 @@
 
 extern int yylex(void);
 
+extern int current_line();
+
 typedef union SemInfo {
 	int i;
 	double f;
