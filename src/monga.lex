@@ -4,6 +4,9 @@
 	#include "lex.h"
 	#include "yacc.h"
 
+	// Holds the current line number
+	static int line_number = 1;
+
 	// Auxliary enum for types of lexical errors
 	typedef enum ErrorType {
 		ERR_COMMENT,
@@ -15,32 +18,31 @@
 
 	// Auxiliary error dealing function
 	static void lex_error(int err) {
+		printf("lexical error line %d (", line_number);
 		switch (err) {
 		case ERR_COMMENT:
-			printf("LEXICAL ERROR - Open commentary");
+			printf("open commentary");
 			break;
 		case ERR_STR_ESCAPE:
-			printf("LEXICAL ERROR - Invalid escape");
+			printf("invalid escape");
 			break;
 		case ERR_STR_OPEN:
-			printf("LEXICAL ERROR - Open string");
+			printf("open string");
 			break;
 		case ERR_STR_LINE:
-			printf("LEXICAL ERROR - Multiline string");
+			printf("multiline string");
 			break;
 		case ERR_STR_MEM:
-			printf("LEXICAL ERROR - Insufficient memory for string");
+			printf("insufficient memory for string");
 			break;
 		default:
 			exit(2);
 		}
 
+		printf(")\n");
 		errno = err;
 		exit(1);
 	}
-
-	// Holds the current line number
-	static int line_number = 1;
 
 	// Exported
 	SemInfo seminfo;
@@ -88,7 +90,7 @@
 
 "/*"						BEGIN(IN_COMMENT);
 <IN_COMMENT>"*/"			BEGIN(INITIAL);
-<IN_COMMENT>"/n"			{ line_number++; }
+<IN_COMMENT>"\n"			{ line_number++; }
 <IN_COMMENT><<EOF>>			{ lex_error(ERR_COMMENT); }
 <IN_COMMENT>.				{ }
 

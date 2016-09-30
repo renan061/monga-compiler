@@ -4,6 +4,6 @@
 #include "syntax.h"
 
 int main(int argc, char *argv[]) {
-	printf((!yyparse()) ? "OK\n" : "FAIL - %d\n", current_line());
+	printf((!yyparse()) ? "OK\n" : "FAIL\n");
     return 0;
 }

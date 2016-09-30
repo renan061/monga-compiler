@@ -3,7 +3,7 @@
 	#include "lex.h"
 
 	void yyerror(const char* err) {
-		fprintf(stderr, "%s\n", err);
+		fprintf(stderr, "syntax error line %d\n", current_line());
 	}
 %}
 
@@ -86,8 +86,7 @@ command	: TK_KEY_IF '(' exp ')' command
 		| TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command
 		| TK_KEY_WHILE '(' exp ')' command
 		| var '=' exp ';'
-		| TK_KEY_RETURN ';'
-		| TK_KEY_RETURN exp ';'
+		| command_return ';'
 		| func_call ';'
 		| block
 		;
@@ -95,17 +94,22 @@ command	: TK_KEY_IF '(' exp ')' command
 command_x	: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
 			| TK_KEY_WHILE '(' exp ')' command_x
 			| var '=' exp ';'
-			| TK_KEY_RETURN ';'
-			| TK_KEY_RETURN exp ';'
+			| command_return ';'
 			| func_call ';'
 			| block
 			;
+
+command_return	: TK_KEY_RETURN
+				| TK_KEY_RETURN exp
+				;
 
 var	: TK_ID
 	| exp '[' exp ']'
 	;
 
-exp: TK_INT ;
+exp	: TK_INT
+	| TK_STR
+	;
 
 func_call	: TK_ID '(' ')'
 			| TK_ID '(' exp_list ')'
