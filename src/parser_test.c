@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include "lex.h"
-#include "yacc.h"
 #include "parser.h"
 
 int main(int argc, char *argv[]) {

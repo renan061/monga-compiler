@@ -7,7 +7,7 @@
 */
 
 
-Gerar o executável:
+Gerar binários:
 
 	make
 
@@ -26,3 +26,7 @@ Testar somente parser:
 Para limpar:
 
 	make clean
+
+
+
+Obs.: É necessário gerar os binários antes de rodar os testes.

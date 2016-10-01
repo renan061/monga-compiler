@@ -28,10 +28,10 @@ main: lex parser
 	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o src/lex_test.c -ll
 	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o src/parser_test.c -ll
 
-lex_test: all
+lex_test:
 	@- sh tests/lex/testlex.sh
 
-parser_test: all
+parser_test:
 	@- sh tests/parser/testparser.sh
 
 test: lex_test parser_test
