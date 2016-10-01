@@ -1,0 +1,6 @@
+/* Expressions */
+void main () {
+	int var;
+	var = 1 || 1 && 1 - 1; 
+	var = (x || y && z - 1 || !(x > y)) * y + z; 
+}

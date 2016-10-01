@@ -30,7 +30,8 @@
 
 %%
 
-program	: definition_list ;
+program	: definition_list
+		;
 
 definition_list	: definition_list definition
 				| /* empty */
@@ -40,42 +41,46 @@ definition 	: definition_var
 			| definition_func
 			;
 
-definition_var : type name_list ';' ;
+definition_var	: type name_list ';'
+				;
 
 name_list	: TK_ID
 			| name_list ',' TK_ID
 			;
 
-type : base_type | type '[' ']'
+type	: base_type
+		| type '[' ']'
+		;
 
-base_type : TK_KEY_INT | TK_KEY_FLOAT | TK_KEY_CHAR ;
+base_type	: TK_KEY_INT
+			| TK_KEY_FLOAT
+			| TK_KEY_CHAR
+			;
 
 definition_func	: type TK_ID '(' func_param_list ')' block
 				| TK_KEY_VOID TK_ID '(' func_param_list ')' block
 				;
 
 func_param_list	: param_list
-				|
+				| /* empty */
 				;
 
 param_list	:	param
 			|	param_list ',' param
 			;
 
-param : type TK_ID
+param	: type TK_ID
+		;
 
-block : '{' definition_var_list block_command_list '}' ;
+block	: '{' definition_var_list command_list '}'
+		;
 
 definition_var_list	: definition_var_list definition_var
-					|
+					| /* empty */
 					;
 
-block_command_list	: command_list
-					|
-					;
-
-command_list	: command
-				| command_list command
+command_list	: command_list command
+				| /* empty */
 				;
 
 command	: TK_KEY_IF '(' exp ')' command
@@ -98,8 +103,9 @@ command_x	: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
 command_return	: TK_KEY_RETURN
 				| TK_KEY_RETURN exp
 				;
+
 var	: TK_ID
-	| exp '[' exp ']'
+	| exp_simple '[' exp ']'
 	;
 
 /*
@@ -108,35 +114,35 @@ var	: TK_ID
 
 exp	: exp_or ;
 
-exp_or	: exp_and
-		| exp_and TK_OR exp_comp
+exp_or	: exp_and TK_OR exp_comp
+		| exp_and
 		;
 
-exp_and	: exp_comp
-		| exp_and TK_AND exp_comp
+exp_and	: exp_and TK_AND exp_comp
+		| exp_comp
 		;
 
-exp_comp	: exp_add
-			| exp_comp TK_EQUAL exp_add
+exp_comp	: exp_comp TK_EQUAL exp_add
 			| exp_comp TK_LEQUAL exp_add
 			| exp_comp TK_GEQUAL exp_add
 			| exp_comp '<' exp_add
 			| exp_comp '>' exp_add
+			| exp_add
 			;
 
-exp_add	: exp_mul
-		| exp_add '+' exp_mul
+exp_add	: exp_add '+' exp_mul
 		| exp_add '-' exp_mul
+		| exp_mul
 		;
 
-exp_mul	: exp_unary
-		| exp_mul '*' exp_unary
+exp_mul	: exp_mul '*' exp_unary
 		| exp_mul '/' exp_unary
+		| exp_unary
 		;
 
-exp_unary	: exp_simple
-			| '-' exp_simple
+exp_unary	: '-' exp_simple
 			| '!' exp_simple
+			| exp_simple
 			;
 
 exp_simple	: TK_INT
@@ -161,47 +167,3 @@ exp_list	: exp
 			;
 
 %%
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
