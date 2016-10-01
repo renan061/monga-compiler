@@ -37,5 +37,6 @@ parser_test:
 test: lex_test parser_test
 
 clean:
+	@- $(RM) monga.output
 	@- $(RM) $(program_OBJS)
 	@- $(RM) $(program_EXES)

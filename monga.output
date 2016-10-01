@@ -103,9 +103,9 @@ Grammar
    60        | exp_mul '*' exp_unary
    61        | exp_mul '/' exp_unary
 
-   62 exp_unary: '-' exp_simple
-   63          | '!' exp_simple
-   64          | exp_simple
+   62 exp_unary: exp_simple
+   63          | '-' exp_simple
+   64          | '!' exp_simple
 
    65 exp_simple: TK_INT
    66           | TK_FLOAT
@@ -125,13 +125,13 @@ Grammar
 Terminals, with rules where they appear
 
 $end (0) 0
-'!' (33) 63
+'!' (33) 64
 '(' (40) 14 15 28 29 30 35 36 69 72 73
 ')' (41) 14 15 28 29 30 35 36 69 72 73
 '*' (42) 60
 '+' (43) 57
 ',' (44) 8 19 75
-'-' (45) 58 62
+'-' (45) 58 63
 '/' (47) 61
 ';' (59) 6 31 32 33 37 38 39
 '<' (60) 54
@@ -697,7 +697,7 @@ state 45
 
 state 46
 
-   62 exp_unary: '-' . exp_simple
+   63 exp_unary: '-' . exp_simple
 
     TK_KEY_NEW  shift, and go to state 39
     TK_ID       shift, and go to state 41
@@ -722,7 +722,7 @@ state 46
 
 state 47
 
-   63 exp_unary: '!' . exp_simple
+   64 exp_unary: '!' . exp_simple
 
     TK_KEY_NEW  shift, and go to state 39
     TK_ID       shift, and go to state 41
@@ -913,9 +913,9 @@ state 62
 
 state 63
 
-   64 exp_unary: exp_simple .
+   62 exp_unary: exp_simple .
 
-    $default  reduce using rule 64 (exp_unary)
+    $default  reduce using rule 62 (exp_unary)
 
 
 state 64
@@ -1050,8 +1050,44 @@ state 72
 
 state 73
 
-   62 exp_unary: '-' exp_simple .
-   64          | exp_simple .
+   62 exp_unary: exp_simple .
+   63          | '-' exp_simple .
+
+    TK_EQUAL   reduce using rule 62 (exp_unary)
+    TK_EQUAL   [reduce using rule 63 (exp_unary)]
+    TK_LEQUAL  reduce using rule 62 (exp_unary)
+    TK_LEQUAL  [reduce using rule 63 (exp_unary)]
+    TK_GEQUAL  reduce using rule 62 (exp_unary)
+    TK_GEQUAL  [reduce using rule 63 (exp_unary)]
+    TK_AND     reduce using rule 62 (exp_unary)
+    TK_AND     [reduce using rule 63 (exp_unary)]
+    TK_OR      reduce using rule 62 (exp_unary)
+    TK_OR      [reduce using rule 63 (exp_unary)]
+    ';'        reduce using rule 63 (exp_unary)
+    ','        reduce using rule 63 (exp_unary)
+    '['        reduce using rule 62 (exp_unary)
+    '['        [reduce using rule 63 (exp_unary)]
+    ']'        reduce using rule 63 (exp_unary)
+    ')'        reduce using rule 63 (exp_unary)
+    '<'        reduce using rule 62 (exp_unary)
+    '<'        [reduce using rule 63 (exp_unary)]
+    '>'        reduce using rule 62 (exp_unary)
+    '>'        [reduce using rule 63 (exp_unary)]
+    '+'        reduce using rule 62 (exp_unary)
+    '+'        [reduce using rule 63 (exp_unary)]
+    '-'        reduce using rule 62 (exp_unary)
+    '-'        [reduce using rule 63 (exp_unary)]
+    '*'        reduce using rule 62 (exp_unary)
+    '*'        [reduce using rule 63 (exp_unary)]
+    '/'        reduce using rule 62 (exp_unary)
+    '/'        [reduce using rule 63 (exp_unary)]
+    $default   reduce using rule 62 (exp_unary)
+
+
+state 74
+
+   62 exp_unary: exp_simple .
+   64          | '!' exp_simple .
 
     TK_EQUAL   reduce using rule 62 (exp_unary)
     TK_EQUAL   [reduce using rule 64 (exp_unary)]
@@ -1063,8 +1099,12 @@ state 73
     TK_AND     [reduce using rule 64 (exp_unary)]
     TK_OR      reduce using rule 62 (exp_unary)
     TK_OR      [reduce using rule 64 (exp_unary)]
+    ';'        reduce using rule 64 (exp_unary)
+    ','        reduce using rule 64 (exp_unary)
     '['        reduce using rule 62 (exp_unary)
     '['        [reduce using rule 64 (exp_unary)]
+    ']'        reduce using rule 64 (exp_unary)
+    ')'        reduce using rule 64 (exp_unary)
     '<'        reduce using rule 62 (exp_unary)
     '<'        [reduce using rule 64 (exp_unary)]
     '>'        reduce using rule 62 (exp_unary)
@@ -1078,38 +1118,6 @@ state 73
     '/'        reduce using rule 62 (exp_unary)
     '/'        [reduce using rule 64 (exp_unary)]
     $default   reduce using rule 62 (exp_unary)
-
-
-state 74
-
-   63 exp_unary: '!' exp_simple .
-   64          | exp_simple .
-
-    TK_EQUAL   reduce using rule 63 (exp_unary)
-    TK_EQUAL   [reduce using rule 64 (exp_unary)]
-    TK_LEQUAL  reduce using rule 63 (exp_unary)
-    TK_LEQUAL  [reduce using rule 64 (exp_unary)]
-    TK_GEQUAL  reduce using rule 63 (exp_unary)
-    TK_GEQUAL  [reduce using rule 64 (exp_unary)]
-    TK_AND     reduce using rule 63 (exp_unary)
-    TK_AND     [reduce using rule 64 (exp_unary)]
-    TK_OR      reduce using rule 63 (exp_unary)
-    TK_OR      [reduce using rule 64 (exp_unary)]
-    '['        reduce using rule 63 (exp_unary)
-    '['        [reduce using rule 64 (exp_unary)]
-    '<'        reduce using rule 63 (exp_unary)
-    '<'        [reduce using rule 64 (exp_unary)]
-    '>'        reduce using rule 63 (exp_unary)
-    '>'        [reduce using rule 64 (exp_unary)]
-    '+'        reduce using rule 63 (exp_unary)
-    '+'        [reduce using rule 64 (exp_unary)]
-    '-'        reduce using rule 63 (exp_unary)
-    '-'        [reduce using rule 64 (exp_unary)]
-    '*'        reduce using rule 63 (exp_unary)
-    '*'        [reduce using rule 64 (exp_unary)]
-    '/'        reduce using rule 63 (exp_unary)
-    '/'        [reduce using rule 64 (exp_unary)]
-    $default   reduce using rule 63 (exp_unary)
 
 
 state 75

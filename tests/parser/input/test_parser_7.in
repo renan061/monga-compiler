@@ -1,0 +1,4 @@
+/* Invalid operation */
+void main () {
+	var = -1+;
+}
