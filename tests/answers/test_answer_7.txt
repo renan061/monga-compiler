@@ -1,2 +1,0 @@
-TK_INT - 1
-LEXICAL ERROR - Open commentary

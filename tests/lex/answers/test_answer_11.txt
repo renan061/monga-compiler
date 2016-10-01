@@ -1,0 +1,31 @@
+TK_KEY_INT
+TK_ID - main
+(
+TK_KEY_VOID
+)
+{
+TK_KEY_INT
+TK_ID - a
+=
+TK_INT - 2
++
+TK_INT - 3
+;
+TK_KEY_CHAR
+*
+TK_ID - str
+=
+TK_STR - "Um programa "muito" complicado"
+;
+TK_ID - printf
+(
+TK_STR - "%s
+"
+,
+TK_ID - str
+)
+;
+TK_KEY_RETURN
+TK_INT - 0
+;
+}

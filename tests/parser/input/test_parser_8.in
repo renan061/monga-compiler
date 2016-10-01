@@ -1,0 +1,7 @@
+/* Calling functions with parameters */
+void main () {
+	foo(1 <= 123, 3 + 2 --7);
+	foo(, 1, 2);
+	foo(,a);
+	foo(a,);
+}
