@@ -34,7 +34,12 @@ lex_test:
 parser_test:
 	@- sh tests/parser/testparser.sh
 
-test: lex_test parser_test
+ast_test:
+	$(CC) $(CFLAGS) -o bin/asttest obj/parser.o src/ast_test.c -ll
+	# @- sh tests/parser/testast.sh	
+
+# test: lex_test parser_test
+test: all ast_test
 
 clean:
 	@- $(RM) monga.output
