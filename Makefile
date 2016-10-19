@@ -16,7 +16,8 @@ parser:
 	bison -v -d src/monga.y
 	@- mv monga.tab.c src/yacc.c
 	@- mv monga.tab.h src/yacc.h
-	gcc -c src/yacc.c -o obj/parser.o
+	$(CC) $(CFLAGS) -c src/yacc.c -o obj/parser.o
+	$(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
 	@- $(RM) src/yacc.c
 
 lex: parser
@@ -25,8 +26,8 @@ lex: parser
 	@- $(RM) lex.yy.c
 
 main: lex parser
-	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o src/lex_test.c -ll
-	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o src/parser_test.c -ll
+	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o obj/parser.o obj/ast.o src/lex_test.c -ll
+	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o obj/ast.o src/parser_test.c -ll
 
 lex_test:
 	@- sh tests/lex/testlex.sh
@@ -35,8 +36,8 @@ parser_test:
 	@- sh tests/parser/testparser.sh
 
 ast_test:
-	$(CC) $(CFLAGS) -o bin/asttest obj/parser.o src/ast_test.c -ll
-	# @- sh tests/parser/testast.sh	
+	$(CC) $(CFLAGS) -o bin/asttest obj/lex.o obj/parser.o obj/ast.o src/ast_test.c -ll
+	@- bin/asttest < ast_test.in
 
 # test: lex_test parser_test
 test: all ast_test

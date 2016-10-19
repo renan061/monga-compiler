@@ -11,6 +11,10 @@ TK_INT - 2
 +
 TK_INT - 3
 ;
+TK_ID - a
+=
+TK_INT - 3
+;
 TK_KEY_CHAR
 *
 TK_ID - str

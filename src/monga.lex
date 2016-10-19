@@ -45,7 +45,6 @@
 	}
 
 	// Exported
-	SemInfo seminfo;
 	int current_line() {
 		return line_number;
 	}
@@ -72,19 +71,19 @@
 "||"				{ return TK_OR;		}
 
 [A-Za-z_][A-Za-z_0-9]*				{
-										seminfo.s = yytext;
+										yylval.strvalue = yytext;
 										return TK_ID;
 									}
 [0-9]+								{ 
-										seminfo.i = strtoul(yytext, NULL, 10);
+										yylval.intvalue = strtoul(yytext, NULL, 10);
 										return TK_INT;
 									}
 "0"[xX][0-9a-fA-F]+					{
-										seminfo.i = strtoul(yytext, NULL, 16);
+										yylval.intvalue = strtoul(yytext, NULL, 16);
 										return TK_INT;
 									}
 [0-9]+"."[0-9]+([Ee][-+]?[0-9]+)?	{
-										seminfo.f = strtod(yytext, NULL);
+										yylval.floatvalue = strtod(yytext, NULL);
 										return TK_FLOAT;
 									}
 
@@ -144,10 +143,10 @@
 								}
 							}
 
-							seminfo.s = result;
+							yylval.strvalue = result;
 							return TK_STR;
 						}
 "\""					{ lex_error(ERR_STR_OPEN); }
 
-. { return yytext[0]; }
+. { yylval.intvalue = line_number; return yytext[0]; }
 %%
