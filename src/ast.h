@@ -16,7 +16,7 @@ typedef enum ExpE {
 	EXP_KSTR,
 	EXP_VAR,
 	// EXP_PAR, ?????
-	// EXP_CALL, TODO
+	EXP_CALL,
 	EXP_NEW,
 	EXP_UNARY,
 	EXP_MUL,
@@ -52,6 +52,11 @@ typedef enum TypeE {
 	TYPE_ARRAY,
 } TypeE;
 
+typedef enum CallE {
+	CALL_EMPTY,
+	CALL_PARAMS
+} CallE;
+
 // ==================================================
 //
 //	Typedefs
@@ -59,12 +64,14 @@ typedef enum TypeE {
 // ==================================================
 
 typedef struct ProgramNode ProgramNode;
-typedef struct IdNode IdNode;
+/* Ok */ typedef struct IdNode IdNode;
 /* Ok */ typedef struct VarNode VarNode;
-typedef struct ExpNode ExpNode;
+/* Ok */ typedef struct ExpNode ExpNode;
+/* Ok */ typedef struct ExpList ExpList;
 typedef struct DefNode DefNode;
 typedef struct CmdNode CmdNode;
 /* Ok */ typedef struct TypeNode TypeNode;
+/* Ok */ typedef struct CallNode CallNode;
 typedef struct AstNode AstNode;
 
 // ==================================================
@@ -82,6 +89,8 @@ extern void ast_set_program_node(VarNode *node);
 // extern AstNode* ast_list_add(AstNode* list, AstNode* node);
 // extern AstNode* ast_list_add(AstNode* list, int value);
 
+extern void ast_list_append(void** list, void* value);
+
 // ==================================================
 //
 //	Create node functions
@@ -98,7 +107,12 @@ extern ExpNode* ast_exp_int(int value);
 extern ExpNode* ast_exp_float(float value);
 extern ExpNode* ast_exp_str(const char* value);
 extern ExpNode* ast_exp_var(VarNode* var);
+extern ExpNode* ast_exp_call(CallNode* call);
 extern ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp);
+
+// ExpList
+extern ExpList* ast_explist_new(ExpNode* exp);
+extern ExpList* ast_explist_append(ExpList* explist, ExpNode* exp);
 
 // Var
 extern VarNode* ast_var(IdNode* id);
@@ -107,5 +121,9 @@ extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
 // Type
 extern TypeNode* ast_type(TypeE tag);
 extern TypeNode* ast_type_array(TypeNode* node);
+
+// Call
+extern CallNode* ast_call_empty(IdNode* id);
+extern CallNode* ast_call_params(IdNode* id, ExpList* params);
 
 #endif

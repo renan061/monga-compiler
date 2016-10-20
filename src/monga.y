@@ -19,9 +19,12 @@
 	const char* strvalue;
 	AstNode *astnode;
 
-	VarNode *varnode;
-	TypeNode *typenode;
-	ExpNode *expnode;
+	VarNode* varnode;
+	TypeNode* typenode;
+	ExpNode* expnode;
+	CallNode* callnode;
+
+	ExpList* explist;
 }
 
 %start program
@@ -38,7 +41,10 @@
 %type <varnode>		var
 %type <typenode>	type base_type
 %type <expnode>		exp exp_or exp_and exp_comp exp_add exp_mul exp_unary exp_simple
-// definition definition_var name_list definition_func func_param_list param_list param block definition_var_list command_list command command_x command_return var func_call exp_list
+%type <callnode>	func_call
+
+%type <explist>		exp_list
+// definition definition_var name_list definition_func func_param_list param_list param block definition_var_list command_list command command_x command_return var
 %%
 
 program	: definition_list 	//{ ast_set_program_node($$); }
@@ -162,7 +168,7 @@ exp_simple	: TK_INT 						{ $$ = ast_exp_int($1);		}
 			| TK_STR						{ $$ = ast_exp_str($1);		}
 			| var 							{ $$ = ast_exp_var($1); 	}
 			| '(' exp ')'					{ $$ = $2;				 	}
-			| func_call						//{ $$ = $1; 					}
+			| func_call						{ $$ = ast_exp_call($1);	}
 			| TK_KEY_NEW type '[' exp ']'	{ $$ = ast_exp_new($2, $4);	}
 			;
 
@@ -170,12 +176,12 @@ exp_simple	: TK_INT 						{ $$ = ast_exp_int($1);		}
  *	END EXP SECTION
  */
 
-func_call	: TK_ID '(' ')'				//{ ; }
-			| TK_ID '(' exp_list ')'	//{ ; }
+func_call	: TK_ID '(' ')'				{ $$ = ast_call_empty(ast_id($1));		}
+			| TK_ID '(' exp_list ')'	{ $$ = ast_call_params(ast_id($1), $3);	}
 			;
 
-exp_list	: exp
-			| exp_list ',' exp
+exp_list	: exp 				{ $$ = ast_explist_new($1);			}
+			| exp_list ',' exp 	{ $$ = ast_explist_append($1, $3);	}
 			;
 
 %%
