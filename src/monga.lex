@@ -9,6 +9,7 @@
 
 	// Auxliary enum for types of lexical errors
 	typedef enum ErrorType {
+		ERR_ID_MEM,
 		ERR_COMMENT,
 		ERR_STR_ESCAPE,
 		ERR_STR_OPEN,
@@ -20,6 +21,8 @@
 	static void lex_error(int err) {
 		printf("lexical error line %d (", line_number);
 		switch (err) {
+		case ERR_ID_MEM:
+			printf("insufficient memory for identifier");
 		case ERR_COMMENT:
 			printf("open commentary");
 			break;
@@ -71,7 +74,13 @@
 "||"				{ return TK_OR;		}
 
 [A-Za-z_][A-Za-z_0-9]*				{
-										yylval.strvalue = yytext;
+										int len = strlen(yytext);
+									    char* str = (char*)malloc(len + 1);
+									    if (str == NULL) { 
+									        lex_error(ERR_ID_MEM);
+									    }
+									    memcpy(str, yytext, len + 1);
+									    yylval.strvalue = str;
 										return TK_ID;
 									}
 [0-9]+								{ 

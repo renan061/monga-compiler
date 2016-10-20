@@ -15,7 +15,6 @@ typedef enum ExpE {
 	EXP_KFLOAT,
 	EXP_KSTR,
 	EXP_VAR,
-	// EXP_PAR, ?????
 	EXP_CALL,
 	EXP_NEW,
 	EXP_UNARY,
@@ -37,11 +36,14 @@ typedef enum DefE {
 } DefE;
 
 typedef enum CmdE {
+	CMD_BLOCK,
 	CMD_IF,
+	CMD_IF_ELSE,
 	CMD_WHILE,
 	CMD_ASG,
-	CMD_RETURN,
-	CMD_COMP
+	CMD_RETURN_NULL,
+	CMD_RETURN_EXP,
+	CMD_CALL
 } CmdE;
 
 typedef enum TypeE {
@@ -80,16 +82,23 @@ typedef struct AstNode AstNode;
 //
 // ==================================================
 
-// Temp
-void printvarnode(AstNode *n);
+#include <stdio.h>	// TODO: Remove
+#include <stdlib.h>	// TODO: Move
 
-extern AstNode* ast_get_program_node();
-extern void ast_set_program_node(VarNode *node);
+AstNode *program_node;
 
-// extern AstNode* ast_list_add(AstNode* list, AstNode* node);
-// extern AstNode* ast_list_add(AstNode* list, int value);
+void printvarnode(AstNode *n) {
+	printf("ast_id printing: ");
+	printf("%s\n", n->u.var->u.id->str);
+}
 
-extern void ast_list_append(void** list, void* value);
+void ast_set_program_node(VarNode *node) {
+	printf("ast_set_program_node\n");
+	AstNode* n;
+	AST_MALLOC(n, AstNode);
+	n->u.var = node;
+	program_node = n;
+}
 
 // ==================================================
 //
@@ -117,6 +126,16 @@ extern ExpList* ast_explist_append(ExpList* explist, ExpNode* exp);
 // Var
 extern VarNode* ast_var(IdNode* id);
 extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
+
+// Cmd
+extern CmdNode* ast_cmd_block(DefNode* def, CmdNode* cmd); // TODO: DefVarList and CmdList
+extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
+extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
+extern CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd);
+extern CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp);
+extern CmdNode* ast_cmd_return_null();
+extern CmdNode* ast_cmd_return_exp(ExpNode* exp);
+extern CmdNode* ast_cmd_call(CallNode* call);
 
 // Type
 extern TypeNode* ast_type(TypeE tag);

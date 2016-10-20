@@ -1,0 +1,2 @@
+syntax error line 4					      |	tests/parser/testparser.sh: line 22: ../../bin/parsertest: No
+FAIL							      <

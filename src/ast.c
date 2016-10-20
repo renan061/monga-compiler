@@ -97,6 +97,37 @@ struct DefNode {
 
 struct CmdNode {
 	CmdE tag;
+	union {
+		// CmdBlock
+		struct {
+			DefNode* def;
+			CmdNode* cmd;
+		} block;
+		// CmdIf
+		struct {
+			ExpNode* exp;
+			CmdNode* cmd;
+		} ifcmd;
+		// CmdIfElse
+		struct {
+			ExpNode* exp;
+			CmdNode* ifcmd, elsecmd;
+		} ifelse;
+		// CmdWhile
+		struct {
+			ExpNode* exp;
+			CmdNode* cmd;
+		} whilecmd;
+		// CmdCall
+		struct {
+			VarNode* var;
+			ExpNode* exp;
+		} asg;
+		// CmdReturnExp
+		ExpNode* exp;
+		// CmdCall
+		CallNode* call;
+	} u;
 };
 
 struct TypeNode {
@@ -131,34 +162,6 @@ struct AstNode {
 		TypeNode* type;
 	} u;
 };
-
-// ==================================================
-//
-//	Temp
-//
-// ==================================================
-
-#include <stdio.h>	// TODO: Remove
-#include <stdlib.h>	// TODO: Move
-
-static AstNode *program_node;
-
-void printvarnode(AstNode *n) {
-	printf("ast_id printing: ");
-	printf("%s\n", n->u.var->u.id->str);
-}
-
-AstNode* ast_get_program_node() {
-	return program_node;
-}
-
-void ast_set_program_node(VarNode *node) {
-	printf("ast_set_program_node\n");
-	AstNode* n;
-	AST_MALLOC(n, AstNode);
-	n->u.var = node;
-	program_node = n;
-}
 
 // ==================================================
 //
@@ -286,6 +289,76 @@ VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
 	n->tag = VAR_INDEXED;
 	n->u.indexed.exp1 = exp1;
 	n->u.indexed.exp2 = exp2;
+	return n;
+}
+
+// Cmd
+CmdNode* ast_cmd_block(DefNode* def, CmdNode* cmd) {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_BLOCK;
+	n->u.block.def = def;
+	n->u.block.cmd = cmd;
+	return n;
+}
+
+CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd) {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_IF;
+	n->u.ifcmd.exp = exp;
+	n->u.ifcmd.cmd = cmd;
+	return n;
+}
+
+CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd) {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_IF_ELSE;
+	n->u.ifelse.exp = exp;
+	n->u.ifelse.ifcmd = ifcmd;
+	n->u.ifelse.elsecmd = elsecmd;
+	return n;
+}
+
+CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd) {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_WHILE;
+	n->u.whilecmd.exp = exp;
+	n->u.whilecmd.cmd = cmd;
+	return n;
+}
+
+CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp) {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_ASG;
+	n->u.asg.var = var;
+	n->u.asg.exp = exp;
+	return n;
+}
+
+CmdNode* ast_cmd_return_null() {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_RETURN_NULL;
+	return n;
+}
+
+CmdNode* ast_cmd_return_exp(ExpNode* exp) {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_RETURN_EXP;
+	n->u.exp = exp;
+	return n;
+}
+
+CmdNode* ast_cmd_call(CallNode* call) {
+	CmdNode* n;
+	AST_MALLOC(n, CmdNode);
+	n->tag = CMD_CALL;
+	n->u.call = call;
 	return n;
 }
 

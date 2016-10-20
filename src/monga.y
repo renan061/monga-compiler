@@ -20,6 +20,7 @@
 	AstNode *astnode;
 
 	VarNode* varnode;
+	CmdNode* cmdnode;
 	TypeNode* typenode;
 	ExpNode* expnode;
 	CallNode* callnode;
@@ -39,12 +40,13 @@
 
 // %type <node> program definition_list definition
 %type <varnode>		var
+%type <cmdnode>		block command command_x command_return
 %type <typenode>	type base_type
 %type <expnode>		exp exp_or exp_and exp_comp exp_add exp_mul exp_unary exp_simple
 %type <callnode>	func_call
 
 %type <explist>		exp_list
-// definition definition_var name_list definition_func func_param_list param_list param block definition_var_list command_list command command_x command_return var
+// definition definition_var name_list definition_func func_param_list param_list param definition_var_list command_list
 %%
 
 program	: definition_list 	//{ ast_set_program_node($$); }
@@ -90,6 +92,8 @@ param	: type TK_ID
 		;
 
 block	: '{' definition_var_list command_list '}'
+			// { $$ = ast_cmd_block($2, $3); }
+			{ $$ = ast_set_program_node($2, $3); }
 		;
 
 definition_var_list	: definition_var_list definition_var
@@ -101,24 +105,37 @@ command_list	: command_list command
 				;
 
 command	: TK_KEY_IF '(' exp ')' command
+			{ $$ = ast_cmd_if($3, $5);			}
 		| TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command
+			{ $$ = ast_cmd_if_else($3, $5, $7);	}
 		| TK_KEY_WHILE '(' exp ')' command
-		| var '=' exp ';'										{ ast_set_program_node($1); }
+			{ $$ = ast_cmd_while($3, $5);		}
+		| var '=' exp ';'
+			{ $$ = ast_cmd_asg($1, $3);			}
 		| command_return ';'
+			{ $$ = $1;							}
 		| func_call ';'
+			{ $$ = ast_cmd_call($1);			}
 		| block
+			{ $$ = $1;							}
 		;
 
 command_x	: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
+				{ $$ = ast_cmd_if_else($3, $5, $7);	}
 			| TK_KEY_WHILE '(' exp ')' command_x
+				{ $$ = ast_cmd_while($3, $5);		}
 			| var '=' exp ';'
+				{ $$ = ast_cmd_asg($1, $3);			}
 			| command_return ';'
+				{ $$ = $1;							}
 			| func_call ';'
+				{ $$ = ast_cmd_call($1);			}
 			| block
+				{ $$ = $1;							}
 			;
 
-command_return	: TK_KEY_RETURN
-				| TK_KEY_RETURN exp
+command_return	: TK_KEY_RETURN		{ $$ = ast_cmd_return_null();	}
+				| TK_KEY_RETURN exp	{ $$ = ast_cmd_return_exp($2);	}
 				;
 
 var	: TK_ID 					{ $$ = ast_var(ast_id($1));		}
