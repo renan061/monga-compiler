@@ -3,12 +3,34 @@
 
 // ==================================================
 //
+//	Typedefs
+//
+// ==================================================
+
+typedef struct ProgramNode ProgramNode;
+typedef struct DefNode DefNode;
+
+/* Ok */ typedef struct IdNode IdNode;
+/* Ok */ typedef struct VarNode VarNode;
+/* Ok */ typedef struct ExpNode ExpNode;
+/* Ok */ typedef struct ExpList ExpList;
+typedef struct CmdNode CmdNode;
+/* Ok */ typedef struct TypeNode TypeNode;
+/* Ok */ typedef struct CallNode CallNode;
+
+// ==================================================
+//
 //	Enums
 //
 // ==================================================
 
 // Auxiliary
 typedef unsigned int LexSymbol;
+
+typedef enum DefE {
+	DEF_VAR,
+	DEF_FUNC,
+} DefE;
 
 typedef enum ExpE {
 	EXP_KINT,
@@ -29,11 +51,6 @@ typedef enum VarE {
 	VAR_ID,
 	VAR_INDEXED
 } VarE;
-
-typedef enum DefE {
-	DEF_VAR,
-	DEF_FUNC,
-} DefE;
 
 typedef enum CmdE {
 	CMD_BLOCK,
@@ -61,20 +78,124 @@ typedef enum CallE {
 
 // ==================================================
 //
-//	Typedefs
+//	Structs
 //
 // ==================================================
 
-typedef struct ProgramNode ProgramNode;
-/* Ok */ typedef struct IdNode IdNode;
-/* Ok */ typedef struct VarNode VarNode;
-/* Ok */ typedef struct ExpNode ExpNode;
-/* Ok */ typedef struct ExpList ExpList;
-typedef struct DefNode DefNode;
-typedef struct CmdNode CmdNode;
-/* Ok */ typedef struct TypeNode TypeNode;
-/* Ok */ typedef struct CallNode CallNode;
-typedef struct AstNode AstNode;
+struct ProgramNode {
+	DefNode* defs;
+};
+
+struct DefNode {
+	DefE tag;
+	DefNode* next;
+	union {
+		struct {
+			TypeNode* type;
+			IdNode* id;
+		} var;
+		struct {
+			IdNode* id; // TODO
+		} func;
+	} u;
+};
+
+struct IdNode {
+	const char* str;
+};
+
+struct ExpNode {
+	ExpE tag;
+	union {
+		// ExpKInt
+		int intvalue;
+		// ExpKFloat
+		double floatvalue;
+		// ExpKStr
+		const char* strvalue;
+		// ExpVar
+		VarNode* var;
+		// ExpCall
+		CallNode* call;
+		// ExpNew
+		struct {
+			TypeNode* type;
+			ExpNode* exp;
+		} new;
+		// ExpUnary and ExpMul
+		struct {
+			char symbol;
+			ExpNode* exp;
+		} unary;
+		// ExpAdd, ExpComp, ExpAnd and ExpOr
+		struct {
+			char symbol;
+			ExpNode *exp1, *exp2;
+		} binary;
+	} u;
+};
+
+struct ExpList {
+	ExpNode** list;
+};
+
+struct VarNode {
+	VarE tag;
+	union {
+		// VarId
+		IdNode* id;
+		// VarIndexed
+		struct {
+			ExpNode *exp1, *exp2;
+		} indexed;
+	} u;
+};
+
+struct CmdNode {
+	CmdE tag;
+	union {
+		// CmdBlock
+		struct {
+			DefNode* def;
+			CmdNode* cmd;
+		} block;
+		// CmdIf
+		struct {
+			ExpNode* exp;
+			CmdNode* cmd;
+		} ifcmd;
+		// CmdIfElse
+		struct {
+			ExpNode* exp;
+			CmdNode *ifcmd, *elsecmd;
+		} ifelse;
+		// CmdWhile
+		struct {
+			ExpNode* exp;
+			CmdNode* cmd;
+		} whilecmd;
+		// CmdCall
+		struct {
+			VarNode* var;
+			ExpNode* exp;
+		} asg;
+		// CmdReturnExp
+		ExpNode* exp;
+		// CmdCall
+		CallNode* call;
+	} u;
+};
+
+struct TypeNode {
+	TypeE tag;
+	TypeNode* array; // Only for TYPE_ARRAY
+};
+
+struct CallNode {
+	CallE tag;
+	IdNode* id;
+	ExpList* params;
+};
 
 // ==================================================
 //
@@ -85,26 +206,21 @@ typedef struct AstNode AstNode;
 #include <stdio.h>	// TODO: Remove
 #include <stdlib.h>	// TODO: Move
 
-AstNode *program_node;
-
-void printvarnode(AstNode *n) {
-	printf("ast_id printing: ");
-	printf("%s\n", n->u.var->u.id->str);
-}
-
-void ast_set_program_node(VarNode *node) {
-	printf("ast_set_program_node\n");
-	AstNode* n;
-	AST_MALLOC(n, AstNode);
-	n->u.var = node;
-	program_node = n;
-}
+extern ProgramNode* ast_program_node();
 
 // ==================================================
 //
 //	Create node functions
 //
 // ==================================================
+
+// Program
+extern void ast_program(DefNode *defs);
+
+// Def
+extern DefNode* ast_def_list(DefNode* list, DefNode* def);
+extern DefNode* ast_def_var(TypeNode* type, IdNode* id); // TODO: IdNode
+extern DefNode* ast_def_func(IdNode* id); // TODO: params
 
 // Id
 extern IdNode* ast_id(const char* id);

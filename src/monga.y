@@ -9,15 +9,14 @@
 	void yyerror(const char* err) {
 		fprintf(stderr, "syntax error line %d\n", current_line());
 	}
-
-	AstNode *test;
 %}
 
 %union {
 	int intvalue;
 	float floatvalue;
 	const char* strvalue;
-	AstNode *astnode;
+
+	DefNode* defnode;
 
 	VarNode* varnode;
 	CmdNode* cmdnode;
@@ -39,6 +38,7 @@
 %token <strvalue> TK_STR TK_ID
 
 // %type <node> program definition_list definition
+%type <defnode>		definition_list definition definition_var definition_func
 %type <varnode>		var
 %type <cmdnode>		block command command_x command_return
 %type <typenode>	type base_type
@@ -49,18 +49,39 @@
 // definition definition_var name_list definition_func func_param_list param_list param definition_var_list command_list
 %%
 
-program	: definition_list 	//{ ast_set_program_node($$); }
-		;
-
-definition_list	: definition_list definition 	//{ $$ = ast_list_add($1, $2);		}
-				| /* empty */					//{ $$ = ast_list_add(NULL, NULL);	}
+program			: definition_list
+					{
+						ast_program($1);
+					}
 				;
 
-definition 	: definition_var 	//{ $$ = ast_literal_exp(0, 10); }
-			| definition_func 	//{ $$ = ast_literal_exp(0, 20); }
-			;
+definition_list	: definition_list definition
+					{
+						printf("definition_list_junta\n");
+						$$ = ast_def_list($1, $2);
+					}
+				| /* empty */				
+					{
+						printf("definition_list_null\n");
+						$$ = NULL;
+					}
+				;
+
+definition 		: definition_var
+					{
+						$$ = $1;
+					}
+				| definition_func
+					{
+						$$ = $1;
+					}
+				;
 
 definition_var	: type name_list ';'
+					{
+						// $$ = ast_def_var($1, $2);
+						$$ = ast_def_var($1, ast_id("name_list"));
+					}
 				;
 
 name_list	: TK_ID
@@ -77,7 +98,14 @@ base_type	: TK_KEY_INT	{ $$ = ast_type(TYPE_INT);		}
 			;
 
 definition_func	: type TK_ID '(' func_param_list ')' block
+					{
+						$$ = ast_def_func(ast_id($2));
+					}
 				| TK_KEY_VOID TK_ID '(' func_param_list ')' block
+					{
+						printf("definition_func\n");
+						$$ = ast_def_func(ast_id($2));
+					}
 				;
 
 func_param_list	: param_list
@@ -93,7 +121,7 @@ param	: type TK_ID
 
 block	: '{' definition_var_list command_list '}'
 			// { $$ = ast_cmd_block($2, $3); }
-			{ $$ = ast_set_program_node($2, $3); }
+			// { $$ = ast_set_program_node($2, $3); }
 		;
 
 definition_var_list	: definition_var_list definition_var
@@ -117,7 +145,7 @@ command	: TK_KEY_IF '(' exp ')' command
 		| func_call ';'
 			{ $$ = ast_cmd_call($1);			}
 		| block
-			{ $$ = $1;							}
+			// { $$ = $1;							}
 		;
 
 command_x	: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x

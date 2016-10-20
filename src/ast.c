@@ -32,142 +32,60 @@ static int in_array(LexSymbol symbol, LexSymbol *arr)  {
 	return 0;
 }
 
-// ============================================================================
+// ==================================================
 //
-//	Nodes
+//	Getter
 //
-// ============================================================================
+// ==================================================
 
-struct IdNode {
-	const char* str;
-};
+static ProgramNode* program_node;
 
-struct ExpNode {
-	ExpE tag;
-	union {
-		// ExpKInt
-		int intvalue;
-		// ExpKFloat
-		double floatvalue;
-		// ExpKStr
-		const char* strvalue;
-		// ExpVar
-		VarNode* var;
-		// ExpCall
-		CallNode* call;
-		// ExpNew
-		struct {
-			TypeNode* type;
-			ExpNode* exp;
-		} new;
-		// ExpUnary and ExpMul
-		struct {
-			char symbol;
-			ExpNode* exp;
-		} unary;
-		// ExpAdd, ExpComp, ExpAnd and ExpOr
-		struct {
-			char symbol;
-			ExpNode *exp1, *exp2;
-		} binary;
-	} u;
-};
-
-struct ExpList {
-	ExpNode** list;
-};
-
-struct VarNode {
-	VarE tag;
-	union {
-		// VarId
-		IdNode* id;
-		// VarIndexed
-		struct {
-			ExpNode *exp1, *exp2;
-		} indexed;
-	} u;
-};
-
-struct DefNode {
-	DefE tag;
-	union {
-	} u;
-};
-
-struct CmdNode {
-	CmdE tag;
-	union {
-		// CmdBlock
-		struct {
-			DefNode* def;
-			CmdNode* cmd;
-		} block;
-		// CmdIf
-		struct {
-			ExpNode* exp;
-			CmdNode* cmd;
-		} ifcmd;
-		// CmdIfElse
-		struct {
-			ExpNode* exp;
-			CmdNode* ifcmd, elsecmd;
-		} ifelse;
-		// CmdWhile
-		struct {
-			ExpNode* exp;
-			CmdNode* cmd;
-		} whilecmd;
-		// CmdCall
-		struct {
-			VarNode* var;
-			ExpNode* exp;
-		} asg;
-		// CmdReturnExp
-		ExpNode* exp;
-		// CmdCall
-		CallNode* call;
-	} u;
-};
-
-struct TypeNode {
-	TypeE tag;
-	TypeNode* array; // Only for TYPE_ARRAY
-};
-
-struct ProgramNode {
-	TypeE tag;
-	DefNode **definitions;
-};
-
-struct CallNode {
-	CallE tag;
-	IdNode* id;
-	ExpList* params;
-};
-
-struct AstNode {
-	int tag; // TODO
-
-	// Lists
-	AstNode *previous, *next;
-
-	union {
-		ProgramNode* prog;
-		IdNode* id;
-		VarNode* var;
-		ExpNode* exp;
-		DefNode* def;
-		CmdNode* cmd;
-		TypeNode* type;
-	} u;
-};
+ProgramNode* ast_program_node() {
+	return program_node;
+}
 
 // ==================================================
 //
-//	Create node functions
+//	Creators
 //
 // ==================================================
+
+// Program
+void ast_program(DefNode* defs) {
+	ProgramNode* n;
+	AST_MALLOC(n, ProgramNode);
+	n->defs = defs;
+	program_node = n;
+}
+
+DefNode* ast_def_list(DefNode* list, DefNode* def) {
+	if (list == NULL) {
+		return def;
+	}
+	DefNode* temp;
+	for (temp = list; temp->next != NULL; temp = temp->next);
+	temp->next = def;
+	return list;
+}
+
+DefNode* ast_def_var(TypeNode* type, IdNode* id) {
+	DefNode* n;
+	AST_MALLOC(n, DefNode);
+	n->tag = DEF_VAR;
+	n->next = NULL;
+	n->u.var.type = type;
+	n->u.var.id = id;
+	return n;
+}
+
+DefNode* ast_def_func(IdNode* id) {
+	DefNode* n;
+	AST_MALLOC(n, DefNode);
+	n->tag = DEF_FUNC;
+	n->next = NULL;
+	n->u.func.id = id;
+	return n;
+}
 
 // Id
 IdNode* ast_id(const char* id) {

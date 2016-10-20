@@ -84,12 +84,13 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 16 "src/monga.y"
+#line 14 "src/monga.y"
 {
 	int intvalue;
 	float floatvalue;
 	const char* strvalue;
-	AstNode *astnode;
+
+	DefNode* defnode;
 
 	VarNode* varnode;
 	CmdNode* cmdnode;
@@ -100,7 +101,7 @@ typedef union YYSTYPE
 	ExpList* explist;
 }
 /* Line 1529 of yacc.c.  */
-#line 104 "monga.tab.h"
+#line 105 "monga.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
