@@ -12,12 +12,12 @@ typedef struct DefNode DefNode;
 typedef struct IdNode IdNode;
 typedef struct ParamNode ParamNode;
 
-/* Ok */ typedef struct VarNode VarNode;
-/* Ok */ typedef struct ExpNode ExpNode;
-/* Ok */ typedef struct ExpList ExpList;
+typedef struct VarNode VarNode;
+typedef struct ExpNode ExpNode;
+typedef struct ExpList ExpList;
 typedef struct CmdNode CmdNode;
-/* Ok */ typedef struct TypeNode TypeNode;
-/* Ok */ typedef struct CallNode CallNode;
+typedef struct TypeNode TypeNode;
+typedef struct CallNode CallNode;
 
 // ==================================================
 //
@@ -111,6 +111,7 @@ struct TypeNode {
 
 struct IdNode {
 	const char* str;
+	IdNode* next;
 };
 
 struct ParamNode {
@@ -125,8 +126,8 @@ struct CmdNode {
 	union {
 		// CmdBlock
 		struct {
-			DefNode* def;
-			CmdNode* cmd;
+			DefNode* defs;
+			CmdNode* cmds;
 		} block;
 		// CmdIf
 		struct {
@@ -143,7 +144,7 @@ struct CmdNode {
 			ExpNode* exp;
 			CmdNode* cmd;
 		} whilecmd;
-		// CmdCall
+		// CmdAsg
 		struct {
 			VarNode* var;
 			ExpNode* exp;
@@ -155,11 +156,17 @@ struct CmdNode {
 	} u;
 };
 
-
-
-
-
-
+struct VarNode {
+	VarE tag;
+	union {
+		// VarId
+		IdNode* id;
+		// VarIndexed
+		struct {
+			ExpNode *exp1, *exp2;
+		} indexed;
+	} u;
+};
 
 struct ExpNode {
 	ExpE tag;
@@ -196,18 +203,6 @@ struct ExpList {
 	ExpNode** list;
 };
 
-struct VarNode {
-	VarE tag;
-	union {
-		// VarId
-		IdNode* id;
-		// VarIndexed
-		struct {
-			ExpNode *exp1, *exp2;
-		} indexed;
-	} u;
-};
-
 struct CallNode {
 	CallE tag;
 	IdNode* id;
@@ -241,6 +236,7 @@ extern DefNode* ast_def_func(TypeNode* type, IdNode* id, ParamNode* params,
 	CmdNode* block);
 
 // Id
+extern IdNode* ast_id_list(IdNode* list, IdNode* id);
 extern IdNode* ast_id(const char* id);
 
 // Param
@@ -253,7 +249,7 @@ extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
 
 // Cmd
 extern CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd);
-extern CmdNode* ast_cmd_block(DefNode* def, CmdNode* cmd);
+extern CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds);
 extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
 extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
 extern CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd);

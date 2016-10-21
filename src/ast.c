@@ -94,9 +94,20 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, ParamNode* params,
 }
 
 // Id
+IdNode* ast_id_list(IdNode* list, IdNode* id) {
+	if (list == NULL) {
+		return id;
+	}
+	IdNode* temp;
+	for (temp = list; temp->next != NULL; temp = temp->next);
+	temp->next = id;
+	return list;
+}
+
 IdNode* ast_id(const char* id) {
 	IdNode* n;
 	AST_MALLOC(n, IdNode);
+	n->next = NULL;
 	n->str = id;
 	return n;
 }
@@ -150,12 +161,13 @@ CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd) {
 	return list;
 }
 
-CmdNode* ast_cmd_block(DefNode* def, CmdNode* cmd) {
+CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_BLOCK;
-	n->u.block.def = def;
-	n->u.block.cmd = cmd;
+	n->next = NULL;
+	n->u.block.defs = defs;
+	n->u.block.cmds = cmds;
 	return n;
 }
 
@@ -163,6 +175,7 @@ CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_IF;
+	n->next = NULL;
 	n->u.ifcmd.exp = exp;
 	n->u.ifcmd.cmd = cmd;
 	return n;
@@ -172,6 +185,7 @@ CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_IF_ELSE;
+	n->next = NULL;
 	n->u.ifelse.exp = exp;
 	n->u.ifelse.ifcmd = ifcmd;
 	n->u.ifelse.elsecmd = elsecmd;
@@ -182,6 +196,7 @@ CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_WHILE;
+	n->next = NULL;
 	n->u.whilecmd.exp = exp;
 	n->u.whilecmd.cmd = cmd;
 	return n;
@@ -191,6 +206,7 @@ CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_ASG;
+	n->next = NULL;
 	n->u.asg.var = var;
 	n->u.asg.exp = exp;
 	return n;
@@ -200,6 +216,7 @@ CmdNode* ast_cmd_return_null() {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_RETURN_NULL;
+	n->next = NULL;
 	return n;
 }
 
@@ -207,6 +224,7 @@ CmdNode* ast_cmd_return_exp(ExpNode* exp) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_RETURN_EXP;
+	n->next = NULL;
 	n->u.exp = exp;
 	return n;
 }
@@ -215,12 +233,10 @@ CmdNode* ast_cmd_call(CallNode* call) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_CALL;
+	n->next = NULL;
 	n->u.call = call;
 	return n;
 }
-
-
-
 
 // Exp
 ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2) {

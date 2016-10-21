@@ -91,11 +91,11 @@ typedef union YYSTYPE
 	const char* strvalue;
 
 	DefNode* defnode;
+	TypeNode* typenode;
+	IdNode* idnode;
 	ParamNode* paramnode;
-
 	VarNode* varnode;
 	CmdNode* cmdnode;
-	TypeNode* typenode;
 	ExpNode* expnode;
 	CallNode* callnode;
 
