@@ -1,18 +1,36 @@
 /* AST */
 
 void foo(char a, int b, float c) {
-	
+/* CmdBlock without vars and cmds */
 }
 
-void bar(int invalue1, int intvalue2) {
-	
+void bar(int intvalue1, int intvalue2) {
+/* CmdBlock with vars and without cmds */
+	/* TypeNode */
+	int i;
+	float f;
+	char c;
+	int[] x;
+	int[][] y;
+	int[][][] z;
+	/* Var definition with list of names */
+	int a, b;
+	float a, b, c;
+	char a, b, c, d, e;
+}
+
+void baz(int intvalue1) {
+/* CmdBlock without vars and with cmds */
+	a = 1;
+	b = 2;
+	c = 3;
 }
 
 void main(char[] a, int[][] b, float[][][] c) {
-/* CmdBlock */
+/* CmdBlock with vars and cmds */
 	int a;
-	int b;
-	int c;
+	float b;
+	char c;
 
 	/* Cmds */
 		/* CmdIf */
@@ -41,7 +59,23 @@ void main(char[] a, int[][] b, float[][][] c) {
 			foo();
 			foo(1);
 			foo(1, 2, 3);
-		/* CmdList */
+		/* Crazy cmds */
+		if (1)
+			if (2)
+				a = 3;
+			else
+				a = 4;
+		else if (5)
+			if (6)
+				a = 7;
+			else
+				while(8)
+					if (9)
+						a = 10;
+					else if (11)
+						a = 12;
+					else 
+						a = 13;
 
 	/* Vars */
 		/* VarId */

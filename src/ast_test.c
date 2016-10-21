@@ -156,6 +156,12 @@ static void print_type(TypeNode* type) {
 static void print_id(IdNode* id) {
 	test_log("print_id");
 	printf("%s", id->str);
+
+	// Id list
+	if (id->next != NULL) {
+		printf(", ");
+		print_id(id->next);
+	}
 }
 
 static void print_param(ParamNode* param) {
