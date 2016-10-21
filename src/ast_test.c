@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "parser.h"
 #include "ast.h"
+#include "yacc.h"
 
 #define DEBUGGING 0
 
@@ -15,6 +16,37 @@ static void test_log(const char* str) {
 static void print_tabs(int layer) {
 	for (int i = 0; i < layer; i++) {
 		printf("  ");
+	}
+}
+
+static void print_lex_symbol(LexSymbol symbol) {
+	switch (symbol) {
+	case '!':
+	case '>':
+	case '<':
+	case '+':
+	case '-':
+	case '*':
+	case '/':
+		printf("%c", symbol);
+		break;
+	case TK_OR:
+		printf("||");
+		break;
+	case TK_AND:
+		printf("&&");
+		break;
+	case TK_EQUAL:
+		printf("==");
+		break;
+	case TK_LEQUAL:
+		printf("<=");
+		break;
+	case TK_GEQUAL:
+		printf(">=");
+		break;
+	default:
+		TEST_ERROR("print_lex_symbol: invalid symbol");
 	}
 }
 
@@ -192,11 +224,9 @@ void print_var(VarNode* var, int layer) {
 		break;
 	case VAR_INDEXED:
 		print_tabs(layer);
-		printf("exp1");
-		// print_exp(var->u.indexed.exp1);
+		print_exp(var->u.indexed.exp1, layer);
 		printf("[");
-		printf("exp2");
-		// print_exp(var->u.indexed.exp2 );
+		print_exp(var->u.indexed.exp2, layer);
 		printf("]");
 		break;
 	default:
@@ -218,24 +248,44 @@ void print_exp(ExpNode* exp, int layer) {
 		printf("%s", exp->u.strvalue);
 		break;
 	case EXP_VAR:
+		print_var(exp->u.var, 0);
 		break;
 	case EXP_CALL:
+		printf("(");
+		print_id(exp->u.call->id);
+		printf("(");
+		if (exp->u.call->params != NULL) {
+			print_exp(exp->u.call->params, 0);
+		}
+		printf(")");
+		printf(")");
 		break;
 	case EXP_NEW:
+		printf("new ");
+		print_type(exp->u.new.type);
+		printf("[");
+		print_exp(exp->u.new.exp, 0);
+		printf("]");
 		break;
 	case EXP_UNARY:
+		printf("(");
+		print_lex_symbol(exp->u.unary.symbol);
+		print_exp(exp->u.unary.exp, 0);
+		printf(")");
 		break;
-	case EXP_MUL:
-		break;
-	case EXP_ADD:
-		break;
-	case EXP_COMP:
-		break;
-	case EXP_AND:
-		break;
-	case EXP_OR:
+	case EXP_BINARY:
+		printf("(");
+		print_exp(exp->u.binary.exp1, 0);
+		print_lex_symbol(exp->u.binary.symbol);
+		print_exp(exp->u.binary.exp2, 0);
+		printf(")");
 		break;
 	default:
 		TEST_ERROR("print_exp: invalid tag");
+	}
+
+	if (exp->next != NULL) {
+		printf(", ");
+		print_exp(exp->next, layer);
 	}
 }

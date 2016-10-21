@@ -24,8 +24,6 @@
 	CmdNode* cmdnode;
 	ExpNode* expnode;
 	CallNode* callnode;
-
-	ExpList* explist;
 }
 
 %start program
@@ -63,13 +61,10 @@
 	type base_type
 
 %type <expnode>
-	exp exp_or exp_and exp_comp exp_add exp_mul exp_unary exp_simple
+	exp_list exp exp_or exp_and exp_comp exp_add exp_mul exp_unary exp_simple
 
 %type <callnode>
 	func_call
-
-%type <explist>
-	exp_list
 %%
 
 program			: definition_list
@@ -289,7 +284,7 @@ exp				: exp_or
 
 exp_or			: exp_and TK_OR exp_comp
 					{
-						$$ = ast_exp_binary(TK_EQUAL, $1, $3);
+						$$ = ast_exp_binary(TK_OR, $1, $3);
 					}
 				| exp_and
 					{
@@ -299,7 +294,7 @@ exp_or			: exp_and TK_OR exp_comp
 
 exp_and			: exp_and TK_AND exp_comp
 					{
-						$$ = ast_exp_binary(TK_EQUAL, $1, $3);
+						$$ = ast_exp_binary(TK_AND, $1, $3);
 					}
 				| exp_comp
 					{
@@ -335,7 +330,7 @@ exp_comp		: exp_comp TK_EQUAL exp_add
 
 exp_add			: exp_add '+' exp_mul
 					{
-						$$ = ast_exp_binary('*', $1, $3);
+						$$ = ast_exp_binary('+', $1, $3);
 					}
 				| exp_add '-' exp_mul
 					{
@@ -411,21 +406,21 @@ exp_simple		: TK_INT
 
 func_call		: TK_ID '(' ')'
 					{
-						$$ = ast_call_empty(ast_id($1));
+						$$ = ast_call(ast_id($1), NULL);
 					}
 				| TK_ID '(' exp_list ')'
 					{
-						$$ = ast_call_params(ast_id($1), $3);
+						$$ = ast_call(ast_id($1), $3);
 					}
 				;
 
 exp_list		: exp
 					{
-						$$ = ast_explist_new($1);
+						$$ = $1;
 					}
 				| exp_list ',' exp
 					{
-						$$ = ast_explist_append($1, $3);
+						$$ = ast_exp_list($1, $3);
 					}
 				;
 %%

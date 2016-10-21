@@ -41,11 +41,7 @@ typedef enum ExpE {
 	EXP_CALL,
 	EXP_NEW,
 	EXP_UNARY,
-	EXP_MUL,
-	EXP_ADD,
-	EXP_COMP,
-	EXP_AND,
-	EXP_OR
+	EXP_BINARY
 } ExpE;
 
 typedef enum VarE {
@@ -170,6 +166,7 @@ struct VarNode {
 
 struct ExpNode {
 	ExpE tag;
+	ExpNode* next;
 	union {
 		// ExpKInt
 		int intvalue;
@@ -188,25 +185,20 @@ struct ExpNode {
 		} new;
 		// ExpUnary and ExpMul
 		struct {
-			char symbol;
+			LexSymbol symbol;
 			ExpNode* exp;
 		} unary;
 		// ExpAdd, ExpComp, ExpAnd and ExpOr
 		struct {
-			char symbol;
+			LexSymbol symbol;
 			ExpNode *exp1, *exp2;
 		} binary;
 	} u;
 };
 
-struct ExpList {
-	ExpNode** list;
-};
-
 struct CallNode {
-	CallE tag;
 	IdNode* id;
-	ExpList* params;
+	ExpNode* params;
 };
 
 // ==================================================
@@ -262,6 +254,7 @@ extern CmdNode* ast_cmd_call(CallNode* call);
 
 
 // Exp
+extern ExpNode* ast_exp_list(ExpNode* list, ExpNode* exp);
 extern ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2);
 extern ExpNode* ast_exp_unary(LexSymbol symbol, ExpNode *exp);
 extern ExpNode* ast_exp_int(int value);
@@ -271,16 +264,11 @@ extern ExpNode* ast_exp_var(VarNode* var);
 extern ExpNode* ast_exp_call(CallNode* call);
 extern ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp);
 
-// ExpList
-extern ExpList* ast_explist_new(ExpNode* exp);
-extern ExpList* ast_explist_append(ExpList* explist, ExpNode* exp);
-
 // Type
 extern TypeNode* ast_type(TypeE tag);
 extern TypeNode* ast_type_array(TypeNode* node);
 
 // Call
-extern CallNode* ast_call_empty(IdNode* id);
-extern CallNode* ast_call_params(IdNode* id, ExpList* params);
+extern CallNode* ast_call(IdNode* id, ExpNode* params);
 
 #endif

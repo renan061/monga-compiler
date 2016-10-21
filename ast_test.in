@@ -12,9 +12,44 @@ void main(char[] a, int[][] b, float[][][] c) {
 	int a;
 	int b;
 	int c;
-	a = 3;
+
+	/* ExpKInt */
+	a = 1;
+	/* ExpKFloat */
+	a = 1.1;
+	/* ExpKStr */
+	a = "111";
+	/* ExpVar */
+	a = b;
+	/* ExpCall */
+	a = foo();
+	a = foo(1);
+	a = foo(1, 2);
+	a = foo(1, 2, 3);
+	/* ExpNew */
+	a = new int[2];
+	/* ExpUnary */
+	a = -1;
+	a = !1;
+	/* ExpMul */
+	a = 1 * 2;
+	a = 1 / 2;
+	/* ExpAdd */
+	a = 1 + 2;
+	a = 1 - 2;
+	/* ExpComp */
+	a = 1 == 2;
+	a = 1 <= 2;
+	a = 1 >= 2;
+	a = 1 < 2;
+	a = 1 > 2;
+	/* ExpAnd */
+	a = 1 && 2;
+	/* ExpOr */
+	a = 1 || 2;
+	/* Crazy Exp */
+	a = -1 || 2 * 3 >= 4 + 5 / 6;
+
 	return;
-	return 3;
-	return 3.5;
-	return "333";
+	return 1;
 }

@@ -98,11 +98,9 @@ typedef union YYSTYPE
 	CmdNode* cmdnode;
 	ExpNode* expnode;
 	CallNode* callnode;
-
-	ExpList* explist;
 }
 /* Line 1529 of yacc.c.  */
-#line 106 "monga.tab.h"
+#line 104 "monga.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

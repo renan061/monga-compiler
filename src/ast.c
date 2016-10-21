@@ -12,11 +12,21 @@
 
 #define AST_ERROR(...) printf(__VA_ARGS__); exit(1);
 
-#define AST_MALLOC(n, type);							\
+#define AST_MALLOC(n, type);					\
 	n = (type*)malloc(sizeof(type));				\
 	if (n == NULL) {								\
 		AST_ERROR("error: insufficient memory\n");	\
 	}												\
+
+#define AST_LIST(type, list, elem);						\
+	if (list == NULL) {								\
+		return elem;								\
+	}												\
+	type* e;										\
+	for (e = list; e->next != NULL; e = e->next);	\
+	e->next = elem;									\
+	return list;									\
+	
 
 // ==================================================
 //
@@ -60,13 +70,7 @@ void ast_program(DefNode* defs) {
 
 // Def
 DefNode* ast_def_list(DefNode* list, DefNode* def) {
-	if (list == NULL) {
-		return def;
-	}
-	DefNode* temp;
-	for (temp = list; temp->next != NULL; temp = temp->next);
-	temp->next = def;
-	return list;
+	AST_LIST(DefNode, list, def);
 }
 
 DefNode* ast_def_var(TypeNode* type, IdNode* id) {
@@ -95,13 +99,7 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, ParamNode* params,
 
 // Id
 IdNode* ast_id_list(IdNode* list, IdNode* id) {
-	if (list == NULL) {
-		return id;
-	}
-	IdNode* temp;
-	for (temp = list; temp->next != NULL; temp = temp->next);
-	temp->next = id;
-	return list;
+	AST_LIST(IdNode, list, id);
 }
 
 IdNode* ast_id(const char* id) {
@@ -114,13 +112,7 @@ IdNode* ast_id(const char* id) {
 
 // Param
 ParamNode* ast_param_list(ParamNode* list, ParamNode* param) {
-	if (list == NULL) {
-		return param;
-	}
-	ParamNode* temp;
-	for (temp = list; temp->next != NULL; temp = temp->next);
-	temp->next = param;
-	return list;
+	AST_LIST(ParamNode, list, param);
 }
 
 ParamNode* ast_param(TypeNode* type, IdNode* id) {
@@ -152,13 +144,7 @@ VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
 
 // Cmd
 CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd) {
-	if (list == NULL) {
-		return cmd;
-	}
-	CmdNode* temp;
-	for (temp = list; temp->next != NULL; temp = temp->next);
-	temp->next = cmd;
-	return list;
+	AST_LIST(CmdNode, list, cmd);
 }
 
 CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds) {
@@ -239,6 +225,10 @@ CmdNode* ast_cmd_call(CallNode* call) {
 }
 
 // Exp
+ExpNode* ast_exp_list(ExpNode* list, ExpNode* exp) {
+	AST_LIST(ExpNode, list, exp);
+}
+
 ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2) {
 	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL, TK_GEQUAL,
 		'<', '>', TK_AND, TK_OR};
@@ -248,7 +238,8 @@ ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2) {
 
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
-	n->tag = EXP_UNARY;
+	n->tag = EXP_BINARY;
+	n->next = NULL;
 	n->u.binary.symbol = symbol;
 	n->u.binary.exp1 = exp1;
 	n->u.binary.exp2 = exp2;
@@ -264,6 +255,7 @@ ExpNode* ast_exp_unary(LexSymbol symbol, ExpNode *exp) {
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
 	n->tag = EXP_UNARY;
+	n->next = NULL;
 	n->u.unary.symbol = symbol;
 	n->u.unary.exp = exp;
 	return n;
@@ -273,6 +265,7 @@ ExpNode* ast_exp_int(int value) {
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
 	n->tag = EXP_KINT;
+	n->next = NULL;
 	n->u.intvalue = value;
 	return n;
 }
@@ -281,6 +274,7 @@ ExpNode* ast_exp_float(float value) {
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
 	n->tag = EXP_KFLOAT;
+	n->next = NULL;
 	n->u.floatvalue = value;
 	return n;
 }
@@ -289,6 +283,7 @@ ExpNode* ast_exp_str(const char* value) {
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
 	n->tag = EXP_KSTR;
+	n->next = NULL;
 	n->u.strvalue = value;
 	return n;
 }
@@ -297,6 +292,7 @@ ExpNode* ast_exp_var(VarNode* var) {
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
 	n->tag = EXP_VAR;
+	n->next = NULL;
 	n->u.var = var;
 	return n;
 }
@@ -305,6 +301,7 @@ ExpNode* ast_exp_call(CallNode* call) {
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
 	n->tag = EXP_CALL;
+	n->next = NULL;
 	n->u.call = call;
 	return n;
 }
@@ -313,26 +310,10 @@ ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp) {
 	ExpNode* n;
 	AST_MALLOC(n, ExpNode);
 	n->tag = EXP_NEW;
+	n->next = NULL;
 	n->u.new.type = type;
 	n->u.new.exp = exp;
 	return n;
-}
-
-// ExpList
-ExpList* ast_explist_new(ExpNode* exp) {
-	ExpList* n;
-	AST_MALLOC(n, ExpList);
-	ExpNode** arr;;
-	AST_MALLOC(arr, ExpNode*);
-	n->list = arr;
-	return n;
-}
-
-ExpList* ast_explist_append(ExpList* explist, ExpNode* exp) {
-	int len = AST_ARRAY_LEN(explist->list);
-	explist->list = realloc(explist->list, (len + 1) * sizeof(ExpNode*));
-	explist->list[len] = exp;
-	return explist;
 }
 
 // Type
@@ -355,18 +336,9 @@ TypeNode* ast_type_array(TypeNode* node) {
 }
 
 // Call
-CallNode* ast_call_empty(IdNode* id) {
+CallNode* ast_call(IdNode* id, ExpNode* params) {
 	CallNode* n;
 	AST_MALLOC(n, CallNode);
-	n->tag = CALL_EMPTY;
-	n->id = id;
-	return n;
-}
-
-CallNode* ast_call_params(IdNode* id, ExpList* params) {
-	CallNode* n;
-	AST_MALLOC(n, CallNode);
-	n->tag = CALL_PARAMS;
 	n->id = id;
 	n->params = params;
 	return n;
