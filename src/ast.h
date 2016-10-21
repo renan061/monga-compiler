@@ -9,8 +9,9 @@
 
 typedef struct ProgramNode ProgramNode;
 typedef struct DefNode DefNode;
+typedef struct IdNode IdNode;
+typedef struct ParamNode ParamNode;
 
-/* Ok */ typedef struct IdNode IdNode;
 /* Ok */ typedef struct VarNode VarNode;
 /* Ok */ typedef struct ExpNode ExpNode;
 /* Ok */ typedef struct ExpList ExpList;
@@ -95,14 +96,70 @@ struct DefNode {
 			IdNode* id;
 		} var;
 		struct {
-			IdNode* id; // TODO
+			TypeNode* type;
+			IdNode* id;
+			ParamNode* params;
+			CmdNode* cmd;
 		} func;
 	} u;
+};
+
+struct TypeNode {
+	TypeE tag;
+	TypeNode* array; // Only for TYPE_ARRAY
 };
 
 struct IdNode {
 	const char* str;
 };
+
+struct ParamNode {
+	ParamNode* next;
+	TypeNode* type;
+	IdNode* id;
+};
+
+struct CmdNode {
+	CmdE tag;
+	CmdNode* next;
+	union {
+		// CmdBlock
+		struct {
+			DefNode* def;
+			CmdNode* cmd;
+		} block;
+		// CmdIf
+		struct {
+			ExpNode* exp;
+			CmdNode* cmd;
+		} ifcmd;
+		// CmdIfElse
+		struct {
+			ExpNode* exp;
+			CmdNode *ifcmd, *elsecmd;
+		} ifelse;
+		// CmdWhile
+		struct {
+			ExpNode* exp;
+			CmdNode* cmd;
+		} whilecmd;
+		// CmdCall
+		struct {
+			VarNode* var;
+			ExpNode* exp;
+		} asg;
+		// CmdReturnExp
+		ExpNode* exp;
+		// CmdCall
+		CallNode* call;
+	} u;
+};
+
+
+
+
+
+
 
 struct ExpNode {
 	ExpE tag;
@@ -151,46 +208,6 @@ struct VarNode {
 	} u;
 };
 
-struct CmdNode {
-	CmdE tag;
-	union {
-		// CmdBlock
-		struct {
-			DefNode* def;
-			CmdNode* cmd;
-		} block;
-		// CmdIf
-		struct {
-			ExpNode* exp;
-			CmdNode* cmd;
-		} ifcmd;
-		// CmdIfElse
-		struct {
-			ExpNode* exp;
-			CmdNode *ifcmd, *elsecmd;
-		} ifelse;
-		// CmdWhile
-		struct {
-			ExpNode* exp;
-			CmdNode* cmd;
-		} whilecmd;
-		// CmdCall
-		struct {
-			VarNode* var;
-			ExpNode* exp;
-		} asg;
-		// CmdReturnExp
-		ExpNode* exp;
-		// CmdCall
-		CallNode* call;
-	} u;
-};
-
-struct TypeNode {
-	TypeE tag;
-	TypeNode* array; // Only for TYPE_ARRAY
-};
-
 struct CallNode {
 	CallE tag;
 	IdNode* id;
@@ -220,10 +237,33 @@ extern void ast_program(DefNode *defs);
 // Def
 extern DefNode* ast_def_list(DefNode* list, DefNode* def);
 extern DefNode* ast_def_var(TypeNode* type, IdNode* id); // TODO: IdNode
-extern DefNode* ast_def_func(IdNode* id); // TODO: params
+extern DefNode* ast_def_func(TypeNode* type, IdNode* id, ParamNode* params,
+	CmdNode* block);
 
 // Id
 extern IdNode* ast_id(const char* id);
+
+// Param
+extern ParamNode* ast_param_list(ParamNode* list, ParamNode* param);
+extern ParamNode* ast_param(TypeNode* type, IdNode* id);
+
+// Var
+extern VarNode* ast_var(IdNode* id);
+extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
+
+// Cmd
+extern CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd);
+extern CmdNode* ast_cmd_block(DefNode* def, CmdNode* cmd);
+extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
+extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
+extern CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd);
+extern CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp);
+extern CmdNode* ast_cmd_return_null();
+extern CmdNode* ast_cmd_return_exp(ExpNode* exp);
+extern CmdNode* ast_cmd_call(CallNode* call);
+
+
+
 
 // Exp
 extern ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2);
@@ -238,20 +278,6 @@ extern ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp);
 // ExpList
 extern ExpList* ast_explist_new(ExpNode* exp);
 extern ExpList* ast_explist_append(ExpList* explist, ExpNode* exp);
-
-// Var
-extern VarNode* ast_var(IdNode* id);
-extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
-
-// Cmd
-extern CmdNode* ast_cmd_block(DefNode* def, CmdNode* cmd); // TODO: DefVarList and CmdList
-extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
-extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
-extern CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd);
-extern CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp);
-extern CmdNode* ast_cmd_return_null();
-extern CmdNode* ast_cmd_return_exp(ExpNode* exp);
-extern CmdNode* ast_cmd_call(CallNode* call);
 
 // Type
 extern TypeNode* ast_type(TypeE tag);

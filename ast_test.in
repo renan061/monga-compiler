@@ -1,14 +1,14 @@
 /* AST */
 
-void foo() {
+void foo(char a, int b, float c) {
 	
 }
 
-void bar() {
+void bar(int invalue1, int intvalue2) {
 	
 }
 
-void main () {
+void main(char[] a, int[][] b, float[][][] c) {
 	int a;
 	a = 1;
 	a = 2;

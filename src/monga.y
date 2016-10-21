@@ -17,6 +17,7 @@
 	const char* strvalue;
 
 	DefNode* defnode;
+	ParamNode* paramnode;
 
 	VarNode* varnode;
 	CmdNode* cmdnode;
@@ -37,16 +38,17 @@
 %token <floatvalue> TK_FLOAT
 %token <strvalue> TK_STR TK_ID
 
-// %type <node> program definition_list definition
-%type <defnode>		definition_list definition definition_var definition_func
+%type <defnode>		definition_list definition definition_var definition_func def_list
+%type <paramnode>	func_param_list param_list param
+
 %type <varnode>		var
-%type <cmdnode>		block command command_x command_return
+%type <cmdnode>		block command command_x command_return command_list
 %type <typenode>	type base_type
 %type <expnode>		exp exp_or exp_and exp_comp exp_add exp_mul exp_unary exp_simple
 %type <callnode>	func_call
 
 %type <explist>		exp_list
-// definition definition_var name_list definition_func func_param_list param_list param definition_var_list command_list
+// name_list
 %%
 
 program			: definition_list
@@ -57,12 +59,10 @@ program			: definition_list
 
 definition_list	: definition_list definition
 					{
-						printf("definition_list_junta\n");
 						$$ = ast_def_list($1, $2);
 					}
 				| /* empty */				
 					{
-						printf("definition_list_null\n");
 						$$ = NULL;
 					}
 				;
@@ -84,52 +84,95 @@ definition_var	: type name_list ';'
 					}
 				;
 
-name_list	: TK_ID
-			| name_list ',' TK_ID
-			;
+name_list		: TK_ID
+				| name_list ',' TK_ID
+				;
 
-type	: base_type		{ $$ = $1;					}
-		| type '[' ']'	{ $$ = ast_type_array($1);	}
-		;
+type			: base_type
+					{
+						$$ = $1;
+					}
+				| type '[' ']'
+					{
+						$$ = ast_type_array($1);
+					}
+				;
 
-base_type	: TK_KEY_INT	{ $$ = ast_type(TYPE_INT);		}
-			| TK_KEY_FLOAT	{ $$ = ast_type(TYPE_FLOAT);	}
-			| TK_KEY_CHAR	{ $$ = ast_type(TYPE_CHAR);		}
-			;
+base_type		: TK_KEY_INT
+					{
+						$$ = ast_type(TYPE_INT);
+					}
+				| TK_KEY_FLOAT
+					{
+						$$ = ast_type(TYPE_FLOAT);
+					}
+				| TK_KEY_CHAR
+						{
+						$$ = ast_type(TYPE_CHAR);
+					}
+				;
 
 definition_func	: type TK_ID '(' func_param_list ')' block
 					{
-						$$ = ast_def_func(ast_id($2));
+						$$ = ast_def_func($1, ast_id($2), $4, $6);
 					}
 				| TK_KEY_VOID TK_ID '(' func_param_list ')' block
 					{
-						printf("definition_func\n");
-						$$ = ast_def_func(ast_id($2));
+						$$ = ast_def_func(ast_type(TYPE_VOID),
+							ast_id($2), $4, $6);
 					}
 				;
 
 func_param_list	: param_list
+					{
+						$$ = $1;
+					}
 				| /* empty */
+					{
+						$$ = NULL;
+					}
 				;
 
-param_list	:	param
-			|	param_list ',' param
-			;
+param_list 		: param
+					{
+						$$ = $1;
+					}
+				| param_list ',' param
+					{
+						$$ = ast_param_list($1, $3);
+					}
+				;
 
-param	: type TK_ID
-		;
+param 			: type TK_ID
+					{
+						$$ = ast_param($1, ast_id($2));
+					}
+				;
 
-block	: '{' definition_var_list command_list '}'
-			// { $$ = ast_cmd_block($2, $3); }
-			// { $$ = ast_set_program_node($2, $3); }
-		;
+block			: '{' def_list command_list '}'
+					{
+						$$ = ast_cmd_block($2, $3);
+					}
+				;
 
-definition_var_list	: definition_var_list definition_var
-					| /* empty */
-					;
+def_list		: def_list definition_var
+					{
+						$$ = ast_def_list($1, $2);
+					}
+				| /* empty */
+					{
+						$$ = NULL;
+					}
+				;
 
 command_list	: command_list command
+					{
+						$$ = ast_cmd_list($1, $2);
+					}
 				| /* empty */
+					{
+						$$ = NULL;
+					}
 				;
 
 command	: TK_KEY_IF '(' exp ')' command
@@ -145,7 +188,7 @@ command	: TK_KEY_IF '(' exp ')' command
 		| func_call ';'
 			{ $$ = ast_cmd_call($1);			}
 		| block
-			// { $$ = $1;							}
+			{ $$ = $1;							}
 		;
 
 command_x	: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
