@@ -63,7 +63,7 @@ static void print_id(IdNode* id);
 static void print_param(ParamNode* param);
 static void print_cmd(CmdNode* cmd, int layer);
 static void print_var(VarNode* var, int layer);
-static void print_exp(ExpNode* exp, int layer);
+static void print_exp(ExpNode* exp);
 
 // ==================================================
 //
@@ -190,7 +190,7 @@ static void print_cmd(CmdNode* cmd, int layer) {
 	case CMD_ASG:
 		print_var(cmd->u.asg.var, layer);
 		printf(" = ");
-		print_exp(cmd->u.asg.exp, layer);
+		print_exp(cmd->u.asg.exp);
 		printf(";\n");
 		break;
 	case CMD_RETURN_NULL:
@@ -200,7 +200,7 @@ static void print_cmd(CmdNode* cmd, int layer) {
 	case CMD_RETURN_EXP:
 		print_tabs(layer);
 		printf("return ");
-		print_exp(cmd->u.exp, layer);
+		print_exp(cmd->u.exp);
 		printf(";\n");
 		break;
 	case CMD_CALL:
@@ -209,6 +209,7 @@ static void print_cmd(CmdNode* cmd, int layer) {
 		TEST_ERROR("print_cmd: invalid tag");
 	}
 
+	// Cmd list
 	if (cmd->next != NULL) {
 		print_cmd(cmd->next, layer);
 	}
@@ -224,9 +225,9 @@ void print_var(VarNode* var, int layer) {
 		break;
 	case VAR_INDEXED:
 		print_tabs(layer);
-		print_exp(var->u.indexed.exp1, layer);
+		print_exp(var->u.indexed.exp1);
 		printf("[");
-		print_exp(var->u.indexed.exp2, layer);
+		print_exp(var->u.indexed.exp2);
 		printf("]");
 		break;
 	default:
@@ -234,7 +235,7 @@ void print_var(VarNode* var, int layer) {
 	}
 }
 
-void print_exp(ExpNode* exp, int layer) {
+void print_exp(ExpNode* exp) {
 	test_log("print_exp");
 
 	switch (exp->tag) {
@@ -255,7 +256,7 @@ void print_exp(ExpNode* exp, int layer) {
 		print_id(exp->u.call->id);
 		printf("(");
 		if (exp->u.call->params != NULL) {
-			print_exp(exp->u.call->params, 0);
+			print_exp(exp->u.call->params);
 		}
 		printf(")");
 		printf(")");
@@ -264,28 +265,29 @@ void print_exp(ExpNode* exp, int layer) {
 		printf("new ");
 		print_type(exp->u.new.type);
 		printf("[");
-		print_exp(exp->u.new.exp, 0);
+		print_exp(exp->u.new.exp);
 		printf("]");
 		break;
 	case EXP_UNARY:
 		printf("(");
 		print_lex_symbol(exp->u.unary.symbol);
-		print_exp(exp->u.unary.exp, 0);
+		print_exp(exp->u.unary.exp);
 		printf(")");
 		break;
 	case EXP_BINARY:
 		printf("(");
-		print_exp(exp->u.binary.exp1, 0);
+		print_exp(exp->u.binary.exp1);
 		print_lex_symbol(exp->u.binary.symbol);
-		print_exp(exp->u.binary.exp2, 0);
+		print_exp(exp->u.binary.exp2);
 		printf(")");
 		break;
 	default:
 		TEST_ERROR("print_exp: invalid tag");
 	}
 
+	// Exp list
 	if (exp->next != NULL) {
 		printf(", ");
-		print_exp(exp->next, layer);
+		print_exp(exp->next);
 	}
 }

@@ -13,42 +13,50 @@ void main(char[] a, int[][] b, float[][][] c) {
 	int b;
 	int c;
 
-	/* ExpKInt */
-	a = 1;
-	/* ExpKFloat */
-	a = 1.1;
-	/* ExpKStr */
-	a = "111";
-	/* ExpVar */
+	/* Vars */
 	a = b;
-	/* ExpCall */
-	a = foo();
-	a = foo(1);
-	a = foo(1, 2);
-	a = foo(1, 2, 3);
-	/* ExpNew */
-	a = new int[2];
-	/* ExpUnary */
-	a = -1;
-	a = !1;
-	/* ExpMul */
-	a = 1 * 2;
-	a = 1 / 2;
-	/* ExpAdd */
-	a = 1 + 2;
-	a = 1 - 2;
-	/* ExpComp */
-	a = 1 == 2;
-	a = 1 <= 2;
-	a = 1 >= 2;
-	a = 1 < 2;
-	a = 1 > 2;
-	/* ExpAnd */
-	a = 1 && 2;
-	/* ExpOr */
-	a = 1 || 2;
-	/* Crazy Exp */
-	a = -1 || 2 * 3 >= 4 + 5 / 6;
+	a = b[1];
+	a = b[1][2][3];
+	a = b[0 >= 5][foo(1, bar(0 && 1))][1 + 3];
+
+	/* Exps */
+		/* ExpKInt */
+		a = 1;
+		/* ExpKFloat */
+		a = 1.1;
+		/* ExpKStr */
+		a = "111";
+		/* ExpVar */
+		a = b;
+		/* ExpCall */
+		a = foo();
+		a = foo(1);
+		a = foo(1, 2);
+		a = foo(1, 2, 3);
+		/* ExpNew */
+		a = new int[2];
+		/* ExpUnary */
+		a = -1;
+		a = !1;
+		/* ExpMul */
+		a = 1 * 2;
+		a = 1 / 2;
+		/* ExpAdd */
+		a = 1 + 2;
+		a = 1 - 2;
+		/* ExpComp */
+		a = 1 == 2;
+		a = 1 <= 2;
+		a = 1 >= 2;
+		a = 1 < 2;
+		a = 1 > 2;
+		/* ExpAnd */
+		a = 1 && 2;
+		/* ExpOr */
+		a = 1 || 2;
+		/* Crazy Exps */
+		a = -1 || 2 * 3 >= 4 + 5 / 6;
+		a = (0 && 1) + foo(2, bar(1 + 3 / 7)) / a * 3;
 
 	return;
 	return 1;
