@@ -10,7 +10,7 @@ CC := gcc
 program_OBJS := $(wildcard obj/*.o)
 program_EXES := $(wildcard bin/*)
 
-all: main
+all: clean main
 
 parser:
 	bison -v -d src/monga.y
@@ -28,6 +28,7 @@ lex: parser
 main: lex parser
 	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o obj/parser.o obj/ast.o src/lex_test.c -ll
 	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o obj/ast.o src/parser_test.c -ll
+	$(CC) $(CFLAGS) -o bin/asttest obj/lex.o obj/parser.o obj/ast.o src/ast_test.c -ll
 
 lex_test:
 	@- sh tests/lex/testlex.sh
@@ -36,11 +37,9 @@ parser_test:
 	@- sh tests/parser/testparser.sh
 
 ast_test:
-	$(CC) $(CFLAGS) -o bin/asttest obj/lex.o obj/parser.o obj/ast.o src/ast_test.c -ll
-	@- bin/asttest < ast_test.in
+	@- sh tests/ast/testast.sh
 
-# test: lex_test parser_test
-test: all ast_test
+test: lex_test parser_test ast_test
 
 clean:
 	@- $(RM) monga.output

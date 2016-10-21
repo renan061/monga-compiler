@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 			printf("TK_INT - %d", yylval.intvalue);
 			break;
 		case TK_FLOAT:
-			printf("TK_FLOAT - %.16lf", yylval.floatvalue);
+			printf("TK_FLOAT - %f", yylval.floatvalue);
 			break;
 		case TK_STR:
 			printf("TK_STR - %s", yylval.strvalue);

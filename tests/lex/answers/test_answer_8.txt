@@ -12,6 +12,6 @@ estranhas e outra"
 TK_STR - "string"colada nessa string"
 TK_ID - id
 TK_STR - "string"
-TK_FLOAT - 29.34
+TK_FLOAT - 29.340000
 TK_STR - "\"
 lexical error line 10 (open string)
