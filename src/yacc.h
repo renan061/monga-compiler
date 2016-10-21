@@ -84,7 +84,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 14 "src/monga.y"
+#line 13 "src/monga.y"
 {
 	int intvalue;
 	float floatvalue;
@@ -94,8 +94,8 @@ typedef union YYSTYPE
 	TypeNode* typenode;
 	IdNode* idnode;
 	ParamNode* paramnode;
-	VarNode* varnode;
 	CmdNode* cmdnode;
+	VarNode* varnode;
 	ExpNode* expnode;
 	CallNode* callnode;
 }

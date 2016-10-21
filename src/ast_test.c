@@ -1,61 +1,24 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "parser.h"
 #include "ast.h"
 #include "yacc.h"
 
 #define DEBUGGING 0
-
 #define TEST_ERROR(...) printf(__VA_ARGS__); exit(1);
 
-static void test_log(const char* str) {
-	if (DEBUGGING) {
-		printf("%s\n", str);
-	}
-}
-
-static void print_tabs(int layer) {
-	for (int i = 0; i < layer; i++) {
-		printf("  ");
-	}
-}
-
-static void print_lex_symbol(LexSymbol symbol) {
-	switch (symbol) {
-	case '!':
-	case '>':
-	case '<':
-	case '+':
-	case '-':
-	case '*':
-	case '/':
-		printf("%c", symbol);
-		break;
-	case TK_OR:
-		printf("||");
-		break;
-	case TK_AND:
-		printf("&&");
-		break;
-	case TK_EQUAL:
-		printf("==");
-		break;
-	case TK_LEQUAL:
-		printf("<=");
-		break;
-	case TK_GEQUAL:
-		printf(">=");
-		break;
-	default:
-		TEST_ERROR("print_lex_symbol: invalid symbol");
-	}
-}
-
 // ==================================================
 //
-//	Print functions
+//	Main
 //
 // ==================================================
 
+// Auxiliary
+static void test_log(const char* str);
+static void print_tabs(int layer);
+static void print_lex_symbol(LexSymbol symbol);
+
+// Print
 static void print_program(ProgramNode* program);
 static void print_def(DefNode* def, int layer);
 static void print_type(TypeNode* type);
@@ -66,14 +29,12 @@ static void print_var(VarNode* var, int layer);
 static void print_exp(ExpNode* exp);
 static void print_call(CallNode* call);
 
-// ==================================================
-//
-//	Main
-//
-// ==================================================
-
 int main(int argc, char *argv[]) {
-	printf((!yyparse()) ? "Parsing ok\n" : "Parsing failed\n");
+	if (yyparse()) {
+		printf("Parsing failed");
+		return 0;
+	}
+
 	ProgramNode* program = ast_program_node();
 	print_program(program);
     return 0;
@@ -81,15 +42,13 @@ int main(int argc, char *argv[]) {
 
 // ==================================================
 //
-//	Print functions
+//	Print
 //
 // ==================================================
 
 static void print_program(ProgramNode* program) {
-	printf("*** Started printing AST ***\n\n");
 	test_log("print_program");
 	print_def(program->defs, 0);
-	printf("\n*** Finished printing AST ***\n");
 }
 
 static void print_def(DefNode* def, int layer) {
@@ -325,3 +284,53 @@ static void print_call(CallNode* call) {
 	}
 	printf(")");
 }
+
+// ==================================================
+//
+//	Auxiliary
+//
+// ==================================================
+
+static void test_log(const char* str) {
+	if (DEBUGGING) {
+		printf("%s\n", str);
+	}
+}
+
+static void print_tabs(int layer) {
+	for (int i = 0; i < layer; i++) {
+		printf("  ");
+	}
+}
+
+static void print_lex_symbol(LexSymbol symbol) {
+	switch (symbol) {
+	case '!':
+	case '>':
+	case '<':
+	case '+':
+	case '-':
+	case '*':
+	case '/':
+		printf("%c", symbol);
+		break;
+	case TK_OR:
+		printf("||");
+		break;
+	case TK_AND:
+		printf("&&");
+		break;
+	case TK_EQUAL:
+		printf("==");
+		break;
+	case TK_LEQUAL:
+		printf("<=");
+		break;
+	case TK_GEQUAL:
+		printf(">=");
+		break;
+	default:
+		TEST_ERROR("print_lex_symbol: invalid symbol");
+	}
+}
+

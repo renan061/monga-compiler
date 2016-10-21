@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h> 
 #include "ast.h"
 #include "yacc.h"
@@ -12,13 +14,13 @@
 
 #define AST_ERROR(...) printf(__VA_ARGS__); exit(1);
 
-#define AST_MALLOC(n, type);					\
+#define AST_MALLOC(n, type);						\
 	n = (type*)malloc(sizeof(type));				\
 	if (n == NULL) {								\
 		AST_ERROR("error: insufficient memory\n");	\
 	}												\
 
-#define AST_LIST(type, list, elem);						\
+#define AST_LIST(type, list, elem);					\
 	if (list == NULL) {								\
 		return elem;								\
 	}												\
@@ -30,7 +32,7 @@
 
 // ==================================================
 //
-//	Auxiliary
+//	Internal
 //
 // ==================================================
 
@@ -42,23 +44,17 @@ static int in_array(LexSymbol symbol, LexSymbol *arr)  {
 	return 0;
 }
 
-// ==================================================
-//
-//	Getter
-//
-// ==================================================
-
 static ProgramNode* program_node;
+
+// ==================================================
+//
+//	Node functions
+//
+// ==================================================
 
 ProgramNode* ast_program_node() {
 	return program_node;
 }
-
-// ==================================================
-//
-//	Creators
-//
-// ==================================================
 
 // Program
 void ast_program(DefNode* defs) {
@@ -97,6 +93,25 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, ParamNode* params,
 	return n;
 }
 
+// Type
+TypeNode* ast_type(TypeE tag) {
+	if (tag == TYPE_ARRAY) {
+		AST_ERROR("ast_type: unexpected TYPE_ARRAY");
+	}
+	TypeNode* n;
+	AST_MALLOC(n, TypeNode);
+	n->tag = tag;
+	return n;
+}
+
+TypeNode* ast_type_array(TypeNode* node) {
+	TypeNode* n;
+	AST_MALLOC(n, TypeNode);
+	n->tag = TYPE_ARRAY;
+	n->array = node;
+	return n;
+}
+
 // Id
 IdNode* ast_id_list(IdNode* list, IdNode* id) {
 	AST_LIST(IdNode, list, id);
@@ -121,24 +136,6 @@ ParamNode* ast_param(TypeNode* type, IdNode* id) {
 	n->next = NULL;
 	n->type = type;
 	n->id = id;
-	return n;
-}
-
-// Var
-VarNode* ast_var(IdNode* id) {
-	VarNode* n;
-	AST_MALLOC(n, VarNode);
-	n->tag = VAR_ID;
-	n->u.id = id;
-	return n;
-}
-
-VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
-	VarNode* n;
-	AST_MALLOC(n, VarNode);
-	n->tag = VAR_INDEXED;
-	n->u.indexed.exp1 = exp1;
-	n->u.indexed.exp2 = exp2;
 	return n;
 }
 
@@ -213,6 +210,24 @@ CmdNode* ast_cmd_call(CallNode* call) {
 	n->tag = CMD_CALL;
 	n->next = NULL;
 	n->u.call = call;
+	return n;
+}
+
+// Var
+VarNode* ast_var(IdNode* id) {
+	VarNode* n;
+	AST_MALLOC(n, VarNode);
+	n->tag = VAR_ID;
+	n->u.id = id;
+	return n;
+}
+
+VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
+	VarNode* n;
+	AST_MALLOC(n, VarNode);
+	n->tag = VAR_INDEXED;
+	n->u.indexed.exp1 = exp1;
+	n->u.indexed.exp2 = exp2;
 	return n;
 }
 
@@ -305,25 +320,6 @@ ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp) {
 	n->next = NULL;
 	n->u.new.type = type;
 	n->u.new.exp = exp;
-	return n;
-}
-
-// Type
-TypeNode* ast_type(TypeE tag) {
-	if (tag == TYPE_ARRAY) {
-		AST_ERROR("ast_type: unexpected TYPE_ARRAY");
-	}
-	TypeNode* n;
-	AST_MALLOC(n, TypeNode);
-	n->tag = tag;
-	return n;
-}
-
-TypeNode* ast_type_array(TypeNode* node) {
-	TypeNode* n;
-	AST_MALLOC(n, TypeNode);
-	n->tag = TYPE_ARRAY;
-	n->array = node;
 	return n;
 }
 

@@ -1,6 +1,5 @@
 %{
 	#include <stdio.h>
-	#include <stdlib.h>
 	#include "lex.h"
 	#include "ast.h"
 
@@ -20,8 +19,8 @@
 	TypeNode* typenode;
 	IdNode* idnode;
 	ParamNode* paramnode;
-	VarNode* varnode;
 	CmdNode* cmdnode;
+	VarNode* varnode;
 	ExpNode* expnode;
 	CallNode* callnode;
 }
@@ -32,37 +31,27 @@
 	TK_KEY_INT TK_KEY_FLOAT TK_KEY_CHAR TK_KEY_IF TK_KEY_ELSE TK_KEY_WHILE
 	TK_KEY_NEW TK_KEY_RETURN TK_KEY_VOID TK_EQUAL TK_LEQUAL TK_GEQUAL TK_AND
 	TK_OR
-
 %token <intvalue>
 	TK_INT
-
 %token <floatvalue>
 	TK_FLOAT
-
 %token <strvalue>
 	TK_STR TK_ID
 
 %type <defnode>
 	definition_list defvar_list definition definition_var definition_func
-
-%type <idnode>
-	name_list
-
-%type <paramnode>
-	func_param_list param_list param
-
-%type <varnode>
-	var
-
-%type <cmdnode>
-	block command command_x command_return command_list
-
 %type <typenode>
 	type base_type
-
+%type <idnode>
+	name_list
+%type <paramnode>
+	func_param_list param_list param
+%type <cmdnode>
+	block command command_x command_return command_list
+%type <varnode>
+	var
 %type <expnode>
 	exp_list exp exp_or exp_and exp_comp exp_add exp_mul exp_unary exp_simple
-
 %type <callnode>
 	func_call
 %%
