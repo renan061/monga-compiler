@@ -64,6 +64,7 @@ static void print_param(ParamNode* param);
 static void print_cmd(CmdNode* cmd, int layer);
 static void print_var(VarNode* var, int layer);
 static void print_exp(ExpNode* exp);
+static void print_call(CallNode* call);
 
 // ==================================================
 //
@@ -182,10 +183,34 @@ static void print_cmd(CmdNode* cmd, int layer) {
 		}
 		break;
 	case CMD_IF:
+		print_tabs(layer);
+		printf("(if(");
+		print_exp(cmd->u.ifwhile.exp);
+		printf(") {\n");
+		print_cmd(cmd->u.ifwhile.cmd, layer + 1);
+		print_tabs(layer);
+		printf("})\n");
 		break;
 	case CMD_IF_ELSE:
+		print_tabs(layer);
+		printf("(if(");
+		print_exp(cmd->u.ifelse.exp);
+		printf(") {\n");
+		print_cmd(cmd->u.ifelse.ifcmd, layer + 1);
+		print_tabs(layer);
+		printf("} else {\n");
+		print_cmd(cmd->u.ifelse.elsecmd, layer + 1);
+		print_tabs(layer);
+		printf("})\n");
 		break;
 	case CMD_WHILE:
+		print_tabs(layer);
+		printf("(while(");
+		print_exp(cmd->u.ifwhile.exp);
+		printf(") {\n");
+		print_cmd(cmd->u.ifwhile.cmd, layer + 1);
+		print_tabs(layer);
+		printf("})\n");
 		break;
 	case CMD_ASG:
 		print_var(cmd->u.asg.var, layer);
@@ -193,17 +218,18 @@ static void print_cmd(CmdNode* cmd, int layer) {
 		print_exp(cmd->u.asg.exp);
 		printf(";\n");
 		break;
-	case CMD_RETURN_NULL:
-		print_tabs(layer);
-		printf("return;\n");
-		break;
-	case CMD_RETURN_EXP:
+	case CMD_RETURN:
 		print_tabs(layer);
 		printf("return ");
-		print_exp(cmd->u.exp);
+		if (cmd->u.exp != NULL) {
+			print_exp(cmd->u.exp);
+		}
 		printf(";\n");
 		break;
 	case CMD_CALL:
+		print_tabs(layer);
+		print_call(cmd->u.call);
+		printf(";\n");
 		break;
 	default:
 		TEST_ERROR("print_cmd: invalid tag");
@@ -238,6 +264,7 @@ void print_var(VarNode* var, int layer) {
 void print_exp(ExpNode* exp) {
 	test_log("print_exp");
 
+	printf("(");
 	switch (exp->tag) {
 	case EXP_KINT:
 		printf("%d", exp->u.intvalue);
@@ -252,14 +279,7 @@ void print_exp(ExpNode* exp) {
 		print_var(exp->u.var, 0);
 		break;
 	case EXP_CALL:
-		printf("(");
-		print_id(exp->u.call->id);
-		printf("(");
-		if (exp->u.call->params != NULL) {
-			print_exp(exp->u.call->params);
-		}
-		printf(")");
-		printf(")");
+		print_call(exp->u.call);
 		break;
 	case EXP_NEW:
 		printf("new ");
@@ -269,25 +289,33 @@ void print_exp(ExpNode* exp) {
 		printf("]");
 		break;
 	case EXP_UNARY:
-		printf("(");
 		print_lex_symbol(exp->u.unary.symbol);
 		print_exp(exp->u.unary.exp);
-		printf(")");
 		break;
 	case EXP_BINARY:
-		printf("(");
 		print_exp(exp->u.binary.exp1);
 		print_lex_symbol(exp->u.binary.symbol);
 		print_exp(exp->u.binary.exp2);
-		printf(")");
 		break;
 	default:
 		TEST_ERROR("print_exp: invalid tag");
 	}
+	printf(")");
 
 	// Exp list
 	if (exp->next != NULL) {
 		printf(", ");
 		print_exp(exp->next);
 	}
+}
+
+static void print_call(CallNode* call) {
+	test_log("print_call");
+
+	print_id(call->id);
+	printf("(");
+	if (call->params != NULL) {
+		print_exp(call->params);
+	}
+	printf(")");
 }

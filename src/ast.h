@@ -55,8 +55,7 @@ typedef enum CmdE {
 	CMD_IF_ELSE,
 	CMD_WHILE,
 	CMD_ASG,
-	CMD_RETURN_NULL,
-	CMD_RETURN_EXP,
+	CMD_RETURN,
 	CMD_CALL
 } CmdE;
 
@@ -125,27 +124,22 @@ struct CmdNode {
 			DefNode* defs;
 			CmdNode* cmds;
 		} block;
-		// CmdIf
+		// CmdIf and CmdWhile
 		struct {
 			ExpNode* exp;
 			CmdNode* cmd;
-		} ifcmd;
+		} ifwhile;
 		// CmdIfElse
 		struct {
 			ExpNode* exp;
 			CmdNode *ifcmd, *elsecmd;
 		} ifelse;
-		// CmdWhile
-		struct {
-			ExpNode* exp;
-			CmdNode* cmd;
-		} whilecmd;
 		// CmdAsg
 		struct {
 			VarNode* var;
 			ExpNode* exp;
 		} asg;
-		// CmdReturnExp
+		// CmdReturn
 		ExpNode* exp;
 		// CmdCall
 		CallNode* call;
@@ -246,8 +240,7 @@ extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
 extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
 extern CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd);
 extern CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp);
-extern CmdNode* ast_cmd_return_null();
-extern CmdNode* ast_cmd_return_exp(ExpNode* exp);
+extern CmdNode* ast_cmd_return(ExpNode* exp);
 extern CmdNode* ast_cmd_call(CallNode* call);
 
 

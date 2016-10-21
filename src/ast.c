@@ -162,8 +162,8 @@ CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd) {
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_IF;
 	n->next = NULL;
-	n->u.ifcmd.exp = exp;
-	n->u.ifcmd.cmd = cmd;
+	n->u.ifwhile.exp = exp;
+	n->u.ifwhile.cmd = cmd;
 	return n;
 }
 
@@ -183,8 +183,8 @@ CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd) {
 	AST_MALLOC(n, CmdNode);
 	n->tag = CMD_WHILE;
 	n->next = NULL;
-	n->u.whilecmd.exp = exp;
-	n->u.whilecmd.cmd = cmd;
+	n->u.ifwhile.exp = exp;
+	n->u.ifwhile.cmd = cmd;
 	return n;
 }
 
@@ -198,18 +198,10 @@ CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp) {
 	return n;
 }
 
-CmdNode* ast_cmd_return_null() {
+CmdNode* ast_cmd_return(ExpNode* exp) {
 	CmdNode* n;
 	AST_MALLOC(n, CmdNode);
-	n->tag = CMD_RETURN_NULL;
-	n->next = NULL;
-	return n;
-}
-
-CmdNode* ast_cmd_return_exp(ExpNode* exp) {
-	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
-	n->tag = CMD_RETURN_EXP;
+	n->tag = CMD_RETURN;
 	n->next = NULL;
 	n->u.exp = exp;
 	return n;

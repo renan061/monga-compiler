@@ -254,11 +254,11 @@ command_x		: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
 
 command_return	: TK_KEY_RETURN
 					{
-						$$ = ast_cmd_return_null();
+						$$ = ast_cmd_return(NULL);
 					}
 				| TK_KEY_RETURN exp
 					{
-						$$ = ast_cmd_return_exp($2);
+						$$ = ast_cmd_return($2);
 					}
 				;
 
