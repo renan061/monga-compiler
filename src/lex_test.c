@@ -21,12 +21,22 @@ int main(int argc, char *argv[]) {
 		case TK_GEQUAL:			printf("TK_GEQUAL");		break;
 		case TK_AND:			printf("TK_AND");			break;
 		case TK_OR:				printf("TK_OR");			break;
-		case TK_ID:				printf("TK_ID - %s", seminfo.s);		break;
-		case TK_INT:			printf("TK_INT - %d", seminfo.i);		break;
-		case TK_FLOAT:			printf("TK_FLOAT - %.16g", seminfo.f);	break;
-		case TK_STR:			printf("TK_STR - %s", seminfo.s);		break;
-		case 0:		return 0;
-		default:	printf("%c", token);
+		case TK_ID:
+			printf("TK_ID - %s", yylval.strvalue);
+			break;
+		case TK_INT:
+			printf("TK_INT - %d", yylval.intvalue);
+			break;
+		case TK_FLOAT:
+			printf("TK_FLOAT - %f", yylval.floatvalue);
+			break;
+		case TK_STR:
+			printf("TK_STR - %s", yylval.strvalue);
+			break;
+		case 0:
+			return 0;
+		default:
+			printf("%c", token);
 		}
 
 		printf("\n");

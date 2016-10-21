@@ -1,6 +1,6 @@
 /*
 	PUC-RJ - INF1715
-	Trabalho 2 - Parser (aceitar a sintaxe)
+	Trabalho 3 - Parser AST (imprimir a árvore)
 	
 	Renan Almeida de Miranda Santos
 	Matrícula: 1211055
@@ -11,7 +11,7 @@ Gerar binários:
 
 	make
 
-Testar tudo (lex e parser):
+Testar tudo (lex, parser e AST):
 
 	make test
 
@@ -22,6 +22,10 @@ Testar somente lex:
 Testar somente parser:
 
 	make parser_test
+
+Testar somente AST:
+
+	make ast_test
 
 Para limpar:
 

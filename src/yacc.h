@@ -53,10 +53,10 @@
      TK_GEQUAL = 269,
      TK_AND = 270,
      TK_OR = 271,
-     TK_ID = 272,
-     TK_INT = 273,
-     TK_FLOAT = 274,
-     TK_STR = 275
+     TK_INT = 272,
+     TK_FLOAT = 273,
+     TK_STR = 274,
+     TK_ID = 275
    };
 #endif
 /* Tokens.  */
@@ -74,16 +74,34 @@
 #define TK_GEQUAL 269
 #define TK_AND 270
 #define TK_OR 271
-#define TK_ID 272
-#define TK_INT 273
-#define TK_FLOAT 274
-#define TK_STR 275
+#define TK_INT 272
+#define TK_FLOAT 273
+#define TK_STR 274
+#define TK_ID 275
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+typedef union YYSTYPE
+#line 13 "src/monga.y"
+{
+	int intvalue;
+	float floatvalue;
+	const char* strvalue;
+
+	DefNode* defnode;
+	TypeNode* typenode;
+	IdNode* idnode;
+	ParamNode* paramnode;
+	CmdNode* cmdnode;
+	VarNode* varnode;
+	ExpNode* expnode;
+	CallNode* callnode;
+}
+/* Line 1529 of yacc.c.  */
+#line 104 "monga.tab.h"
+	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

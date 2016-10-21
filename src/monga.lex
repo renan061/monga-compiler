@@ -9,6 +9,7 @@
 
 	// Auxliary enum for types of lexical errors
 	typedef enum ErrorType {
+		ERR_ID_MEM,
 		ERR_COMMENT,
 		ERR_STR_ESCAPE,
 		ERR_STR_OPEN,
@@ -20,6 +21,8 @@
 	static void lex_error(int err) {
 		printf("lexical error line %d (", line_number);
 		switch (err) {
+		case ERR_ID_MEM:
+			printf("insufficient memory for identifier");
 		case ERR_COMMENT:
 			printf("open commentary");
 			break;
@@ -45,7 +48,6 @@
 	}
 
 	// Exported
-	SemInfo seminfo;
 	int current_line() {
 		return line_number;
 	}
@@ -72,19 +74,25 @@
 "||"				{ return TK_OR;		}
 
 [A-Za-z_][A-Za-z_0-9]*				{
-										seminfo.s = yytext;
+										int len = strlen(yytext);
+									    char* str = (char*)malloc(len + 1);
+									    if (str == NULL) { 
+									        lex_error(ERR_ID_MEM);
+									    }
+									    memcpy(str, yytext, len + 1);
+									    yylval.strvalue = str;
 										return TK_ID;
 									}
 [0-9]+								{ 
-										seminfo.i = strtoul(yytext, NULL, 10);
+										yylval.intvalue = strtoul(yytext, NULL, 10);
 										return TK_INT;
 									}
 "0"[xX][0-9a-fA-F]+					{
-										seminfo.i = strtoul(yytext, NULL, 16);
+										yylval.intvalue = strtoul(yytext, NULL, 16);
 										return TK_INT;
 									}
 [0-9]+"."[0-9]+([Ee][-+]?[0-9]+)?	{
-										seminfo.f = strtod(yytext, NULL);
+										yylval.floatvalue = strtod(yytext, NULL);
 										return TK_FLOAT;
 									}
 
@@ -144,10 +152,10 @@
 								}
 							}
 
-							seminfo.s = result;
+							yylval.strvalue = result;
 							return TK_STR;
 						}
 "\""					{ lex_error(ERR_STR_OPEN); }
 
-. { return yytext[0]; }
+. { yylval.intvalue = line_number; return yytext[0]; }
 %%
