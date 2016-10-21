@@ -1,5 +1,10 @@
 /* AST */
 
+/* ParamNode */
+void x() {}
+void y(int a) {}
+void z(int a, float b, char c) {}
+
 void foo(char a, int b, float c) {
 /* CmdBlock without vars and cmds */
 }
