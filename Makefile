@@ -5,12 +5,12 @@
 # Monga language compiler
 # 
 
-CC := gcc
+CC := gcc -std=c99
 
 program_OBJS := $(wildcard obj/*.o)
 program_EXES := $(wildcard bin/*)
 
-all: clean main
+all: main
 
 parser:
 	bison -v -d src/monga.y
@@ -30,18 +30,19 @@ main: lex parser
 	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o obj/ast.o src/parser_test.c -ll
 	$(CC) $(CFLAGS) -o bin/asttest obj/lex.o obj/parser.o obj/ast.o src/ast_test.c -ll
 
-lex_test:
+lex_test: main
 	@- sh tests/lex/testlex.sh
 
-parser_test:
+parser_test: main
 	@- sh tests/parser/testparser.sh
 
-ast_test:
+ast_test: main
 	@- sh tests/ast/testast.sh
 
 test: lex_test parser_test ast_test
 
 clean:
+	@- $(RM) src/yacc.h
 	@- $(RM) monga.output
 	@- $(RM) $(program_OBJS)
 	@- $(RM) $(program_EXES)

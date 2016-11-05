@@ -1,6 +1,6 @@
 /*
 	PUC-RJ - INF1715
-	Trabalho 3 - Parser AST (imprimir a árvore)
+	Trabalho 4 - AST (tipagem)
 	
 	Renan Almeida de Miranda Santos
 	Matrícula: 1211055
@@ -30,7 +30,3 @@ Testar somente AST:
 Para limpar:
 
 	make clean
-
-
-
-Obs.: É necessário gerar os binários antes de rodar os testes.
