@@ -17,7 +17,6 @@
 
 	DefNode* defnode;
 	TypeNode* typenode;
-	IdNode* idnode;
 	CmdNode* cmdnode;
 	VarNode* varnode;
 	ExpNode* expnode;
@@ -39,12 +38,9 @@
 
 %type <defnode>
 	definition_list defvar_list definition definition_var definition_func
+	name_list func_param_list param_list param
 %type <typenode>
-	type base_type
-%type <idnode>
-	name_list
-%type <defnode>
-	func_param_list param_list param
+	type base_type	
 %type <cmdnode>
 	block command command_x command_return command_list
 %type <varnode>
@@ -83,17 +79,22 @@ definition 		: definition_var
 
 definition_var	: type name_list ';'
 					{
-						$$ = ast_def_var($1, $2);
+						$$ = $2;
+						DefNode* aux = $2;
+						while (aux != NULL) {
+							aux->u.var.type = $1;
+							aux = aux->next;
+						}
 					}
 				;
 
 name_list		: TK_ID
 					{
-						$$ = ast_id($1);
+						$$ = ast_def_var(NULL, ast_id($1));
 					}
 				| name_list ',' TK_ID
 					{
-						$$ = ast_id_list($1, ast_id($3));
+						$$ = ast_def_list($1, ast_def_var(NULL, ast_id($3)));
 					}
 				;
 
@@ -116,7 +117,7 @@ base_type		: TK_KEY_INT
 						$$ = ast_type(TYPE_FLOAT);
 					}
 				| TK_KEY_CHAR
-						{
+					{
 						$$ = ast_type(TYPE_CHAR);
 					}
 				;

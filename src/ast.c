@@ -114,14 +114,9 @@ TypeNode* ast_type_array(TypeNode* node) {
 }
 
 // Id
-IdNode* ast_id_list(IdNode* list, IdNode* id) {
-	AST_LIST(IdNode, list, id);
-}
-
 IdNode* ast_id(const char* id) {
 	IdNode* n;
 	AST_MALLOC(n, IdNode);
-	n->next = NULL;
 	n->def = NULL;
 	n->str = id;
 	return n;
@@ -343,8 +338,12 @@ static void type_def(DefNode* def) {
 	st_insert(def);
 	if (def->tag == DEF_FUNC) {
 		st_enter_scope();
-		type_def(def->u.func.params);
-		type_cmd(def->u.func.cmd);
+		if (def->u.func.params != NULL) {
+			type_def(def->u.func.params);
+		}
+		if (def->u.func.cmd != NULL) {
+			type_cmd(def->u.func.cmd);
+		}
 		st_leave_scope();
 	}
 

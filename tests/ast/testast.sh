@@ -13,15 +13,12 @@ INPUT_FILE="test.in"
 ANSWER_FILE="answer.txt"
 OUTPUT_FILE="result.txt"
 
-printf "\n\n"
-../../bin/asttest < $INPUT_FILE
-printf "\n\n"
-# ../../bin/asttest < $INPUT_FILE > $OUTPUT_FILE
-# diff -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
-# if [ -s "diff.txt" ]
-# then
-# 	echo "FAIL ast test"
-# else
-#     echo "OK ast test"
-#     rm "diff.txt"
-# fi
+../../bin/asttest < $INPUT_FILE > $OUTPUT_FILE
+diff -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
+if [ -s "diff.txt" ]
+then
+	echo "FAIL ast test"
+else
+    echo "OK ast test"
+    rm "diff.txt"
+fi

@@ -72,23 +72,10 @@ void st_insert(DefNode* def) {
 	// TODO: Should I make sure def is not repeated
 	// by calling "st_find_in_current_scope()" ?
 	SymbolElem* symbol;
-	
-	switch (def->tag) {
-	case DEF_VAR:
-		ST_MALLOC(symbol, SymbolElem);
-		symbol->def = def;
-		symbol->next = table->first->first;
-		table->first->first = symbol;
-
-		// TODO: Remove
-		printf("*** ST - Inserted %s ***\n", def->u.var.id->str);
-		break;
-	case DEF_FUNC:
-
-		break;
-	default:
-		ST_ERROR("st_insert: invalid def tag\n");
-	}
+	ST_MALLOC(symbol, SymbolElem);
+	symbol->def = def;
+	symbol->next = table->first->first;
+	table->first->first = symbol;
 }
 
 void st_enter_scope() {

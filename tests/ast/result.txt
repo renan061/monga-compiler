@@ -1,3 +1,6 @@
+int intvalue;
+float floatvalue;
+char charvalue;
 void x() {
 }
 void y(int a) {
@@ -13,9 +16,16 @@ void bar(int intvalue1, int intvalue2) {
     int[] x;
     int[][] y;
     int[][][] z;
-    int a, b;
-    float a, b, c;
-    char a, b, c, d, e;
+    int a;
+    int b;
+    float a;
+    float b;
+    float c;
+    char a;
+    char b;
+    char c;
+    char d;
+    char e;
 }
 void baz(int intvalue1) {
     a = (1);

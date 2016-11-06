@@ -109,8 +109,7 @@ struct TypeNode {
 struct IdNode {
 	const char* str;
 	// TODO: Should this be here?
-	DefNode* def; // Only for IdNode inside exp
-	IdNode* next;
+	DefNode* def; // Symbol table: Only for IdNode inside exp
 };
 
 struct CmdNode {
@@ -214,7 +213,6 @@ extern TypeNode* ast_type(TypeE tag);
 extern TypeNode* ast_type_array(TypeNode* node);
 
 // Id
-extern IdNode* ast_id_list(IdNode* list, IdNode* id);
 extern IdNode* ast_id(const char* id);
 
 // Cmd
