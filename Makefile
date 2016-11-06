@@ -17,18 +17,21 @@ parser:
 	@- mv monga.tab.c src/yacc.c
 	@- mv monga.tab.h src/yacc.h
 	$(CC) $(CFLAGS) -c src/yacc.c -o obj/parser.o
-	$(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
 	@- $(RM) src/yacc.c
+
+ast: parser
+	$(CC) $(CFLAGS) -c src/symbol_table.c -o obj/symtable.o
+	$(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
 
 lex: parser
 	flex src/monga.lex
 	$(CC) $(CFLAGS) -c lex.yy.c -o obj/lex.o -Isrc/
 	@- $(RM) lex.yy.c
 
-main: lex parser
+main: lex ast parser
 	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o obj/parser.o obj/ast.o src/lex_test.c -ll
 	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o obj/ast.o src/parser_test.c -ll
-	$(CC) $(CFLAGS) -o bin/asttest obj/lex.o obj/parser.o obj/ast.o src/ast_test.c -ll
+	$(CC) $(CFLAGS) -o bin/asttest obj/lex.o obj/parser.o obj/ast.o obj/symtable.o src/ast_test.c -ll
 
 lex_test: main
 	@- sh tests/lex/testlex.sh

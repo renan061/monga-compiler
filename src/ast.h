@@ -21,7 +21,7 @@ typedef unsigned int LexSymbol;
 
 // ==================================================
 //
-//	Enums
+//	Node Enums
 //
 // ==================================================
 
@@ -71,7 +71,7 @@ typedef enum CallE {
 
 // ==================================================
 //
-//	Structs
+//	Node Structs
 //
 // ==================================================
 
@@ -83,10 +83,12 @@ struct DefNode {
 	DefE tag;
 	DefNode* next;
 	union {
+		// DefVar
 		struct {
 			TypeNode* type;
 			IdNode* id;
 		} var;
+		// DefFunc
 		struct {
 			TypeNode* type;
 			IdNode* id;
@@ -194,7 +196,7 @@ struct CallNode {
 
 // ==================================================
 //
-//	Functions
+//	Node Functions
 //
 // ==================================================
 
