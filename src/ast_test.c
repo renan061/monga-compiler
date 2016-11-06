@@ -23,7 +23,6 @@ static void print_program(ProgramNode* program);
 static void print_def(DefNode* def, int layer);
 static void print_type(TypeNode* type);
 static void print_id(IdNode* id);
-static void print_param(ParamNode* param);
 static void print_cmd(CmdNode* cmd, int layer);
 static void print_var(VarNode* var, int layer);
 static void print_exp(ExpNode* exp);
@@ -35,7 +34,10 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	// TODO: Should "ast_type_program" be called inside "ast_program_node" ?
+	ast_type_program();
 	ProgramNode* program = ast_program_node();
+
 	print_program(program);
     return 0;
 }
@@ -70,7 +72,18 @@ static void print_def(DefNode* def, int layer) {
 			printf("()");
 		} else {
 			printf("(");
-			print_param(def->u.func.params);
+			DefNode* aux = def->u.func.params;
+			while (1) { // It's ugly but necessary
+				print_type(aux->u.var.type);
+				printf(" ");
+				print_id(aux->u.var.id);
+				if (aux->next != NULL) {
+					printf(", ");
+					aux = aux->next;
+				} else {
+					break;
+				}
+			}
 			printf(")");
 		}
 		printf(" {\n");
@@ -120,18 +133,6 @@ static void print_id(IdNode* id) {
 	if (id->next != NULL) {
 		printf(", ");
 		print_id(id->next);
-	}
-}
-
-static void print_param(ParamNode* param) {
-	test_log("print_param");
-
-	print_type(param->type);
-	printf(" ");
-	print_id(param->id);
-	if (param->next != NULL) {
-		printf(", ");
-		print_param(param->next);
 	}
 }
 

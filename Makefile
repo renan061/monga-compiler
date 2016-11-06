@@ -19,6 +19,7 @@ parser:
 	$(CC) $(CFLAGS) -c src/yacc.c -o obj/parser.o
 	@- $(RM) src/yacc.c
 
+# TODO: Is AST inside parser?
 ast: parser
 	$(CC) $(CFLAGS) -c src/symbol_table.c -o obj/symtable.o
 	$(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
@@ -29,8 +30,8 @@ lex: parser
 	@- $(RM) lex.yy.c
 
 main: lex ast parser
-	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o obj/parser.o obj/ast.o src/lex_test.c -ll
-	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o obj/ast.o src/parser_test.c -ll
+	$(CC) $(CFLAGS) -o bin/lextest obj/lex.o obj/parser.o obj/ast.o obj/symtable.o src/lex_test.c -ll
+	$(CC) $(CFLAGS) -o bin/parsertest obj/lex.o obj/parser.o obj/ast.o obj/symtable.o src/parser_test.c -ll
 	$(CC) $(CFLAGS) -o bin/asttest obj/lex.o obj/parser.o obj/ast.o obj/symtable.o src/ast_test.c -ll
 
 lex_test: main
@@ -42,7 +43,8 @@ parser_test: main
 ast_test: main
 	@- sh tests/ast/testast.sh
 
-test: lex_test parser_test ast_test
+# test: lex_test parser_test ast_test
+test: ast_test
 
 clean:
 	@- $(RM) src/yacc.h

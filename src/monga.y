@@ -18,7 +18,6 @@
 	DefNode* defnode;
 	TypeNode* typenode;
 	IdNode* idnode;
-	ParamNode* paramnode;
 	CmdNode* cmdnode;
 	VarNode* varnode;
 	ExpNode* expnode;
@@ -44,7 +43,7 @@
 	type base_type
 %type <idnode>
 	name_list
-%type <paramnode>
+%type <defnode>
 	func_param_list param_list param
 %type <cmdnode>
 	block command command_x command_return command_list
@@ -149,13 +148,13 @@ param_list 		: param
 					}
 				| param_list ',' param
 					{
-						$$ = ast_param_list($1, $3);
+						$$ = ast_def_list($1, $3);
 					}
 				;
 
 param 			: type TK_ID
 					{
-						$$ = ast_param($1, ast_id($2));
+						$$ = ast_def_var($1, ast_id($2));
 					}
 				;
 

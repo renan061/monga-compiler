@@ -41,7 +41,7 @@ struct SymbolElem {
 	SymbolElem* next;
 };
 
-static DefNode* find_in_scope(ScopeElem* scope, ExpNode* exp);
+static DefNode* find_in_scope(ScopeElem* scope, IdNode* id);
 
 static SymbolTable* table;
 
@@ -51,15 +51,15 @@ static SymbolTable* table;
 //
 // ==================================================
 
-DefNode* st_find_in_current_scope(ExpNode* exp) {
-	return find_in_scope(table->first, exp);
+DefNode* st_find_in_current_scope(IdNode* id) {
+	return find_in_scope(table->first, id);
 }
 
-DefNode* st_find(ExpNode* exp) {
+DefNode* st_find(IdNode* id) {
 	DefNode* def;
 	ScopeElem* scope = table->first;
 	while (scope != NULL) {
-		def = find_in_scope(scope, exp);
+		def = find_in_scope(scope, id);
 		if (def != NULL) {
 			return def;
 		}
@@ -72,10 +72,23 @@ void st_insert(DefNode* def) {
 	// TODO: Should I make sure def is not repeated
 	// by calling "st_find_in_current_scope()" ?
 	SymbolElem* symbol;
-	ST_MALLOC(symbol, SymbolElem);
-	symbol->def = def;
-	symbol->next = table->first->first;
-	table->first->first = symbol;
+	
+	switch (def->tag) {
+	case DEF_VAR:
+		ST_MALLOC(symbol, SymbolElem);
+		symbol->def = def;
+		symbol->next = table->first->first;
+		table->first->first = symbol;
+
+		// TODO: Remove
+		printf("*** ST - Inserted %s ***\n", def->u.var.id->str);
+		break;
+	case DEF_FUNC:
+
+		break;
+	default:
+		ST_ERROR("st_insert: invalid def tag\n");
+	}
 }
 
 void st_enter_scope() {
@@ -115,33 +128,22 @@ void st_new() {
 //
 // ==================================================
 
-static DefNode* find_in_scope(ScopeElem* scope, ExpNode* exp) {
-	// TODO: Necessary?
-	if (exp->tag != EXP_VAR && exp->tag != EXP_CALL) {
-		ST_ERROR("symbol table: invalid exp tag");
-	}
-
-	int expIsVar = (exp->tag == EXP_VAR);
+static DefNode* find_in_scope(ScopeElem* scope, IdNode* id) {
 	SymbolElem* symbol = scope->first;
 
 	while (symbol != NULL) {
 		switch(symbol->def->tag) {
 		case DEF_VAR:
-			if (!expIsVar) {
-				break;
-			}
-			if (strcmp(exp->u.var->u.id->str, symbol->def->u.var.id->str) == 0) {
+			if (strcmp(id->str, symbol->def->u.var.id->str) == 0) {
 				return symbol->def;
 			}
 			break;
 		case DEF_FUNC:
-			if (expIsVar) {
-				break;
-			}
 			// TODO
 			break;
+		default:
+			ST_ERROR("find_in_scope: invalid def tag\n");
 		}
-
 		symbol = symbol->next;
 	}
 

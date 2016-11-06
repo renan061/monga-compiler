@@ -3,6 +3,7 @@
 #include <string.h> 
 #include "ast.h"
 #include "yacc.h"
+#include "symbol_table.h"
 
 // ==================================================
 //
@@ -35,8 +36,6 @@
 //	Internal
 //
 // ==================================================
-
-static void type_program();
 
 static int in_array(LexSymbol symbol, LexSymbol *arr)  {
 	int len = AST_ARRAY_LEN(arr);
@@ -81,7 +80,7 @@ DefNode* ast_def_var(TypeNode* type, IdNode* id) {
 	return n;
 }
 
-DefNode* ast_def_func(TypeNode* type, IdNode* id, ParamNode* params,
+DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	CmdNode* cmd) {
 
 	DefNode* n;
@@ -123,21 +122,8 @@ IdNode* ast_id(const char* id) {
 	IdNode* n;
 	AST_MALLOC(n, IdNode);
 	n->next = NULL;
+	n->def = NULL;
 	n->str = id;
-	return n;
-}
-
-// Param
-ParamNode* ast_param_list(ParamNode* list, ParamNode* param) {
-	AST_LIST(ParamNode, list, param);
-}
-
-ParamNode* ast_param(TypeNode* type, IdNode* id) {
-	ParamNode* n;
-	AST_MALLOC(n, ParamNode);
-	n->next = NULL;
-	n->type = type;
-	n->id = id;
 	return n;
 }
 
@@ -340,243 +326,132 @@ CallNode* ast_call(IdNode* id, ExpNode* params) {
 //
 // ==================================================
 
-// static void print_id(IdNode* id);
-// static void print_param(ParamNode* param);
-// static void print_cmd(CmdNode* cmd, int layer);
-// static void print_var(VarNode* var, int layer);
-// static void print_exp(ExpNode* exp);
-// static void print_call(CallNode* call);
+// Headers (TODO: ?)
+static void type_def(DefNode* def);
+static void type_cmd(CmdNode* cmd);
+static void type_var(VarNode* var);
+static void type_exp(ExpNode* exp);
+static void type_call(CallNode* call);
 
-static void type_program() {
-	// printf("TODO: type_program\n");
-	// type_def(program_node->defs);
+void ast_type_program() {
+	st_new();
+	type_def(program_node->defs);
 }
 
-// static void type_def(DefNode* def) {
-// 	switch (def->tag) {
-// 	case DEF_VAR:
-// 		print_type(def->u.var.type);
-// 		print_id(def->u.var.id);
-// 		break;
-// 	case DEF_FUNC:
-// 		print_type(def->u.func.type);
-// 		printf(" ");
-// 		print_id(def->u.func.id);
-// 		if (def->u.func.params == NULL) {
-// 			printf("()");
-// 		} else {
-// 			printf("(");
-// 			print_param(def->u.func.params);
-// 			printf(")");
-// 		}
-// 		printf(" {\n");
-// 		print_cmd(def->u.func.cmd, layer + 1);
-// 		print_tabs(layer);
-// 		printf("}\n");
-// 		break;
-// 	default:
-// 		TEST_ERROR("print_def: invalid tag");
-// 	}
+static void type_def(DefNode* def) {
+	// TODO: Check repeated inside same scope?
+	st_insert(def);
+	if (def->tag == DEF_FUNC) {
+		st_enter_scope();
+		type_def(def->u.func.params);
+		type_cmd(def->u.func.cmd);
+		st_leave_scope();
+	}
 
-// 	if (def->next != NULL) {
-// 		type_def(def->next);
-// 	}
-// }
+	if (def->next != NULL) {
+		type_def(def->next);
+	}
+}
 
-// static void print_type(TypeNode* type) {
-// 	test_log("print_type");
+static void type_cmd(CmdNode* cmd) {
+	switch (cmd->tag) {
+	case CMD_BLOCK:
+		if (cmd->u.block.defs != NULL) {
+			type_def(cmd->u.block.defs);
+		}
+		if (cmd->u.block.cmds != NULL) {
+			type_cmd(cmd->u.block.cmds);
+		}
+		break;
+	case CMD_IF:
+		type_exp(cmd->u.ifwhile.exp);
+		st_enter_scope();
+		type_cmd(cmd->u.ifwhile.cmd);
+		st_leave_scope();
+		break;
+	case CMD_IF_ELSE:
+		type_exp(cmd->u.ifelse.exp);
+		st_enter_scope();
+		type_cmd(cmd->u.ifelse.ifcmd);
+		st_leave_scope();
+		st_enter_scope();
+		type_cmd(cmd->u.ifelse.elsecmd);
+		st_leave_scope();
+		break;
+	case CMD_WHILE:
+		type_exp(cmd->u.ifwhile.exp);
+		st_enter_scope();
+		type_cmd(cmd->u.ifwhile.cmd);
+		st_leave_scope();
+		break;
+	case CMD_ASG:
+		type_var(cmd->u.asg.var);
+		type_exp(cmd->u.asg.exp);
+		break;
+	case CMD_RETURN:
+		if (cmd->u.exp != NULL) {
+			type_exp(cmd->u.exp);
+		}
+		break;
+	case CMD_CALL:
+		type_call(cmd->u.call);
+		break;
+	default:
+		AST_ERROR("type_cmd: invalid tag");
+	}
 
-// 	switch (type->tag) {
-// 	case TYPE_INT:
-// 		printf("int");
-// 		break;
-// 	case TYPE_FLOAT:
-// 		printf("float");
-// 		break;
-// 	case TYPE_CHAR:
-// 		printf("char");
-// 		break;
-// 	case TYPE_VOID:
-// 		printf("void");
-// 		break;
-// 	case TYPE_ARRAY:
-// 		print_type(type->array);
-// 		printf("[]");
-// 		break;
-// 	default:
-// 		TEST_ERROR("print_type: invalid tag");
-// 	}
-// }
+	// Cmd list
+	if (cmd->next != NULL) {
+		type_cmd(cmd->next);
+	}
+}
 
-// static void print_id(IdNode* id) {
-// 	test_log("print_id");
-// 	printf("%s", id->str);
+void type_var(VarNode* var) {
+	switch (var->tag) {
+	case VAR_ID:
+		var->u.id->def = st_find(var->u.id); // TODO: Really like this?
+		break;
+	case VAR_INDEXED:
+		type_exp(var->u.indexed.exp1);
+		type_exp(var->u.indexed.exp2);
+		break;
+	default:
+		AST_ERROR("type_var: invalid tag");
+	}
+}
 
-// 	// Id list
-// 	if (id->next != NULL) {
-// 		printf(", ");
-// 		print_id(id->next);
-// 	}
-// }
+void type_exp(ExpNode* exp) {
+	switch (exp->tag) {
+	case EXP_VAR:
+		type_var(exp->u.var);
+		break;
+	case EXP_CALL:
+		type_call(exp->u.call);
+		break;
+	case EXP_NEW:
+		type_exp(exp->u.new.exp);
+		break;
+	case EXP_UNARY:
+		type_exp(exp->u.unary.exp);
+		break;
+	case EXP_BINARY:
+		type_exp(exp->u.binary.exp1);
+		type_exp(exp->u.binary.exp2);
+		break;
+	default:
+		break;
+	}
 
-// static void print_param(ParamNode* param) {
-// 	test_log("print_param");
+	// Exp list
+	if (exp->next != NULL) {
+		type_exp(exp->next);
+	}
+}
 
-// 	print_type(param->type);
-// 	printf(" ");
-// 	print_id(param->id);
-// 	if (param->next != NULL) {
-// 		printf(", ");
-// 		print_param(param->next);
-// 	}
-// }
-
-// static void print_cmd(CmdNode* cmd, int layer) {
-// 	test_log("print_cmd");
-
-// 	switch (cmd->tag) {
-// 	case CMD_BLOCK:
-// 		if (cmd->u.block.defs != NULL) {
-// 			print_def(cmd->u.block.defs, layer + 1);
-// 		}
-// 		if (cmd->u.block.cmds != NULL) {
-// 			print_cmd(cmd->u.block.cmds, layer + 1);
-// 		}
-// 		break;
-// 	case CMD_IF:
-// 		print_tabs(layer);
-// 		printf("(if(");
-// 		print_exp(cmd->u.ifwhile.exp);
-// 		printf(") {\n");
-// 		print_cmd(cmd->u.ifwhile.cmd, layer + 1);
-// 		print_tabs(layer);
-// 		printf("})\n");
-// 		break;
-// 	case CMD_IF_ELSE:
-// 		print_tabs(layer);
-// 		printf("(if(");
-// 		print_exp(cmd->u.ifelse.exp);
-// 		printf(") {\n");
-// 		print_cmd(cmd->u.ifelse.ifcmd, layer + 1);
-// 		print_tabs(layer);
-// 		printf("} else {\n");
-// 		print_cmd(cmd->u.ifelse.elsecmd, layer + 1);
-// 		print_tabs(layer);
-// 		printf("})\n");
-// 		break;
-// 	case CMD_WHILE:
-// 		print_tabs(layer);
-// 		printf("(while(");
-// 		print_exp(cmd->u.ifwhile.exp);
-// 		printf(") {\n");
-// 		print_cmd(cmd->u.ifwhile.cmd, layer + 1);
-// 		print_tabs(layer);
-// 		printf("})\n");
-// 		break;
-// 	case CMD_ASG:
-// 		print_var(cmd->u.asg.var, layer);
-// 		printf(" = ");
-// 		print_exp(cmd->u.asg.exp);
-// 		printf(";\n");
-// 		break;
-// 	case CMD_RETURN:
-// 		print_tabs(layer);
-// 		printf("return ");
-// 		if (cmd->u.exp != NULL) {
-// 			print_exp(cmd->u.exp);
-// 		}
-// 		printf(";\n");
-// 		break;
-// 	case CMD_CALL:
-// 		print_tabs(layer);
-// 		print_call(cmd->u.call);
-// 		printf(";\n");
-// 		break;
-// 	default:
-// 		TEST_ERROR("print_cmd: invalid tag");
-// 	}
-
-// 	// Cmd list
-// 	if (cmd->next != NULL) {
-// 		print_cmd(cmd->next, layer);
-// 	}
-// }
-
-// void print_var(VarNode* var, int layer) {
-// 	test_log("print_var");
-
-// 	switch (var->tag) {
-// 	case VAR_ID:
-// 		print_tabs(layer);
-// 		print_id(var->u.id);
-// 		break;
-// 	case VAR_INDEXED:
-// 		print_tabs(layer);
-// 		print_exp(var->u.indexed.exp1);
-// 		printf("[");
-// 		print_exp(var->u.indexed.exp2);
-// 		printf("]");
-// 		break;
-// 	default:
-// 		TEST_ERROR("print_var: invalid tag");
-// 	}
-// }
-
-// void print_exp(ExpNode* exp) {
-// 	test_log("print_exp");
-
-// 	printf("(");
-// 	switch (exp->tag) {
-// 	case EXP_KINT:
-// 		printf("%d", exp->u.intvalue);
-// 		break;
-// 	case EXP_KFLOAT:
-// 		printf("%f", exp->u.floatvalue);
-// 		break;
-// 	case EXP_KSTR:
-// 		printf("%s", exp->u.strvalue);
-// 		break;
-// 	case EXP_VAR:
-// 		print_var(exp->u.var, 0);
-// 		break;
-// 	case EXP_CALL:
-// 		print_call(exp->u.call);
-// 		break;
-// 	case EXP_NEW:
-// 		printf("new ");
-// 		print_type(exp->u.new.type);
-// 		printf("[");
-// 		print_exp(exp->u.new.exp);
-// 		printf("]");
-// 		break;
-// 	case EXP_UNARY:
-// 		print_lex_symbol(exp->u.unary.symbol);
-// 		print_exp(exp->u.unary.exp);
-// 		break;
-// 	case EXP_BINARY:
-// 		print_exp(exp->u.binary.exp1);
-// 		print_lex_symbol(exp->u.binary.symbol);
-// 		print_exp(exp->u.binary.exp2);
-// 		break;
-// 	default:
-// 		TEST_ERROR("print_exp: invalid tag");
-// 	}
-// 	printf(")");
-
-// 	// Exp list
-// 	if (exp->next != NULL) {
-// 		printf(", ");
-// 		print_exp(exp->next);
-// 	}
-// }
-
-// static void print_call(CallNode* call) {
-// 	test_log("print_call");
-
-// 	print_id(call->id);
-// 	printf("(");
-// 	if (call->params != NULL) {
-// 		print_exp(call->params);
-// 	}
-// 	printf(")");
-// }
+void type_call(CallNode* call) {
+	// TODO: Really like this? Check NULL?
+	call->id->def = st_find(call->id);
+	if (call->params != NULL) {
+		type_exp(call->params);
+	}
+}
