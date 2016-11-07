@@ -1,9 +1,11 @@
 %{
 	#include <stdio.h>
+
 	#include "lex.h"
 	#include "ast.h"
 
 	void yyerror(const char* err) {
+		// TODO: Ask if this can fail with exit();
 		fprintf(stderr, "syntax error line %d\n", current_line());
 	}
 %}

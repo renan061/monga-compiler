@@ -3,6 +3,8 @@
 #include "yacc.h"
 
 int main(int argc, char *argv[]) {
+	setbuf(stdout, NULL); // FIXME: Possible side effects?
+	
 	int token;
 	do {
 		token = yylex();

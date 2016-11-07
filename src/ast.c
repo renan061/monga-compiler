@@ -1,24 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 
+#include <string.h>
+
+#include "macros.h"
 #include "ast.h"
 #include "yacc.h"
-
-// ==================================================
-//
-//	Macros
-//
-// ==================================================
-
-#define AST_ARRAY_LEN(arr) (sizeof(arr)/sizeof(arr[0]))
-
-#define AST_ERROR(...) printf(__VA_ARGS__); exit(1);
-
-#define AST_MALLOC(n, type);						\
-	n = (type*)malloc(sizeof(type));				\
-	if (n == NULL) {								\
-		AST_ERROR("error: insufficient memory\n");	\
-	}												\
 
 #define AST_LIST(type, list, elem);					\
 	if (list == NULL) {								\
@@ -37,7 +23,7 @@
 // ==================================================
 
 static int in_array(LexSymbol symbol, LexSymbol *arr)  {
-	int len = AST_ARRAY_LEN(arr);
+	int len = sizeof(arr)/sizeof(arr[0]);
 	for (int i = 0; i < len; i++)
 		if (symbol != arr[i])
 			return 1;
@@ -58,7 +44,7 @@ ProgramNode* ast_get_program() {
 // Program
 void ast_program(DefNode* defs) {
 	ProgramNode* n;
-	AST_MALLOC(n, ProgramNode);
+	MONGA_MALLOC(n, ProgramNode);
 	n->defs = defs;
 	program_node = n;
 }
@@ -70,7 +56,7 @@ DefNode* ast_def_list(DefNode* list, DefNode* def) {
 
 DefNode* ast_def_var(TypeNode* type, IdNode* id) {
 	DefNode* n;
-	AST_MALLOC(n, DefNode);
+	MONGA_MALLOC(n, DefNode);
 	n->tag = DEF_VAR;
 	n->next = NULL;
 	n->u.var.type = type;
@@ -82,7 +68,7 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	CmdNode* cmd) {
 
 	DefNode* n;
-	AST_MALLOC(n, DefNode);
+	MONGA_MALLOC(n, DefNode);
 	n->tag = DEF_FUNC;
 	n->next = NULL;
 	n->u.func.type = type;
@@ -95,17 +81,17 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 // Type
 TypeNode* ast_type(TypeE tag) {
 	if (tag == TYPE_ARRAY) {
-		AST_ERROR("ast_type: unexpected TYPE_ARRAY");
+		MONGA_INTERNAL_ERR("ast_type: unexpected TYPE_ARRAY");
 	}
 	TypeNode* n;
-	AST_MALLOC(n, TypeNode);
+	MONGA_MALLOC(n, TypeNode);
 	n->tag = tag;
 	return n;
 }
 
 TypeNode* ast_type_array(TypeNode* node) {
 	TypeNode* n;
-	AST_MALLOC(n, TypeNode);
+	MONGA_MALLOC(n, TypeNode);
 	n->tag = TYPE_ARRAY;
 	n->array = node;
 	return n;
@@ -114,7 +100,7 @@ TypeNode* ast_type_array(TypeNode* node) {
 // Id
 IdNode* ast_id(const char* id) {
 	IdNode* n;
-	AST_MALLOC(n, IdNode);
+	MONGA_MALLOC(n, IdNode);
 	n->def = NULL;
 	n->str = id;
 	return n;
@@ -127,7 +113,7 @@ CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd) {
 
 CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds) {
 	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
+	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_BLOCK;
 	n->next = NULL;
 	n->u.block.defs = defs;
@@ -137,7 +123,7 @@ CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds) {
 
 CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd) {
 	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
+	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_IF;
 	n->next = NULL;
 	n->u.ifwhile.exp = exp;
@@ -147,7 +133,7 @@ CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd) {
 
 CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd) {
 	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
+	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_IF_ELSE;
 	n->next = NULL;
 	n->u.ifelse.exp = exp;
@@ -158,7 +144,7 @@ CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd) {
 
 CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd) {
 	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
+	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_WHILE;
 	n->next = NULL;
 	n->u.ifwhile.exp = exp;
@@ -168,7 +154,7 @@ CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd) {
 
 CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp) {
 	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
+	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_ASG;
 	n->next = NULL;
 	n->u.asg.var = var;
@@ -178,7 +164,7 @@ CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp) {
 
 CmdNode* ast_cmd_return(ExpNode* exp) {
 	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
+	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_RETURN;
 	n->next = NULL;
 	n->u.exp = exp;
@@ -187,7 +173,7 @@ CmdNode* ast_cmd_return(ExpNode* exp) {
 
 CmdNode* ast_cmd_call(CallNode* call) {
 	CmdNode* n;
-	AST_MALLOC(n, CmdNode);
+	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_CALL;
 	n->next = NULL;
 	n->u.call = call;
@@ -197,7 +183,7 @@ CmdNode* ast_cmd_call(CallNode* call) {
 // Var
 VarNode* ast_var(IdNode* id) {
 	VarNode* n;
-	AST_MALLOC(n, VarNode);
+	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_ID;
 	n->u.id = id;
 	return n;
@@ -205,7 +191,7 @@ VarNode* ast_var(IdNode* id) {
 
 VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
 	VarNode* n;
-	AST_MALLOC(n, VarNode);
+	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_INDEXED;
 	n->u.indexed.exp1 = exp1;
 	n->u.indexed.exp2 = exp2;
@@ -221,11 +207,11 @@ ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2) {
 	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL, TK_GEQUAL,
 		'<', '>', TK_AND, TK_OR};
 	if (!in_array(symbol, symbols)) {
-		AST_ERROR("ast_exp_unary: unexpected symbol %c", symbol);
+		MONGA_INTERNAL_ERR("ast_exp_unary: unexpected symbol %c", symbol);
 	}
 
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_BINARY;
 	n->next = NULL;
 	n->u.binary.symbol = symbol;
@@ -237,11 +223,11 @@ ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2) {
 ExpNode* ast_exp_unary(LexSymbol symbol, ExpNode *exp) {
 	LexSymbol symbols[] = {'-', '!'};
 	if (!in_array(symbol, symbols)) {
-		AST_ERROR("ast_exp_unary: unexpected symbol %c", symbol);
+		MONGA_INTERNAL_ERR("ast_exp_unary: unexpected symbol %c", symbol);
 	}
 
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_UNARY;
 	n->next = NULL;
 	n->u.unary.symbol = symbol;
@@ -251,7 +237,7 @@ ExpNode* ast_exp_unary(LexSymbol symbol, ExpNode *exp) {
 
 ExpNode* ast_exp_int(int value) {
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KINT;
 	n->next = NULL;
 	n->u.intvalue = value;
@@ -260,7 +246,7 @@ ExpNode* ast_exp_int(int value) {
 
 ExpNode* ast_exp_float(float value) {
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KFLOAT;
 	n->next = NULL;
 	n->u.floatvalue = value;
@@ -269,7 +255,7 @@ ExpNode* ast_exp_float(float value) {
 
 ExpNode* ast_exp_str(const char* value) {
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KSTR;
 	n->next = NULL;
 	n->u.strvalue = value;
@@ -278,7 +264,7 @@ ExpNode* ast_exp_str(const char* value) {
 
 ExpNode* ast_exp_var(VarNode* var) {
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_VAR;
 	n->next = NULL;
 	n->u.var = var;
@@ -287,7 +273,7 @@ ExpNode* ast_exp_var(VarNode* var) {
 
 ExpNode* ast_exp_call(CallNode* call) {
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_CALL;
 	n->next = NULL;
 	n->u.call = call;
@@ -296,7 +282,7 @@ ExpNode* ast_exp_call(CallNode* call) {
 
 ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp) {
 	ExpNode* n;
-	AST_MALLOC(n, ExpNode);
+	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_NEW;
 	n->next = NULL;
 	n->u.new.type = type;
@@ -307,7 +293,7 @@ ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp) {
 // Call
 CallNode* ast_call(IdNode* id, ExpNode* args) {
 	CallNode* n;
-	AST_MALLOC(n, CallNode);
+	MONGA_MALLOC(n, CallNode);
 	n->id = id;
 	n->args = args;
 	return n;

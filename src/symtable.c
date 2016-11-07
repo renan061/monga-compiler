@@ -1,22 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "macros.h"
 #include "ast.h"
-#include "symtable.h"
-
-// ==================================================
-//
-//	Macros
-//
-// ==================================================
-
-#define ST_ERROR(...) printf(__VA_ARGS__); exit(1);
-
-#define ST_MALLOC(n, type);							\
-	n = (type*)malloc(sizeof(type));				\
-	if (n == NULL) {								\
-		ST_ERROR("error: insufficient memory\n");	\
-	}												\
+#include "symtable.h"							\
 
 // ==================================================
 //
@@ -54,7 +42,7 @@ static DefNode* find_in_scope(ScopeElem* scope, IdNode* id) {
 			str = symbol->def->u.func.id->str;
 			break;
 		default:
-			ST_ERROR("find_in_scope: invalid def tag\n");
+			MONGA_INTERNAL_ERR("find_in_scope: invalid def tag\n");
 		}
 
 		if (strcmp(id->str, str) == 0) {
@@ -104,7 +92,7 @@ int st_insert(SymbolTable* table, DefNode* def) {
 		id = def->u.func.id;
 		break;
 	default:
-		ST_ERROR("st_insert: invalid def tag\n");
+		MONGA_INTERNAL_ERR("st_insert: invalid def tag\n");
 	}
 
 	int repeated = (find_in_scope(table->first, id) != NULL);
@@ -113,7 +101,7 @@ int st_insert(SymbolTable* table, DefNode* def) {
 	}
 
 	SymbolElem* symbol;
-	ST_MALLOC(symbol, SymbolElem);
+	MONGA_MALLOC(symbol, SymbolElem);
 	symbol->def = def;
 	symbol->next = table->first->first;
 	table->first->first = symbol;
@@ -122,7 +110,7 @@ int st_insert(SymbolTable* table, DefNode* def) {
 
 void st_enter_scope(SymbolTable* table) {
 	ScopeElem* scope;
-	ST_MALLOC(scope, ScopeElem);
+	MONGA_MALLOC(scope, ScopeElem);
 
 	scope->first = NULL;
 	scope->next = table->first;
@@ -147,7 +135,7 @@ void st_leave_scope(SymbolTable* table) {
 
 SymbolTable* st_new() {
 	SymbolTable* table;
-	ST_MALLOC(table, SymbolTable);
+	MONGA_MALLOC(table, SymbolTable);
 	table->first = NULL; // FIXME: Do I need this here?
 	st_enter_scope(table);
 	return table;
@@ -156,7 +144,7 @@ SymbolTable* st_new() {
 void st_free(SymbolTable* table) {
 	st_leave_scope(table);
 	if (table->first != NULL) {
-		ST_ERROR("internal error: did not left all scopes");
+		MONGA_INTERNAL_ERR("internal error: did not left all scopes");
 	}
 	free(table);
 }

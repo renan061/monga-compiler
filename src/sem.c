@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "macros.h"
 #include "ast.h"
 #include "symtable.h"
-
-// TODO: Create macro.h with this kind of code
-#define SEM_ERROR(...) printf(__VA_ARGS__); exit(1);
 
 // ==================================================
 //
@@ -14,8 +13,7 @@
 
 static void sem_fail(const char* type, const char* details) {
 	// TODO: How to indicate line number?
-	fprintf(stderr, "error: sem fail: %s (%s)\n", type, details);
-	exit(1);
+	MONGA_ERR("sem fail: %s (%s)\n", type, details);
 }
 
 static void type_def(SymbolTable* table, DefNode* def);
@@ -45,7 +43,7 @@ static void type_def(SymbolTable* table, DefNode* def) {
 		st_leave_scope(table);
 		break;
 	default:
-		SEM_ERROR("internal error: type_def: invalid tag");
+		MONGA_INTERNAL_ERR("type_def: invalid tag");
 	}
 
 	if (def->next != NULL) {
@@ -97,7 +95,7 @@ static void type_cmd(SymbolTable* table, CmdNode* cmd) {
 		type_call(table, cmd->u.call);
 		break;
 	default:
-		SEM_ERROR("internal error: type_cmd: invalid tag");
+		MONGA_INTERNAL_ERR("type_cmd: invalid tag");
 	}
 
 	// Cmd list
@@ -121,7 +119,7 @@ static void type_var(SymbolTable* table, VarNode* var) {
 		type_exp(table, var->u.indexed.exp2);
 		break;
 	default:
-		SEM_ERROR("internal error: type_var: invalid tag");
+		MONGA_INTERNAL_ERR("type_var: invalid tag");
 	}
 }
 

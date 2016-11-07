@@ -19,7 +19,7 @@ do
 	ANSWER_FILE="answers/test_parser_"$i".asw"
 	OUTPUT_FILE="test_parser_"$i".out"
 
-	../../bin/parsertest < $INPUT_FILE > $OUTPUT_FILE 2>&1
+	../../bin/parsertest < $INPUT_FILE >> $OUTPUT_FILE 2>&1
 	diff -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
 	if [ -s "diff.txt" ]
 	then

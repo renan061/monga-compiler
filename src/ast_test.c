@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "macros.h"
 #include "parser.h"
 #include "ast.h"
 #include "yacc.h"
 #include "sem.h"
 
 #define DEBUGGING 0
-#define TEST_ERROR(...) printf(__VA_ARGS__); exit(1);
 
 // ==================================================
 //
@@ -92,7 +93,7 @@ static void print_def(DefNode* def, int layer) {
 		printf("}\n");
 		break;
 	default:
-		TEST_ERROR("print_def: invalid tag");
+		MONGA_ERR("print_def: invalid tag");
 	}
 
 	if (def->next != NULL) {
@@ -121,7 +122,7 @@ static void print_type(TypeNode* type) {
 		printf("[]");
 		break;
 	default:
-		TEST_ERROR("print_type: invalid tag");
+		MONGA_ERR("print_type: invalid tag");
 	}
 }
 
@@ -158,7 +159,7 @@ static void print_id(IdNode* id) {
 			printf(")%s", id->str);
 			break;
 		default:
-			TEST_ERROR("print_id: invalid tag");
+			MONGA_ERR("print_id: invalid tag");
 	}
 }
 
@@ -224,7 +225,7 @@ static void print_cmd(CmdNode* cmd, int layer) {
 		printf(";\n");
 		break;
 	default:
-		TEST_ERROR("print_cmd: invalid tag");
+		MONGA_ERR("print_cmd: invalid tag");
 	}
 
 	// Cmd list
@@ -249,7 +250,7 @@ void print_var(VarNode* var, int layer) {
 		printf("]");
 		break;
 	default:
-		TEST_ERROR("print_var: invalid tag");
+		MONGA_ERR("print_var: invalid tag");
 	}
 }
 
@@ -290,7 +291,7 @@ void print_exp(ExpNode* exp) {
 		print_exp(exp->u.binary.exp2);
 		break;
 	default:
-		TEST_ERROR("print_exp: invalid tag");
+		MONGA_ERR("print_exp: invalid tag");
 	}
 	printf(")");
 
@@ -357,7 +358,7 @@ static void print_lex_symbol(LexSymbol symbol) {
 		printf(">=");
 		break;
 	default:
-		TEST_ERROR("print_lex_symbol: invalid symbol");
+		MONGA_ERR("print_lex_symbol: invalid symbol");
 	}
 }
 
