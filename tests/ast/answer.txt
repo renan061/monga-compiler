@@ -28,9 +28,9 @@ void bar(int intvalue1, int intvalue2) {
     char e;
 }
 void baz(int intvalue1) {
-    a = (1);
-    b = (2);
-    c = (3);
+    (int)intvalue1 = (1);
+    (int)intvalue1 = (2);
+    (int)intvalue1 = (3);
 }
 void main(char[] a, int[][] b, float[][][] c) {
     int a;

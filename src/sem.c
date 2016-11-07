@@ -3,6 +3,7 @@
 #include "ast.h"
 #include "symtable.h"
 
+// TODO: Create macro.h with this kind of code
 #define SEM_ERROR(...) printf(__VA_ARGS__); exit(1);
 
 // ==================================================
@@ -10,6 +11,12 @@
 //	Private
 //
 // ==================================================
+
+static void sem_failed_type_checking(const char* str) {
+	// TODO: How to indicate line number?
+	fprintf(stderr, "err: failed type checking (%s)\n", str);
+	exit(1);
+}
 
 static void type_def(SymbolTable* table, DefNode* def);
 static void type_cmd(SymbolTable* table, CmdNode* cmd);
@@ -35,7 +42,7 @@ static void type_def(SymbolTable* table, DefNode* def) {
 		st_leave_scope(table);
 		break;
 	default:
-		SEM_ERROR("type_def: invalid tag");
+		SEM_ERROR("internal error: type_def: invalid tag");
 	}
 
 	if (def->next != NULL) {
@@ -87,7 +94,7 @@ static void type_cmd(SymbolTable* table, CmdNode* cmd) {
 		type_call(table, cmd->u.call);
 		break;
 	default:
-		SEM_ERROR("type_cmd: invalid tag");
+		SEM_ERROR("internal error: type_cmd: invalid tag");
 	}
 
 	// Cmd list
@@ -97,16 +104,21 @@ static void type_cmd(SymbolTable* table, CmdNode* cmd) {
 }
 
 static void type_var(SymbolTable* table, VarNode* var) {
+	DefNode* def;
 	switch (var->tag) {
 	case VAR_ID:
-		var->u.id->def = st_find(table, var->u.id); // TODO: Really like this?
+		def = st_find(table, var->u.id);
+		if (def == NULL) {
+			sem_failed_type_checking(var->u.id->str);
+		}
+		var->u.id->def = def;
 		break;
 	case VAR_INDEXED:
 		type_exp(table, var->u.indexed.exp1);
 		type_exp(table, var->u.indexed.exp2);
 		break;
 	default:
-		SEM_ERROR("type_var: invalid tag");
+		SEM_ERROR("internal error: type_var: invalid tag");
 	}
 }
 
@@ -139,8 +151,12 @@ static void type_exp(SymbolTable* table, ExpNode* exp) {
 }
 
 static void type_call(SymbolTable* table, CallNode* call) {
-	// TODO: Really like this? Check NULL?
-	call->id->def = st_find(table, call->id);
+	DefNode* def = st_find(table, call->id);
+	if (def == NULL) {
+		sem_failed_type_checking(call->id->str);
+	}
+
+	call->id->def = def;
 	if (call->args != NULL) {
 		type_exp(table, call->args);
 	}

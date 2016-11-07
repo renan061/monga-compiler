@@ -31,9 +31,9 @@ void bar(int intvalue1, int intvalue2) {
 
 void baz(int intvalue1) {
 /* CmdBlock without vars and with cmds */
-	a = 1;
-	b = 2;
-	c = 3;
+	intvalue1 = 1;
+	intvalue1 = 2;
+	intvalue1 = 3;
 }
 
 void main(char[] a, int[][] b, float[][][] c) {

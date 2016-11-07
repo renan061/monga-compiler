@@ -13,7 +13,7 @@ INPUT_FILE="test.in"
 ANSWER_FILE="answer.txt"
 OUTPUT_FILE="result.txt"
 
-../../bin/asttest < $INPUT_FILE > $OUTPUT_FILE
+../../bin/asttest < $INPUT_FILE &> $OUTPUT_FILE
 diff -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
 if [ -s "diff.txt" ]
 then
