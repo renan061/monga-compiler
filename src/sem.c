@@ -25,7 +25,6 @@ static void type_exp(SymbolTable* table, ExpNode* exp);
 static void type_call(SymbolTable* table, CallNode* call);
 
 static void type_def(SymbolTable* table, DefNode* def) {
-	// TODO: Check repeated inside same scope?
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
@@ -175,5 +174,5 @@ static void type_call(SymbolTable* table, CallNode* call) {
 void sem_type_program(ProgramNode* program) {
 	SymbolTable* table = st_new();
 	type_def(table, program->defs);
-	// TODO: Free table
+	st_free(table);
 }

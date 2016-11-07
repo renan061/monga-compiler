@@ -18,5 +18,6 @@ extern void st_enter_scope(SymbolTable* table);
 extern void st_leave_scope(SymbolTable* table);
 
 extern SymbolTable* st_new();
+extern void st_free(SymbolTable* table);
 
 #endif

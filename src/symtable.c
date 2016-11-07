@@ -152,3 +152,11 @@ SymbolTable* st_new() {
 	st_enter_scope(table);
 	return table;
 }
+
+void st_free(SymbolTable* table) {
+	st_leave_scope(table);
+	if (table->first != NULL) {
+		ST_ERROR("internal error: did not left all scopes");
+	}
+	free(table);
+}
