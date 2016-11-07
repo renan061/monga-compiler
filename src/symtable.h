@@ -5,7 +5,9 @@
 
 typedef struct SymbolTable SymbolTable;
 
-// TODO: IdNode or ExpNode? Can funcs and vars have same names inside same scope?
+// TODO: Var e Func no mesmo escopo com mesmo nome?
+// Qual o escopo que a func deve ficar, e os parâmetros da func?
+// Repetir no escopo de fora e no de dentro?
 extern DefNode* st_find_in_current_scope(SymbolTable* table, IdNode* id);
 extern DefNode* st_find(SymbolTable* table, IdNode* id);
 

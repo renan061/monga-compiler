@@ -5,32 +5,37 @@
 
 #define SEM_ERROR(...) printf(__VA_ARGS__); exit(1);
 
+// ==================================================
+//
+//	Private
+//
+// ==================================================
+
 static void type_def(SymbolTable* table, DefNode* def);
 static void type_cmd(SymbolTable* table, CmdNode* cmd);
 static void type_var(SymbolTable* table, VarNode* var);
 static void type_exp(SymbolTable* table, ExpNode* exp);
 static void type_call(SymbolTable* table, CallNode* call);
 
-void sem_type_program(ProgramNode* program) {
-	SymbolTable* table = st_new();
-	type_def(table, program->defs);
-	// TODO: Free table
-}
-
 static void type_def(SymbolTable* table, DefNode* def) {
 	// TODO: Check repeated inside same scope?
-	st_insert(table, def);
-	if (def->tag == DEF_FUNC) {
+	switch (def->tag) {
+	case DEF_VAR:
+		st_insert(table, def);
+		break;
+	case DEF_FUNC:
+		st_insert(table, def);
 		st_enter_scope(table);
 		if (def->u.func.params != NULL) {
 			type_def(table, def->u.func.params);
 		}
-		st_enter_scope(table);
 		if (def->u.func.cmd != NULL) {
 			type_cmd(table, def->u.func.cmd);
 		}
 		st_leave_scope(table);
-		st_leave_scope(table); // TODO: Correct?
+		break;
+	default:
+		SEM_ERROR("type_def: invalid tag");
 	}
 
 	if (def->next != NULL) {
@@ -91,7 +96,7 @@ static void type_cmd(SymbolTable* table, CmdNode* cmd) {
 	}
 }
 
-void type_var(SymbolTable* table, VarNode* var) {
+static void type_var(SymbolTable* table, VarNode* var) {
 	switch (var->tag) {
 	case VAR_ID:
 		var->u.id->def = st_find(table, var->u.id); // TODO: Really like this?
@@ -105,7 +110,7 @@ void type_var(SymbolTable* table, VarNode* var) {
 	}
 }
 
-void type_exp(SymbolTable* table, ExpNode* exp) {
+static void type_exp(SymbolTable* table, ExpNode* exp) {
 	switch (exp->tag) {
 	case EXP_VAR:
 		type_var(table, exp->u.var);
@@ -133,10 +138,22 @@ void type_exp(SymbolTable* table, ExpNode* exp) {
 	}
 }
 
-void type_call(SymbolTable* table, CallNode* call) {
+static void type_call(SymbolTable* table, CallNode* call) {
 	// TODO: Really like this? Check NULL?
 	call->id->def = st_find(table, call->id);
 	if (call->args != NULL) {
 		type_exp(table, call->args);
 	}
+}
+
+// ==================================================
+//
+//	Functions
+//
+// ==================================================
+
+void sem_type_program(ProgramNode* program) {
+	SymbolTable* table = st_new();
+	type_def(table, program->defs);
+	// TODO: Free table
 }

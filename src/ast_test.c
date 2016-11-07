@@ -127,7 +127,39 @@ static void print_type(TypeNode* type) {
 
 static void print_id(IdNode* id) {
 	test_log("print_id");
-	printf("%s", id->str);
+
+	if (id->def == NULL) {
+		printf("%s", id->str);
+		return;
+	}
+
+	// Printing id's type
+	DefNode* aux;
+	switch (id->def->tag) {
+		case DEF_VAR:
+			printf("(");
+			print_type(id->def->u.var.type);
+			printf(")%s", id->str);
+			break;
+		case DEF_FUNC:
+			printf("((");
+			aux = id->def->u.func.params;
+			while (1) { // It's ugly but necessary
+				print_type(aux->u.var.type);
+				if (aux->next != NULL) {
+					printf(", ");
+					aux = aux->next;
+				} else {
+					break;
+				}
+			}
+			printf(")->");
+			print_type(id->def->u.func.type);
+			printf(")%s", id->str);
+			break;
+		default:
+			TEST_ERROR("print_id: invalid tag");
+	}
 }
 
 static void print_cmd(CmdNode* cmd, int layer) {

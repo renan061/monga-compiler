@@ -1,11 +1,11 @@
 /* AST */
 
-/* Global variables */
+/* Global DefVar */
 int intvalue;
 float floatvalue;
 char charvalue;
 
-/* ParamNode */
+/* DefFunc */
 void x() {}
 void y(int a) {}
 void z(int a, float b, char c) {}

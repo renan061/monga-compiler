@@ -42,21 +42,25 @@ struct SymbolElem {
 };
 
 static DefNode* find_in_scope(ScopeElem* scope, IdNode* id) {
-	SymbolElem* symbol = scope->first;
+	const char* str;
 
+	SymbolElem* symbol = scope->first;
 	while (symbol != NULL) {
 		switch(symbol->def->tag) {
 		case DEF_VAR:
-			if (strcmp(id->str, symbol->def->u.var.id->str) == 0) {
-				return symbol->def;
-			}
+			str = symbol->def->u.var.id->str;
 			break;
 		case DEF_FUNC:
-			// TODO
+			str = symbol->def->u.func.id->str;
 			break;
 		default:
 			ST_ERROR("find_in_scope: invalid def tag\n");
 		}
+
+		if (strcmp(id->str, str) == 0) {
+			return symbol->def;
+		}
+
 		symbol = symbol->next;
 	}
 
@@ -88,9 +92,11 @@ DefNode* st_find(SymbolTable* table, IdNode* id) {
 	return NULL;
 }
 
+// TODO: Should I make sure def is not repeated
+// by calling "st_find_in_current_scope()" here?
 void st_insert(SymbolTable* table, DefNode* def) {
-	// TODO: Should I make sure def is not repeated
-	// by calling "st_find_in_current_scope()" ?
+	// Obs.: Insertion of DefFunc parameters is made outside
+	// of this function in sem.c (intern "type_def" function)
 	SymbolElem* symbol;
 	ST_MALLOC(symbol, SymbolElem);
 	symbol->def = def;
