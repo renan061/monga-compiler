@@ -1,26 +1,12 @@
 #if !defined(ast_h)
 #define ast_h
 
-// ==================================================
-//
-//	Typedefs
-//
-// ==================================================
-
-typedef struct ProgramNode ProgramNode;
-typedef struct DefNode DefNode;
-typedef struct TypeNode TypeNode;
-typedef struct IdNode IdNode;
-typedef struct CmdNode CmdNode;
-typedef struct VarNode VarNode;
-typedef struct ExpNode ExpNode;
-typedef struct CallNode CallNode;
-
+// Aesthetic
 typedef unsigned int LexSymbol;
 
 // ==================================================
 //
-//	Node Enums
+//	Tags
 //
 // ==================================================
 
@@ -74,6 +60,15 @@ typedef enum CallE {
 //
 // ==================================================
 
+typedef struct ProgramNode ProgramNode;
+typedef struct DefNode DefNode;
+typedef struct TypeNode TypeNode;
+typedef struct IdNode IdNode;
+typedef struct CmdNode CmdNode;
+typedef struct VarNode VarNode;
+typedef struct ExpNode ExpNode;
+typedef struct CallNode CallNode;
+
 struct ProgramNode {
 	DefNode* defs;
 };
@@ -91,10 +86,6 @@ struct DefNode {
 		struct {
 			TypeNode* type;
 			IdNode* id;
-			// TODO: What is the correct name for this?
-			// Params and (?)
-			// When is in the signature and when is beeing used in the function
-			// Argument?
 			DefNode* params;
 			CmdNode* cmd;
 		} func;
@@ -189,17 +180,17 @@ struct ExpNode {
 
 struct CallNode {
 	IdNode* id;
-	ExpNode* params;
+	ExpNode* args;
 };
 
 // ==================================================
 //
-//	Node Functions
+//	Functions
 //
 // ==================================================
 
 // Program
-extern ProgramNode* ast_program_node(); // Getter
+extern ProgramNode* ast_get_program(); // Getter
 extern void ast_program(DefNode *defs); // Setter
 
 // Def
@@ -241,9 +232,6 @@ extern ExpNode* ast_exp_call(CallNode* call);
 extern ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp);
 
 // Call
-extern CallNode* ast_call(IdNode* id, ExpNode* params);
-
-// TODO
-extern void ast_type_program();
+extern CallNode* ast_call(IdNode* id, ExpNode* args);
 
 #endif

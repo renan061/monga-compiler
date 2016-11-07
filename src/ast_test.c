@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "ast.h"
 #include "yacc.h"
+#include "sem.h"
 
 #define DEBUGGING 0
 #define TEST_ERROR(...) printf(__VA_ARGS__); exit(1);
@@ -34,9 +35,8 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	// TODO: Should "ast_type_program" be called inside "ast_program_node" ?
-	ast_type_program();
-	ProgramNode* program = ast_program_node();
+	ProgramNode* program = ast_get_program();
+	sem_type_program(program);
 
 	print_program(program);
     return 0;
@@ -274,8 +274,8 @@ static void print_call(CallNode* call) {
 
 	print_id(call->id);
 	printf("(");
-	if (call->params != NULL) {
-		print_exp(call->params);
+	if (call->args != NULL) {
+		print_exp(call->args);
 	}
 	printf(")");
 }

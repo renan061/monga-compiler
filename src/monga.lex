@@ -1,8 +1,11 @@
 %x IN_COMMENT
+%option nounput
 %{
 	#include <errno.h>
 	#include "lex.h"
 	#include "yacc.h"
+
+	#define YY_NO_INPUT
 
 	// Holds the current line number
 	static int line_number = 1;

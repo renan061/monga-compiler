@@ -3,8 +3,6 @@
 	#include "lex.h"
 	#include "ast.h"
 
-	extern char yytext[];
-
 	void yyerror(const char* err) {
 		fprintf(stderr, "syntax error line %d\n", current_line());
 	}

@@ -3,7 +3,6 @@
 #include <string.h> 
 #include "ast.h"
 #include "yacc.h"
-#include "symbol_table.h"
 
 // ==================================================
 //
@@ -45,15 +44,14 @@ static int in_array(LexSymbol symbol, LexSymbol *arr)  {
 	return 0;
 }
 
+// ==================================================
+//
+//	Functions
+//
+// ==================================================
+
 static ProgramNode* program_node;
-
-// ==================================================
-//
-//	Node functions
-//
-// ==================================================
-
-ProgramNode* ast_program_node() {
+ProgramNode* ast_get_program() {
 	return program_node;
 }
 
@@ -307,150 +305,10 @@ ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp) {
 }
 
 // Call
-CallNode* ast_call(IdNode* id, ExpNode* params) {
+CallNode* ast_call(IdNode* id, ExpNode* args) {
 	CallNode* n;
 	AST_MALLOC(n, CallNode);
 	n->id = id;
-	n->params = params;
+	n->args = args;
 	return n;
-}
-
-// ==================================================
-//
-//	Typing Functions
-//
-// ==================================================
-
-// Headers (TODO: ?)
-static void type_def(DefNode* def);
-static void type_cmd(CmdNode* cmd);
-static void type_var(VarNode* var);
-static void type_exp(ExpNode* exp);
-static void type_call(CallNode* call);
-
-void ast_type_program() {
-	st_new();
-	type_def(program_node->defs);
-}
-
-static void type_def(DefNode* def) {
-	// TODO: Check repeated inside same scope?
-	st_insert(def);
-	if (def->tag == DEF_FUNC) {
-		st_enter_scope();
-		if (def->u.func.params != NULL) {
-			type_def(def->u.func.params);
-		}
-		if (def->u.func.cmd != NULL) {
-			type_cmd(def->u.func.cmd);
-		}
-		st_leave_scope();
-	}
-
-	if (def->next != NULL) {
-		type_def(def->next);
-	}
-}
-
-static void type_cmd(CmdNode* cmd) {
-	switch (cmd->tag) {
-	case CMD_BLOCK:
-		if (cmd->u.block.defs != NULL) {
-			type_def(cmd->u.block.defs);
-		}
-		if (cmd->u.block.cmds != NULL) {
-			type_cmd(cmd->u.block.cmds);
-		}
-		break;
-	case CMD_IF:
-		type_exp(cmd->u.ifwhile.exp);
-		st_enter_scope();
-		type_cmd(cmd->u.ifwhile.cmd);
-		st_leave_scope();
-		break;
-	case CMD_IF_ELSE:
-		type_exp(cmd->u.ifelse.exp);
-		st_enter_scope();
-		type_cmd(cmd->u.ifelse.ifcmd);
-		st_leave_scope();
-		st_enter_scope();
-		type_cmd(cmd->u.ifelse.elsecmd);
-		st_leave_scope();
-		break;
-	case CMD_WHILE:
-		type_exp(cmd->u.ifwhile.exp);
-		st_enter_scope();
-		type_cmd(cmd->u.ifwhile.cmd);
-		st_leave_scope();
-		break;
-	case CMD_ASG:
-		type_var(cmd->u.asg.var);
-		type_exp(cmd->u.asg.exp);
-		break;
-	case CMD_RETURN:
-		if (cmd->u.exp != NULL) {
-			type_exp(cmd->u.exp);
-		}
-		break;
-	case CMD_CALL:
-		type_call(cmd->u.call);
-		break;
-	default:
-		AST_ERROR("type_cmd: invalid tag");
-	}
-
-	// Cmd list
-	if (cmd->next != NULL) {
-		type_cmd(cmd->next);
-	}
-}
-
-void type_var(VarNode* var) {
-	switch (var->tag) {
-	case VAR_ID:
-		var->u.id->def = st_find(var->u.id); // TODO: Really like this?
-		break;
-	case VAR_INDEXED:
-		type_exp(var->u.indexed.exp1);
-		type_exp(var->u.indexed.exp2);
-		break;
-	default:
-		AST_ERROR("type_var: invalid tag");
-	}
-}
-
-void type_exp(ExpNode* exp) {
-	switch (exp->tag) {
-	case EXP_VAR:
-		type_var(exp->u.var);
-		break;
-	case EXP_CALL:
-		type_call(exp->u.call);
-		break;
-	case EXP_NEW:
-		type_exp(exp->u.new.exp);
-		break;
-	case EXP_UNARY:
-		type_exp(exp->u.unary.exp);
-		break;
-	case EXP_BINARY:
-		type_exp(exp->u.binary.exp1);
-		type_exp(exp->u.binary.exp2);
-		break;
-	default:
-		break;
-	}
-
-	// Exp list
-	if (exp->next != NULL) {
-		type_exp(exp->next);
-	}
-}
-
-void type_call(CallNode* call) {
-	// TODO: Really like this? Check NULL?
-	call->id->def = st_find(call->id);
-	if (call->params != NULL) {
-		type_exp(call->params);
-	}
 }

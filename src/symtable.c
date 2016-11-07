@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
+#include "symtable.h"
 
 // ==================================================
 //
@@ -19,11 +20,10 @@
 
 // ==================================================
 //
-//	Headers (TODO: ?)
+//	Private
 //
 // ==================================================
 
-typedef struct SymbolTable SymbolTable;
 typedef struct ScopeElem ScopeElem;
 typedef struct SymbolElem SymbolElem;
 
@@ -40,80 +40,6 @@ struct SymbolElem {
 	DefNode* def;
 	SymbolElem* next;
 };
-
-static DefNode* find_in_scope(ScopeElem* scope, IdNode* id);
-
-static SymbolTable* table;
-
-// ==================================================
-//
-//	Functions
-//
-// ==================================================
-
-DefNode* st_find_in_current_scope(IdNode* id) {
-	return find_in_scope(table->first, id);
-}
-
-DefNode* st_find(IdNode* id) {
-	DefNode* def;
-	ScopeElem* scope = table->first;
-	while (scope != NULL) {
-		def = find_in_scope(scope, id);
-		if (def != NULL) {
-			return def;
-		}
-		scope = scope->next;
-	}
-	return NULL;
-}
-
-void st_insert(DefNode* def) {
-	// TODO: Should I make sure def is not repeated
-	// by calling "st_find_in_current_scope()" ?
-	SymbolElem* symbol;
-	ST_MALLOC(symbol, SymbolElem);
-	symbol->def = def;
-	symbol->next = table->first->first;
-	table->first->first = symbol;
-}
-
-void st_enter_scope() {
-	ScopeElem* scope;
-	ST_MALLOC(scope, ScopeElem);
-
-	scope->first = NULL;
-	scope->next = table->first;
-
-	table->first = scope;
-}
-
-// TODO: Should I "free" here?
-void st_leave_scope() {
-	SymbolElem* aux;
-
-	ScopeElem* scope = table->first;
-	table->first = scope->next;
-
-	while (scope->first != NULL) {
-		aux = scope->first;
-		scope->first = aux->next;
-		free(aux);
-	}
-	free(scope);
-}
-
-void st_new() {
-	ST_MALLOC(table, SymbolTable);
-	table->first = NULL; // FIXME: Do I need this here?
-	st_enter_scope();
-}
-
-// ==================================================
-//
-//	TODO: Internal
-//
-// ==================================================
 
 static DefNode* find_in_scope(ScopeElem* scope, IdNode* id) {
 	SymbolElem* symbol = scope->first;
@@ -137,3 +63,70 @@ static DefNode* find_in_scope(ScopeElem* scope, IdNode* id) {
 	return NULL;
 }
 
+// ==================================================
+//
+//	Functions
+//
+// ==================================================
+
+DefNode* st_find_in_current_scope(SymbolTable* table, IdNode* id) {
+	return find_in_scope(table->first, id);
+}
+
+DefNode* st_find(SymbolTable* table, IdNode* id) {
+	DefNode* def;
+
+	ScopeElem* scope = table->first;
+	while (scope != NULL) {
+		def = find_in_scope(scope, id);
+		if (def != NULL) {
+			return def;
+		}
+		scope = scope->next;
+	}
+
+	return NULL;
+}
+
+void st_insert(SymbolTable* table, DefNode* def) {
+	// TODO: Should I make sure def is not repeated
+	// by calling "st_find_in_current_scope()" ?
+	SymbolElem* symbol;
+	ST_MALLOC(symbol, SymbolElem);
+	symbol->def = def;
+	symbol->next = table->first->first;
+	table->first->first = symbol;
+}
+
+void st_enter_scope(SymbolTable* table) {
+	ScopeElem* scope;
+	ST_MALLOC(scope, ScopeElem);
+
+	scope->first = NULL;
+	scope->next = table->first;
+
+	table->first = scope;
+}
+
+// TODO: Should I "free" here?
+void st_leave_scope(SymbolTable* table) {
+	SymbolElem* aux;
+
+	ScopeElem* scope = table->first;
+	table->first = scope->next;
+
+	while (scope->first != NULL) {
+		aux = scope->first;
+		scope->first = aux->next;
+		free(aux);
+	}
+	free(scope);
+}
+
+SymbolTable* st_new() {
+	SymbolTable* table;
+	ST_MALLOC(table, SymbolTable);
+	table->first = NULL; // FIXME: Do I need this here?
+	st_enter_scope(table);
+	return table;
+}
