@@ -16,23 +16,23 @@ void bar(int intvalue1, int intvalue2) {
     int[] x;
     int[][] y;
     int[][][] z;
-    int a;
-    int b;
-    float a;
-    float b;
-    float c;
-    char a;
-    char b;
-    char c;
-    char d;
-    char e;
+    int a1;
+    int b1;
+    float a2;
+    float b2;
+    float c2;
+    char a3;
+    char b3;
+    char c3;
+    char d3;
+    char e3;
 }
 void baz(int intvalue1) {
     (int)intvalue1 = (1);
     (int)intvalue1 = (2);
     (int)intvalue1 = (3);
 }
-void main(char[] a, int[][] b, float[][][] c) {
+void main(char[] x, int[][] y, float[][][] z) {
     int a;
     float b;
     char c;

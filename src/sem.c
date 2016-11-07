@@ -12,9 +12,9 @@
 //
 // ==================================================
 
-static void sem_failed_type_checking(const char* str) {
+static void sem_fail(const char* type, const char* details) {
 	// TODO: How to indicate line number?
-	fprintf(stderr, "err: failed type checking (%s)\n", str);
+	fprintf(stderr, "error: sem fail: %s (%s)\n", type, details);
 	exit(1);
 }
 
@@ -28,10 +28,14 @@ static void type_def(SymbolTable* table, DefNode* def) {
 	// TODO: Check repeated inside same scope?
 	switch (def->tag) {
 	case DEF_VAR:
-		st_insert(table, def);
+		if (!st_insert(table, def)) {
+			sem_fail("redeclaration", def->u.var.id->str);
+		}
 		break;
 	case DEF_FUNC:
-		st_insert(table, def);
+		if (!st_insert(table, def)) {
+			sem_fail("redeclaration", def->u.func.id->str); // TODO: Duplicate? Move?
+		}
 		st_enter_scope(table);
 		if (def->u.func.params != NULL) {
 			type_def(table, def->u.func.params);
@@ -109,7 +113,7 @@ static void type_var(SymbolTable* table, VarNode* var) {
 	case VAR_ID:
 		def = st_find(table, var->u.id);
 		if (def == NULL) {
-			sem_failed_type_checking(var->u.id->str);
+			sem_fail("type checking", var->u.id->str);
 		}
 		var->u.id->def = def;
 		break;
@@ -153,7 +157,7 @@ static void type_exp(SymbolTable* table, ExpNode* exp) {
 static void type_call(SymbolTable* table, CallNode* call) {
 	DefNode* def = st_find(table, call->id);
 	if (def == NULL) {
-		sem_failed_type_checking(call->id->str);
+		sem_fail("type checking", call->id->str);
 	}
 
 	call->id->def = def;

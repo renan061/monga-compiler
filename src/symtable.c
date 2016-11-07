@@ -73,10 +73,6 @@ static DefNode* find_in_scope(ScopeElem* scope, IdNode* id) {
 //
 // ==================================================
 
-DefNode* st_find_in_current_scope(SymbolTable* table, IdNode* id) {
-	return find_in_scope(table->first, id);
-}
-
 DefNode* st_find(SymbolTable* table, IdNode* id) {
 	DefNode* def;
 
@@ -94,14 +90,34 @@ DefNode* st_find(SymbolTable* table, IdNode* id) {
 
 // TODO: Should I make sure def is not repeated
 // by calling "st_find_in_current_scope()" here?
-void st_insert(SymbolTable* table, DefNode* def) {
-	// Obs.: Insertion of DefFunc parameters is made outside
-	// of this function in sem.c (intern "type_def" function)
+
+// Obs.: Insertion of DefFunc parameters is made outside
+// of this function in sem.c (intern "type_def" function)
+int st_insert(SymbolTable* table, DefNode* def) {
+	// Checks for repetition inside same scope
+	IdNode* id;
+	switch(def->tag) {
+	case DEF_VAR:
+		id = def->u.var.id;
+		break;
+	case DEF_FUNC:
+		id = def->u.func.id;
+		break;
+	default:
+		ST_ERROR("st_insert: invalid def tag\n");
+	}
+
+	int repeated = (find_in_scope(table->first, id) != NULL);
+	if (repeated) {
+		return 0;
+	}
+
 	SymbolElem* symbol;
 	ST_MALLOC(symbol, SymbolElem);
 	symbol->def = def;
 	symbol->next = table->first->first;
 	table->first->first = symbol;
+	return 1;
 }
 
 void st_enter_scope(SymbolTable* table) {

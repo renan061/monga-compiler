@@ -24,9 +24,9 @@ void bar(int intvalue1, int intvalue2) {
 	int[][] y;
 	int[][][] z;
 	/* Var definition with list of names */
-	int a, b;
-	float a, b, c;
-	char a, b, c, d, e;
+	int a1, b1;
+	float a2, b2, c2;
+	char a3, b3, c3, d3, e3;
 }
 
 void baz(int intvalue1) {
@@ -36,7 +36,7 @@ void baz(int intvalue1) {
 	intvalue1 = 3;
 }
 
-void main(char[] a, int[][] b, float[][][] c) {
+void main(char[] x, int[][] y, float[][][] z) {
 /* CmdBlock with vars and cmds */
 	int a;
 	float b;
