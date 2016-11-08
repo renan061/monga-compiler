@@ -117,8 +117,8 @@ static void print_type(TypeNode* type) {
 	case TYPE_VOID:
 		printf("void");
 		break;
-	case TYPE_ARRAY:
-		print_type(type->array);
+	case TYPE_INDEXED:
+		print_type(type->indexed);
 		printf("[]");
 		break;
 	default:

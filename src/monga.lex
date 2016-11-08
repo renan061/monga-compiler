@@ -63,15 +63,15 @@
 "\t"				{ }
 " "					{ }
 
-"int"				{ return TK_KEY_INT;	}
-"float"				{ return TK_KEY_FLOAT;	}
-"char"				{ return TK_KEY_CHAR;	}
-"if"				{ return TK_KEY_IF;		}
-"else"				{ return TK_KEY_ELSE;	}
-"while"				{ return TK_KEY_WHILE;	}
-"new"				{ return TK_KEY_NEW;	}
-"return"			{ return TK_KEY_RETURN;	}
-"void"				{ return TK_KEY_VOID;	}
+"int"				{ yylval.intvalue = line_number; return TK_KEY_INT;		}
+"float"				{ yylval.intvalue = line_number; return TK_KEY_FLOAT;	}
+"char"				{ yylval.intvalue = line_number; return TK_KEY_CHAR;	}
+"if"				{ yylval.intvalue = line_number; return TK_KEY_IF;		}
+"else"				{ yylval.intvalue = line_number; return TK_KEY_ELSE;	}
+"while"				{ yylval.intvalue = line_number; return TK_KEY_WHILE;	}
+"new"				{ yylval.intvalue = line_number; return TK_KEY_NEW;		}
+"return"			{ yylval.intvalue = line_number; return TK_KEY_RETURN;	}
+"void"				{ yylval.intvalue = line_number; return TK_KEY_VOID;	}
 
 "=="				{ yylval.intvalue = line_number; return TK_EQUAL;	}
 "<="				{ yylval.intvalue = line_number; return TK_LEQUAL;	}

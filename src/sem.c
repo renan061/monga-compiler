@@ -11,8 +11,8 @@
 //
 // ==================================================
 
-static void sem_fail(int line_number, const char* type, const char* details) {
-	MONGA_ERR("semantical error line %d (%s - %s)\n", line_number, type,
+static void sem_error(int line_number, const char* type, const char* details) {
+	MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line_number, type,
 		details);
 }
 
@@ -26,12 +26,14 @@ static void type_def(SymbolTable* table, DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
-			sem_fail(-1, "redeclaration", def->u.var.id->str); // TODO: line_number
+			sem_error(def->u.var.type->line, "redeclaration",
+				def->u.var.id->str);
 		}
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
-			sem_fail(-1, "redeclaration", def->u.func.id->str); // TODO: line_number
+			sem_error(def->u.func.type->line, "redeclaration",
+				def->u.func.id->str);
 		}
 		st_enter_scope(table);
 		if (def->u.func.params != NULL) {
@@ -110,7 +112,7 @@ static void type_var(SymbolTable* table, VarNode* var) {
 	case VAR_ID:
 		def = st_find(table, var->u.id);
 		if (def == NULL) {
-			sem_fail(-1, "type checking", var->u.id->str); // TODO: line_number
+			sem_error(-1, "type checking", var->u.id->str); // TODO: line_number
 		}
 		var->u.id->def = def;
 		break;
@@ -154,7 +156,7 @@ static void type_exp(SymbolTable* table, ExpNode* exp) {
 static void type_call(SymbolTable* table, CallNode* call) {
 	DefNode* def = st_find(table, call->id);
 	if (def == NULL) {
-		sem_fail(-1, "type checking", call->id->str); // TODO: line_number
+		sem_error(-1, "type checking", call->id->str); // TODO: line_number
 	}
 
 	call->id->def = def;

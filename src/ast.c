@@ -60,21 +60,23 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 }
 
 // Type
-TypeNode* ast_type(TypeE tag) {
-	if (tag == TYPE_ARRAY) {
-		MONGA_INTERNAL_ERR("ast_type: unexpected TYPE_ARRAY");
+TypeNode* ast_type(int line, TypeE tag) {
+	if (tag == TYPE_INDEXED) {
+		MONGA_INTERNAL_ERR("ast_type: unexpected TYPE_INDEXED");
 	}
 	TypeNode* n;
 	MONGA_MALLOC(n, TypeNode);
 	n->tag = tag;
+	n->line = line;
 	return n;
 }
 
-TypeNode* ast_type_array(TypeNode* node) {
+TypeNode* ast_type_indexed(int line, TypeNode* node) {
 	TypeNode* n;
 	MONGA_MALLOC(n, TypeNode);
-	n->tag = TYPE_ARRAY;
-	n->array = node;
+	n->tag = TYPE_INDEXED;
+	n->line = node->line;
+	n->indexed = node;
 	return n;
 }
 
@@ -175,7 +177,7 @@ VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
 }
 
 // Exp
-ExpNode* ast_exp_binary(int line_number, LexSymbol symbol,
+ExpNode* ast_exp_binary(int line, LexSymbol symbol,
 	ExpNode *exp1, ExpNode *exp2) {
 
 	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL, TK_GEQUAL,
@@ -187,7 +189,7 @@ ExpNode* ast_exp_binary(int line_number, LexSymbol symbol,
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_BINARY;
-	n->line_number = line_number;
+	n->line = line;
 	n->next = NULL;
 	n->u.binary.symbol = symbol;
 	n->u.binary.exp1 = exp1;
@@ -195,7 +197,7 @@ ExpNode* ast_exp_binary(int line_number, LexSymbol symbol,
 	return n;
 }
 
-ExpNode* ast_exp_unary(int line_number, LexSymbol symbol, ExpNode *exp) {
+ExpNode* ast_exp_unary(int line, LexSymbol symbol, ExpNode *exp) {
 	LexSymbol symbols[] = {'-', '!'};
 	if (!in_array(symbol, symbols)) {
 		MONGA_INTERNAL_ERR("ast_exp_unary: unexpected symbol %c", symbol);
@@ -204,7 +206,7 @@ ExpNode* ast_exp_unary(int line_number, LexSymbol symbol, ExpNode *exp) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_UNARY;
-	n->line_number = line_number;
+	n->line = line;
 	n->next = NULL;
 	n->u.unary.symbol = symbol;
 	n->u.unary.exp = exp;
@@ -215,7 +217,7 @@ ExpNode* ast_exp_int(int value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KINT;
-	n->line_number = -1; // TODO
+	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.intvalue = value;
 	return n;
@@ -225,7 +227,7 @@ ExpNode* ast_exp_float(float value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KFLOAT;
-	n->line_number = -1; // TODO
+	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.floatvalue = value;
 	return n;
@@ -235,7 +237,7 @@ ExpNode* ast_exp_str(const char* value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KSTR;
-	n->line_number = -1; // TODO
+	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.strvalue = value;
 	return n;
@@ -245,7 +247,7 @@ ExpNode* ast_exp_var(VarNode* var) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_VAR;
-	n->line_number = -1; // TODO
+	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.var = var;
 	return n;
@@ -255,17 +257,17 @@ ExpNode* ast_exp_call(CallNode* call) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_CALL;
-	n->line_number = -1; // TODO
+	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.call = call;
 	return n;
 }
 
-ExpNode* ast_exp_new(int line_number, TypeNode* type, ExpNode* exp) {
+ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* exp) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_NEW;
-	n->line_number = line_number;
+	n->line = line;
 	n->next = NULL;
 	n->u.new.type = type;
 	n->u.new.exp = exp;

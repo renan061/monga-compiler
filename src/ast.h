@@ -20,7 +20,7 @@ typedef enum TypeE {
 	TYPE_FLOAT,
 	TYPE_CHAR,
 	TYPE_VOID,
-	TYPE_ARRAY,
+	TYPE_INDEXED,
 } TypeE;
 
 typedef enum CmdE {
@@ -94,7 +94,8 @@ struct DefNode {
 
 struct TypeNode {
 	TypeE tag;
-	TypeNode* array; // Only for TYPE_ARRAY
+	int line;
+	TypeNode* indexed; // Only for TYPE_INDEXED
 };
 
 union IdNode {
@@ -148,7 +149,7 @@ struct VarNode {
 
 struct ExpNode {
 	ExpE tag;
-	int line_number;
+	int line;
 	// TODO: TypeNode* type;
 
 	ExpNode* next;
@@ -202,8 +203,8 @@ extern DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	CmdNode* block);
 
 // Type
-extern TypeNode* ast_type(TypeE tag);
-extern TypeNode* ast_type_array(TypeNode* node);
+extern TypeNode* ast_type(int line, TypeE tag);
+extern TypeNode* ast_type_indexed(int line, TypeNode* node);
 
 // Id
 extern IdNode* ast_id(const char* id);
@@ -222,15 +223,15 @@ extern VarNode* ast_var(IdNode* id);
 extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
 
 // Exp
-extern ExpNode* ast_exp_binary(int line_number, LexSymbol symbol,
-	ExpNode *exp1, ExpNode *exp2);
-extern ExpNode* ast_exp_unary(int line_number, LexSymbol symbol, ExpNode *exp);
+extern ExpNode* ast_exp_binary(int line, LexSymbol symbol, ExpNode *exp1,
+	ExpNode *exp2);
+extern ExpNode* ast_exp_unary(int line, LexSymbol symbol, ExpNode *exp);
 extern ExpNode* ast_exp_int(int value);
 extern ExpNode* ast_exp_float(float value);
 extern ExpNode* ast_exp_str(const char* value);
 extern ExpNode* ast_exp_var(VarNode* var);
 extern ExpNode* ast_exp_call(CallNode* call);
-extern ExpNode* ast_exp_new(int line_number, TypeNode* type, ExpNode* exp);
+extern ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* exp);
 
 // Call
 extern CallNode* ast_call(IdNode* id, ExpNode* args);
