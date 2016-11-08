@@ -41,13 +41,13 @@ main: lex sem parser
 		src/ast_test.c -ll
 
 lex_test: main
-	@- sh tests/lex/testlex.sh
+	@- sh tests/test.sh lex
 
 parser_test: main
-	@- sh tests/parser/testparser.sh
+	@- sh tests/test.sh parser
 
 ast_test: main
-	@- sh tests/ast/testast.sh
+	@- sh tests/test.sh ast
 
 test: lex_test parser_test ast_test
 # test: ast_test
