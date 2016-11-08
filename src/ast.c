@@ -164,14 +164,16 @@ VarNode* ast_var(IdNode* id) {
 	VarNode* n;
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_ID;
+	n->line = id->line;
 	n->u.id = id;
 	return n;
 }
 
-VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
+VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2) {
 	VarNode* n;
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_INDEXED;
+	n->line = line;
 	n->u.indexed.exp1 = exp1;
 	n->u.indexed.exp2 = exp2;
 	return n;
@@ -218,7 +220,6 @@ ExpNode* ast_exp_int(int value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KINT;
-	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.intvalue = value;
 	return n;
@@ -228,7 +229,6 @@ ExpNode* ast_exp_float(float value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KFLOAT;
-	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.floatvalue = value;
 	return n;
@@ -238,7 +238,6 @@ ExpNode* ast_exp_str(const char* value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KSTR;
-	n->line = -1; // TODO
 	n->next = NULL;
 	n->u.strvalue = value;
 	return n;
@@ -248,7 +247,7 @@ ExpNode* ast_exp_var(VarNode* var) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_VAR;
-	n->line = -1; // TODO
+	n->line = var->line;
 	n->next = NULL;
 	n->u.var = var;
 	return n;
@@ -258,7 +257,7 @@ ExpNode* ast_exp_call(CallNode* call) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_CALL;
-	n->line = -1; // TODO
+	n->line = call->id->line;
 	n->next = NULL;
 	n->u.call = call;
 	return n;

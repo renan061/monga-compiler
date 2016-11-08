@@ -139,6 +139,7 @@ struct CmdNode {
 
 struct VarNode {
 	VarE tag;
+	int line;
 	// TODO: TypeNode* type;
 	union {
 		// VarId
@@ -152,7 +153,7 @@ struct VarNode {
 
 struct ExpNode {
 	ExpE tag;
-	int line;
+	int line; // Uninitialized for ExpInt, ExpFloat and ExpStr
 	// TODO: TypeNode* type;
 
 	ExpNode* next;
@@ -223,7 +224,7 @@ extern CmdNode* ast_cmd_call(CallNode* call);
 
 // Var
 extern VarNode* ast_var(IdNode* id);
-extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
+extern VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2);
 
 // Exp
 extern ExpNode* ast_exp_binary(int line, LexSymbol symbol, ExpNode *exp1,

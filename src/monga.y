@@ -280,7 +280,7 @@ var 			: TK_ID
 					}
 				| exp_simple '[' exp ']'
 					{
-						$$ = ast_var_indexed($1, $3);
+						$$ = ast_var_indexed($2, $1, $3);
 					}
 				;
 
