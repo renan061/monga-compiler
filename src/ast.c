@@ -81,10 +81,11 @@ TypeNode* ast_type_indexed(int line, TypeNode* node) {
 }
 
 // Id
-IdNode* ast_id(const char* id) {
+IdNode* ast_id(int line, const char* id) {
 	IdNode* n;
 	MONGA_MALLOC(n, IdNode);
-	n->str = id;
+	n->line = line;
+	n->u.str = id;
 	return n;
 }
 

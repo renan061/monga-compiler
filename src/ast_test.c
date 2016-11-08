@@ -128,17 +128,17 @@ static void print_type(TypeNode* type) {
 
 static void print_id(IdNode* id) {
 	test_log("print_id");
-	printf("%s", id->str);
+	printf("%s", id->u.str);
 }
 
 static void print_id_ref(IdNode* id) {
 	test_log("print_id_ref");
-	switch (id->def->tag) {
+	switch (id->u.def->tag) {
 		case DEF_VAR:
-			printf("%s", id->def->u.var.id->str);
+			printf("%s", id->u.def->u.var.id->u.str);
 			break;
 		case DEF_FUNC:
-			printf("%s", id->def->u.func.id->str);
+			printf("%s", id->u.def->u.func.id->u.str);
 			break;
 		default:
 			MONGA_ERR("print_id_def: invalid def tag");
@@ -287,7 +287,7 @@ void print_exp(ExpNode* exp) {
 static void print_call(CallNode* call) {
 	test_log("print_call");
 
-	print_id(call->id->def->u.func.id);
+	print_id(call->id->u.def->u.func.id);
 	printf("(");
 	if (call->args != NULL) {
 		print_exp(call->args);

@@ -36,16 +36,16 @@ static DefNode* find_in_scope(ScopeElem* scope, IdNode* id) {
 	while (symbol != NULL) {
 		switch(symbol->def->tag) {
 		case DEF_VAR:
-			str = symbol->def->u.var.id->str;
+			str = symbol->def->u.var.id->u.str;
 			break;
 		case DEF_FUNC:
-			str = symbol->def->u.func.id->str;
+			str = symbol->def->u.func.id->u.str;
 			break;
 		default:
 			MONGA_INTERNAL_ERR("find_in_scope: invalid def tag\n");
 		}
 
-		if (strcmp(id->str, str) == 0) {
+		if (strcmp(id->u.str, str) == 0) {
 			return symbol->def;
 		}
 
@@ -115,7 +115,6 @@ void st_enter_scope(SymbolTable* table) {
 	table->first = scope;
 }
 
-// TODO: Should I "free" here?
 void st_leave_scope(SymbolTable* table) {
 	SymbolElem* aux;
 

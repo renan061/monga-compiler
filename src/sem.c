@@ -27,13 +27,13 @@ static void type_def(SymbolTable* table, DefNode* def) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
 			sem_error(def->u.var.type->line, "redeclaration",
-				def->u.var.id->str);
+				def->u.var.id->u.str);
 		}
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
 			sem_error(def->u.func.type->line, "redeclaration",
-				def->u.func.id->str);
+				def->u.func.id->u.str);
 		}
 		st_enter_scope(table);
 		if (def->u.func.params != NULL) {
@@ -112,9 +112,9 @@ static void type_var(SymbolTable* table, VarNode* var) {
 	case VAR_ID:
 		def = st_find(table, var->u.id);
 		if (def == NULL) {
-			sem_error(-1, "type checking", var->u.id->str); // TODO: line_number
+			sem_error(var->u.id->line, "var not defined", var->u.id->u.str);
 		}
-		var->u.id->def = def;
+		var->u.id->u.def = def;
 		break;
 	case VAR_INDEXED:
 		type_exp(table, var->u.indexed.exp1);
@@ -156,10 +156,10 @@ static void type_exp(SymbolTable* table, ExpNode* exp) {
 static void type_call(SymbolTable* table, CallNode* call) {
 	DefNode* def = st_find(table, call->id);
 	if (def == NULL) {
-		sem_error(-1, "type checking", call->id->str); // TODO: line_number
+		sem_error(call->id->line, "func not defined", call->id->u.str);
 	}
 
-	call->id->def = def;
+	call->id->u.def = def;
 	if (call->args != NULL) {
 		type_exp(table, call->args);
 	}

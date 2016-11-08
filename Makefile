@@ -50,7 +50,6 @@ ast_test: main
 	@- sh tests/test.sh ast
 
 test: lex_test parser_test ast_test
-# test: ast_test
 
 clean:
 	@- $(RM) src/yacc.h

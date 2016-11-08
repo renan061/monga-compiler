@@ -63,7 +63,7 @@ typedef enum CallE {
 typedef struct ProgramNode ProgramNode;
 typedef struct DefNode DefNode;
 typedef struct TypeNode TypeNode;
-typedef union IdNode IdNode;
+typedef struct IdNode IdNode;
 typedef struct CmdNode CmdNode;
 typedef struct VarNode VarNode;
 typedef struct ExpNode ExpNode;
@@ -98,9 +98,12 @@ struct TypeNode {
 	TypeNode* indexed; // Only for TYPE_INDEXED
 };
 
-union IdNode {
-	const char* str;
-	DefNode* def;
+struct IdNode {
+	int line;
+	union {
+		const char* str;
+		DefNode* def;
+	} u;
 };
 
 struct CmdNode {
@@ -207,7 +210,7 @@ extern TypeNode* ast_type(int line, TypeE tag);
 extern TypeNode* ast_type_indexed(int line, TypeNode* node);
 
 // Id
-extern IdNode* ast_id(const char* id);
+extern IdNode* ast_id(int line, const char* id);
 
 // Cmd
 extern CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds);

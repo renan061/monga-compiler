@@ -86,7 +86,8 @@
 									        lex_error(ERR_ID_MEM);
 									    }
 									    memcpy(str, yytext, len + 1);
-									    yylval.strvalue = str;
+									    yylval.idnode.line = line_number;
+									    yylval.idnode.str = str;
 										return TK_ID;
 									}
 [0-9]+								{ 

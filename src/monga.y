@@ -5,7 +5,7 @@
 	#include "lex.h"
 	#include "ast.h"
 
-	// Auxiliary
+	// Auxiliary macro to use in lists
 	#define APPEND_TO_LIST(type, assignable, list, elem);	\
 		if (list == NULL) {									\
 			assignable = elem;								\
@@ -19,12 +19,20 @@
 	void yyerror(const char* err) {
 		MONGA_ERR("syntax error line %d\n", current_line());
 	}
+
+	// Auxiliary macro to use with ids
+	#define ID_ARGS(idnode) idnode.line, idnode.str
 %}
 
 %union {
 	int intvalue;
 	float floatvalue;
 	const char* strvalue;
+
+	struct {
+		int line;
+		const char* str;
+	} idnode;
 
 	DefNode* defnode;
 	TypeNode* typenode;
@@ -46,7 +54,9 @@
 %token <floatvalue>
 	TK_FLOAT
 %token <strvalue>
-	TK_STR TK_ID
+	TK_STR
+%token <idnode>
+	TK_ID
 
 %type <defnode>
 	definition_list defvar_list definition definition_var definition_func
@@ -102,12 +112,12 @@ definition_var	: type name_list ';'
 
 name_list		: TK_ID
 					{
-						$$ = ast_def_var(NULL, ast_id($1));
+						$$ = ast_def_var(NULL, ast_id(ID_ARGS($1)));
 					}
 				| name_list ',' TK_ID
 					{
 						APPEND_TO_LIST(DefNode, $$, $1,
-							ast_def_var(NULL, ast_id($3)));
+							ast_def_var(NULL, ast_id(ID_ARGS($3))));
 					}
 				;
 
@@ -137,12 +147,12 @@ base_type		: TK_KEY_INT
 
 definition_func	: type TK_ID '(' func_param_list ')' block
 					{
-						$$ = ast_def_func($1, ast_id($2), $4, $6);
+						$$ = ast_def_func($1, ast_id(ID_ARGS($2)), $4, $6);
 					}
 				| TK_KEY_VOID TK_ID '(' func_param_list ')' block
 					{
 						$$ = ast_def_func(ast_type($1, TYPE_VOID),
-							ast_id($2), $4, $6);
+							ast_id(ID_ARGS($2)), $4, $6);
 					}
 				;
 
@@ -168,7 +178,7 @@ param_list 		: param
 
 param 			: type TK_ID
 					{
-						$$ = ast_def_var($1, ast_id($2));
+						$$ = ast_def_var($1, ast_id(ID_ARGS($2)));
 					}
 				;
 
@@ -266,7 +276,7 @@ command_return	: TK_KEY_RETURN
 
 var 			: TK_ID
 					{
-						$$ = ast_var(ast_id($1));
+						$$ = ast_var(ast_id(ID_ARGS($1)));
 					}
 				| exp_simple '[' exp ']'
 					{
@@ -408,11 +418,11 @@ exp_simple		: TK_INT
 
 func_call		: TK_ID '(' ')'
 					{
-						$$ = ast_call(ast_id($1), NULL);
+						$$ = ast_call(ast_id(ID_ARGS($1)), NULL);
 					}
 				| TK_ID '(' exp_list ')'
 					{
-						$$ = ast_call(ast_id($1), $3);
+						$$ = ast_call(ast_id(ID_ARGS($1)), $3);
 					}
 				;
 
