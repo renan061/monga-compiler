@@ -76,6 +76,7 @@ struct ProgramNode {
 struct DefNode {
 	DefE tag;
 	DefNode* next;
+	
 	union {
 		// DefVar
 		struct {
@@ -109,6 +110,7 @@ struct IdNode {
 struct CmdNode {
 	CmdE tag;
 	CmdNode* next;
+
 	union {
 		// CmdBlock
 		struct {
@@ -140,7 +142,8 @@ struct CmdNode {
 struct VarNode {
 	VarE tag;
 	int line;
-	// TODO: TypeNode* type;
+	TypeNode* type;
+
 	union {
 		// VarId
 		IdNode* id;
@@ -154,9 +157,9 @@ struct VarNode {
 struct ExpNode {
 	ExpE tag;
 	int line; // Uninitialized for ExpInt, ExpFloat and ExpStr
-	// TODO: TypeNode* type;
-
+	TypeNode* type;
 	ExpNode* next;
+	
 	union {
 		// ExpKInt
 		int intvalue;

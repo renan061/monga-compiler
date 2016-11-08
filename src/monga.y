@@ -5,6 +5,9 @@
 	#include "lex.h"
 	#include "ast.h"
 
+	// Auxiliary macro to use with ids
+	#define ID_ARGS(idnode) idnode.line, idnode.str
+
 	// Auxiliary macro to use in lists
 	#define APPEND_TO_LIST(type, assignable, list, elem);	\
 		if (list == NULL) {									\
@@ -19,9 +22,6 @@
 	void yyerror(const char* err) {
 		MONGA_ERR("syntax error line %d\n", current_line());
 	}
-
-	// Auxiliary macro to use with ids
-	#define ID_ARGS(idnode) idnode.line, idnode.str
 %}
 
 %union {

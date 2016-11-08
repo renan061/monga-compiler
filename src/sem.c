@@ -7,7 +7,7 @@
 
 // ==================================================
 //
-//	Private
+//	Auxiliary
 //
 // ==================================================
 
@@ -16,13 +16,19 @@ static void sem_error(int line_number, const char* type, const char* details) {
 		details);
 }
 
-static void type_def(SymbolTable* table, DefNode* def);
-static void type_cmd(SymbolTable* table, CmdNode* cmd);
-static void type_var(SymbolTable* table, VarNode* var);
-static void type_exp(SymbolTable* table, ExpNode* exp);
-static void type_call(SymbolTable* table, CallNode* call);
+// ==================================================
+//
+//	Type checking
+//
+// ==================================================
 
-static void type_def(SymbolTable* table, DefNode* def) {
+static void type_check_def(SymbolTable* table, DefNode* def);
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd);
+static void type_check_var(SymbolTable* table, VarNode* var);
+static void type_check_exp(SymbolTable* table, ExpNode* exp);
+static void type_check_call(SymbolTable* table, CallNode* call);
+
+static void type_check_def(SymbolTable* table, DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
@@ -37,10 +43,10 @@ static void type_def(SymbolTable* table, DefNode* def) {
 		}
 		st_enter_scope(table);
 		if (def->u.func.params != NULL) {
-			type_def(table, def->u.func.params);
+			type_check_def(table, def->u.func.params);
 		}
 		if (def->u.func.cmd != NULL) {
-			type_cmd(table, def->u.func.cmd);
+			type_check_cmd(table, def->u.func.cmd);
 		}
 		st_leave_scope(table);
 		break;
@@ -49,52 +55,52 @@ static void type_def(SymbolTable* table, DefNode* def) {
 	}
 
 	if (def->next != NULL) {
-		type_def(table, def->next);
+		type_check_def(table, def->next);
 	}
 }
 
-static void type_cmd(SymbolTable* table, CmdNode* cmd) {
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
 		if (cmd->u.block.defs != NULL) {
-			type_def(table, cmd->u.block.defs);
+			type_check_def(table, cmd->u.block.defs);
 		}
 		if (cmd->u.block.cmds != NULL) {
-			type_cmd(table, cmd->u.block.cmds);
+			type_check_cmd(table, cmd->u.block.cmds);
 		}
 		break;
 	case CMD_IF:
-		type_exp(table, cmd->u.ifwhile.exp);
+		type_check_exp(table, cmd->u.ifwhile.exp);
 		st_enter_scope(table);
-		type_cmd(table, cmd->u.ifwhile.cmd);
+		type_check_cmd(table, cmd->u.ifwhile.cmd);
 		st_leave_scope(table);
 		break;
 	case CMD_IF_ELSE:
-		type_exp(table, cmd->u.ifelse.exp);
+		type_check_exp(table, cmd->u.ifelse.exp);
 		st_enter_scope(table);
-		type_cmd(table, cmd->u.ifelse.ifcmd);
+		type_check_cmd(table, cmd->u.ifelse.ifcmd);
 		st_leave_scope(table);
 		st_enter_scope(table);
-		type_cmd(table, cmd->u.ifelse.elsecmd);
+		type_check_cmd(table, cmd->u.ifelse.elsecmd);
 		st_leave_scope(table);
 		break;
 	case CMD_WHILE:
-		type_exp(table, cmd->u.ifwhile.exp);
+		type_check_exp(table, cmd->u.ifwhile.exp);
 		st_enter_scope(table);
-		type_cmd(table, cmd->u.ifwhile.cmd);
+		type_check_cmd(table, cmd->u.ifwhile.cmd);
 		st_leave_scope(table);
 		break;
 	case CMD_ASG:
-		type_var(table, cmd->u.asg.var);
-		type_exp(table, cmd->u.asg.exp);
+		type_check_var(table, cmd->u.asg.var);
+		type_check_exp(table, cmd->u.asg.exp);
 		break;
 	case CMD_RETURN:
 		if (cmd->u.exp != NULL) {
-			type_exp(table, cmd->u.exp);
+			type_check_exp(table, cmd->u.exp);
 		}
 		break;
 	case CMD_CALL:
-		type_call(table, cmd->u.call);
+		type_check_call(table, cmd->u.call);
 		break;
 	default:
 		MONGA_INTERNAL_ERR("type_cmd: invalid tag");
@@ -102,11 +108,11 @@ static void type_cmd(SymbolTable* table, CmdNode* cmd) {
 
 	// Cmd list
 	if (cmd->next != NULL) {
-		type_cmd(table, cmd->next);
+		type_check_cmd(table, cmd->next);
 	}
 }
 
-static void type_var(SymbolTable* table, VarNode* var) {
+static void type_check_var(SymbolTable* table, VarNode* var) {
 	DefNode* def;
 	switch (var->tag) {
 	case VAR_ID:
@@ -117,31 +123,31 @@ static void type_var(SymbolTable* table, VarNode* var) {
 		var->u.id->u.def = def;
 		break;
 	case VAR_INDEXED:
-		type_exp(table, var->u.indexed.exp1);
-		type_exp(table, var->u.indexed.exp2);
+		type_check_exp(table, var->u.indexed.exp1);
+		type_check_exp(table, var->u.indexed.exp2);
 		break;
 	default:
 		MONGA_INTERNAL_ERR("type_var: invalid tag");
 	}
 }
 
-static void type_exp(SymbolTable* table, ExpNode* exp) {
+static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 	switch (exp->tag) {
 	case EXP_VAR:
-		type_var(table, exp->u.var);
+		type_check_var(table, exp->u.var);
 		break;
 	case EXP_CALL:
-		type_call(table, exp->u.call);
+		type_check_call(table, exp->u.call);
 		break;
 	case EXP_NEW:
-		type_exp(table, exp->u.new.exp);
+		type_check_exp(table, exp->u.new.exp);
 		break;
 	case EXP_UNARY:
-		type_exp(table, exp->u.unary.exp);
+		type_check_exp(table, exp->u.unary.exp);
 		break;
 	case EXP_BINARY:
-		type_exp(table, exp->u.binary.exp1);
-		type_exp(table, exp->u.binary.exp2);
+		type_check_exp(table, exp->u.binary.exp1);
+		type_check_exp(table, exp->u.binary.exp2);
 		break;
 	default:
 		break;
@@ -149,11 +155,11 @@ static void type_exp(SymbolTable* table, ExpNode* exp) {
 
 	// Exp list
 	if (exp->next != NULL) {
-		type_exp(table, exp->next);
+		type_check_exp(table, exp->next);
 	}
 }
 
-static void type_call(SymbolTable* table, CallNode* call) {
+static void type_check_call(SymbolTable* table, CallNode* call) {
 	DefNode* def = st_find(table, call->id);
 	if (def == NULL) {
 		sem_error(call->id->line, "func not defined", call->id->u.str);
@@ -161,7 +167,7 @@ static void type_call(SymbolTable* table, CallNode* call) {
 
 	call->id->u.def = def;
 	if (call->args != NULL) {
-		type_exp(table, call->args);
+		type_check_exp(table, call->args);
 	}
 }
 
@@ -173,6 +179,6 @@ static void type_call(SymbolTable* table, CallNode* call) {
 
 void sem_type_program(ProgramNode* program) {
 	SymbolTable* table = st_new();
-	type_def(table, program->defs);
+	type_check_def(table, program->defs);
 	st_free(table);
 }

@@ -165,6 +165,7 @@ VarNode* ast_var(IdNode* id) {
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_ID;
 	n->line = id->line;
+	n->type = NULL;
 	n->u.id = id;
 	return n;
 }
@@ -174,6 +175,7 @@ VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2) {
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_INDEXED;
 	n->line = line;
+	n->type = exp1->type;
 	n->u.indexed.exp1 = exp1;
 	n->u.indexed.exp2 = exp2;
 	return n;
@@ -193,6 +195,7 @@ ExpNode* ast_exp_binary(int line, LexSymbol symbol,
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_BINARY;
 	n->line = line;
+	n->type = NULL;
 	n->next = NULL;
 	n->u.binary.symbol = symbol;
 	n->u.binary.exp1 = exp1;
@@ -210,6 +213,7 @@ ExpNode* ast_exp_unary(int line, LexSymbol symbol, ExpNode *exp) {
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_UNARY;
 	n->line = line;
+	n->type = NULL;
 	n->next = NULL;
 	n->u.unary.symbol = symbol;
 	n->u.unary.exp = exp;
@@ -220,6 +224,7 @@ ExpNode* ast_exp_int(int value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KINT;
+	n->type = NULL; // TODO: n->type = IntType?
 	n->next = NULL;
 	n->u.intvalue = value;
 	return n;
@@ -229,6 +234,7 @@ ExpNode* ast_exp_float(float value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KFLOAT;
+	n->type = NULL; // TODO: n->type = FloatType?
 	n->next = NULL;
 	n->u.floatvalue = value;
 	return n;
@@ -238,6 +244,7 @@ ExpNode* ast_exp_str(const char* value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KSTR;
+	n->type = NULL; // TODO: n->type = StringType?
 	n->next = NULL;
 	n->u.strvalue = value;
 	return n;
@@ -248,6 +255,7 @@ ExpNode* ast_exp_var(VarNode* var) {
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_VAR;
 	n->line = var->line;
+	n->type = NULL;
 	n->next = NULL;
 	n->u.var = var;
 	return n;
@@ -258,6 +266,7 @@ ExpNode* ast_exp_call(CallNode* call) {
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_CALL;
 	n->line = call->id->line;
+	n->type = NULL; // TODO: n->type = call->type?
 	n->next = NULL;
 	n->u.call = call;
 	return n;
@@ -268,6 +277,7 @@ ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* exp) {
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_NEW;
 	n->line = line;
+	n->type = NULL;
 	n->next = NULL;
 	n->u.new.type = type;
 	n->u.new.exp = exp;
