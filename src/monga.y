@@ -1,12 +1,23 @@
 %{
 	#include <stdio.h>
 
+	#include "macros.h"
 	#include "lex.h"
 	#include "ast.h"
 
+	// Auxiliary
+	#define APPEND_TO_LIST(type, assignable, list, elem);	\
+		if (list == NULL) {									\
+			assignable = elem;								\
+		} else {											\
+			type* e;										\
+			for (e = list; e->next != NULL; e = e->next);	\
+			e->next = elem;									\
+			assignable = list;								\
+		}													\
+
 	void yyerror(const char* err) {
-		// TODO: Ask if this can fail with exit();
-		fprintf(stderr, "syntax error line %d\n", current_line());
+		MONGA_ERR("syntax error line %d\n", current_line());
 	}
 %}
 
@@ -59,7 +70,7 @@ program			: definition_list
 
 definition_list	: definition_list definition
 					{
-						$$ = ast_def_list($1, $2);
+						APPEND_TO_LIST(DefNode, $$, $1, $2);
 					}
 				| /* empty */				
 					{
@@ -94,7 +105,8 @@ name_list		: TK_ID
 					}
 				| name_list ',' TK_ID
 					{
-						$$ = ast_def_list($1, ast_def_var(NULL, ast_id($3)));
+						APPEND_TO_LIST(DefNode, $$, $1,
+							ast_def_var(NULL, ast_id($3)));
 					}
 				;
 
@@ -149,7 +161,7 @@ param_list 		: param
 					}
 				| param_list ',' param
 					{
-						$$ = ast_def_list($1, $3);
+						APPEND_TO_LIST(DefNode, $$, $1, $3);
 					}
 				;
 
@@ -167,7 +179,7 @@ block			: '{' defvar_list command_list '}'
 
 defvar_list		: defvar_list definition_var
 					{
-						$$ = ast_def_list($1, $2);
+						APPEND_TO_LIST(DefNode, $$, $1, $2);
 					}
 				| /* empty */
 					{
@@ -177,7 +189,7 @@ defvar_list		: defvar_list definition_var
 
 command_list	: command_list command
 					{
-						$$ = ast_cmd_list($1, $2);
+						APPEND_TO_LIST(CmdNode, $$, $1, $2);
 					}
 				| /* empty */
 					{
@@ -409,7 +421,7 @@ exp_list		: exp
 					}
 				| exp_list ',' exp
 					{
-						$$ = ast_exp_list($1, $3);
+						APPEND_TO_LIST(ExpNode, $$, $1, $3);
 					}
 				;
 %%

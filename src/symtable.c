@@ -76,9 +76,6 @@ DefNode* st_find(SymbolTable* table, IdNode* id) {
 	return NULL;
 }
 
-// TODO: Should I make sure def is not repeated
-// by calling "st_find_in_current_scope()" here?
-
 // Obs.: Insertion of DefFunc parameters is made outside
 // of this function in sem.c (intern "type_def" function)
 int st_insert(SymbolTable* table, DefNode* def) {

@@ -5,13 +5,10 @@
 
 typedef struct SymbolTable SymbolTable;
 
-// TODO: Var e Func no mesmo escopo com mesmo nome?
-// Qual o escopo que a func deve ficar, e os parâmetros da func?
-// Repetir no escopo de fora e no de dentro?
+// Returns NULL if id could not be found
 extern DefNode* st_find(SymbolTable* table, IdNode* id);
 
-// TODO: Should this return bool in case of same scope insertion?
-// Returns "false" in case of errors (redeclaration) and "true" otherwise
+// Returns "false" if def is already declared and "true" otherwise
 extern int st_insert(SymbolTable* table, DefNode* def);
 
 extern void st_enter_scope(SymbolTable* table);

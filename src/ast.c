@@ -6,22 +6,7 @@
 #include "ast.h"
 #include "yacc.h"
 
-#define AST_LIST(type, list, elem);					\
-	if (list == NULL) {								\
-		return elem;								\
-	}												\
-	type* e;										\
-	for (e = list; e->next != NULL; e = e->next);	\
-	e->next = elem;									\
-	return list;									\
-	
-
-// ==================================================
-//
-//	Internal
-//
-// ==================================================
-
+// Auxiliary
 static int in_array(LexSymbol symbol, LexSymbol *arr)  {
 	int len = sizeof(arr)/sizeof(arr[0]);
 	for (int i = 0; i < len; i++)
@@ -50,10 +35,6 @@ void ast_program(DefNode* defs) {
 }
 
 // Def
-DefNode* ast_def_list(DefNode* list, DefNode* def) {
-	AST_LIST(DefNode, list, def);
-}
-
 DefNode* ast_def_var(TypeNode* type, IdNode* id) {
 	DefNode* n;
 	MONGA_MALLOC(n, DefNode);
@@ -107,10 +88,6 @@ IdNode* ast_id(const char* id) {
 }
 
 // Cmd
-CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd) {
-	AST_LIST(CmdNode, list, cmd);
-}
-
 CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
@@ -199,10 +176,6 @@ VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2) {
 }
 
 // Exp
-ExpNode* ast_exp_list(ExpNode* list, ExpNode* exp) {
-	AST_LIST(ExpNode, list, exp);
-}
-
 ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2) {
 	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL, TK_GEQUAL,
 		'<', '>', TK_AND, TK_OR};

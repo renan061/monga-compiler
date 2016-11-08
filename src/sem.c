@@ -13,6 +13,7 @@
 
 static void sem_fail(const char* type, const char* details) {
 	// TODO: How to indicate line number?
+	// Exp com current_line e current_line nos operadores
 	MONGA_ERR("sem fail: %s (%s)\n", type, details);
 }
 
@@ -31,7 +32,7 @@ static void type_def(SymbolTable* table, DefNode* def) {
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
-			sem_fail("redeclaration", def->u.func.id->str); // TODO: Duplicate? Move?
+			sem_fail("redeclaration", def->u.func.id->str);
 		}
 		st_enter_scope(table);
 		if (def->u.func.params != NULL) {

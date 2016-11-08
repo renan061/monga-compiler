@@ -98,8 +98,14 @@ struct TypeNode {
 };
 
 struct IdNode {
+	// TODO
+	// IdE tag; -> Não precisa
+	// union {
+	// 	const char* name;
+	// 	DefNode* def; -> Obs.: Nome da variável está aqui dentro
+	// } u;
+
 	const char* str;
-	// TODO: Should this be here?
 	DefNode* def; // Symbol table: Only for IdNode inside exp
 };
 
@@ -136,6 +142,7 @@ struct CmdNode {
 
 struct VarNode {
 	VarE tag;
+	// TODO: TypeNode* type;
 	union {
 		// VarId
 		IdNode* id;
@@ -148,6 +155,7 @@ struct VarNode {
 
 struct ExpNode {
 	ExpE tag;
+	// TODO: TypeNode* type;
 	ExpNode* next;
 	union {
 		// ExpKInt
@@ -194,7 +202,6 @@ extern ProgramNode* ast_get_program(); // Getter
 extern void ast_program(DefNode *defs); // Setter
 
 // Def
-extern DefNode* ast_def_list(DefNode* list, DefNode* def);
 extern DefNode* ast_def_var(TypeNode* type, IdNode* id);
 extern DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	CmdNode* block);
@@ -207,7 +214,6 @@ extern TypeNode* ast_type_array(TypeNode* node);
 extern IdNode* ast_id(const char* id);
 
 // Cmd
-extern CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd);
 extern CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds);
 extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
 extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
@@ -221,7 +227,6 @@ extern VarNode* ast_var(IdNode* id);
 extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
 
 // Exp
-extern ExpNode* ast_exp_list(ExpNode* list, ExpNode* exp);
 extern ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2);
 extern ExpNode* ast_exp_unary(LexSymbol symbol, ExpNode *exp);
 extern ExpNode* ast_exp_int(int value);
