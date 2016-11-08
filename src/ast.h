@@ -63,7 +63,7 @@ typedef enum CallE {
 typedef struct ProgramNode ProgramNode;
 typedef struct DefNode DefNode;
 typedef struct TypeNode TypeNode;
-typedef struct IdNode IdNode;
+typedef union IdNode IdNode;
 typedef struct CmdNode CmdNode;
 typedef struct VarNode VarNode;
 typedef struct ExpNode ExpNode;
@@ -97,16 +97,9 @@ struct TypeNode {
 	TypeNode* array; // Only for TYPE_ARRAY
 };
 
-struct IdNode {
-	// TODO
-	// IdE tag; -> Não precisa
-	// union {
-	// 	const char* name;
-	// 	DefNode* def; -> Obs.: Nome da variável está aqui dentro
-	// } u;
-
+union IdNode {
 	const char* str;
-	DefNode* def; // Symbol table: Only for IdNode inside exp
+	DefNode* def;
 };
 
 struct CmdNode {

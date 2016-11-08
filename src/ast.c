@@ -82,7 +82,6 @@ TypeNode* ast_type_array(TypeNode* node) {
 IdNode* ast_id(const char* id) {
 	IdNode* n;
 	MONGA_MALLOC(n, IdNode);
-	n->def = NULL;
 	n->str = id;
 	return n;
 }

@@ -128,38 +128,20 @@ static void print_type(TypeNode* type) {
 
 static void print_id(IdNode* id) {
 	test_log("print_id");
+	printf("%s", id->str);
+}
 
-	if (id->def == NULL) {
-		printf("%s", id->str);
-		return;
-	}
-
-	// Printing id's type
-	DefNode* aux;
+static void print_id_ref(IdNode* id) {
+	test_log("print_id_ref");
 	switch (id->def->tag) {
 		case DEF_VAR:
-			printf("(");
-			print_type(id->def->u.var.type);
-			printf(")%s", id->str);
+			printf("%s", id->def->u.var.id->str);
 			break;
 		case DEF_FUNC:
-			printf("((");
-			aux = id->def->u.func.params;
-			while (1) { // It's ugly but necessary
-				print_type(aux->u.var.type);
-				if (aux->next != NULL) {
-					printf(", ");
-					aux = aux->next;
-				} else {
-					break;
-				}
-			}
-			printf(")->");
-			print_type(id->def->u.func.type);
-			printf(")%s", id->str);
+			printf("%s", id->def->u.func.id->str);
 			break;
 		default:
-			MONGA_ERR("print_id: invalid tag");
+			MONGA_ERR("print_id_def: invalid def tag");
 	}
 }
 
@@ -240,7 +222,7 @@ void print_var(VarNode* var, int layer) {
 	switch (var->tag) {
 	case VAR_ID:
 		print_tabs(layer);
-		print_id(var->u.id);
+		print_id_ref(var->u.id);
 		break;
 	case VAR_INDEXED:
 		print_tabs(layer);
@@ -305,7 +287,7 @@ void print_exp(ExpNode* exp) {
 static void print_call(CallNode* call) {
 	test_log("print_call");
 
-	print_id(call->id);
+	print_id(call->id->def->u.func.id);
 	printf("(");
 	if (call->args != NULL) {
 		print_exp(call->args);
