@@ -73,11 +73,11 @@
 "return"			{ return TK_KEY_RETURN;	}
 "void"				{ return TK_KEY_VOID;	}
 
-"=="				{ return TK_EQUAL;	}
-"<="				{ return TK_LEQUAL;	}
-">="				{ return TK_GEQUAL;	}
-"&&"				{ return TK_AND;	}
-"||"				{ return TK_OR;		}
+"=="				{ yylval.intvalue = line_number; return TK_EQUAL;	}
+"<="				{ yylval.intvalue = line_number; return TK_LEQUAL;	}
+">="				{ yylval.intvalue = line_number; return TK_GEQUAL;	}
+"&&"				{ yylval.intvalue = line_number; return TK_AND;		}
+"||"				{ yylval.intvalue = line_number; return TK_OR;		}
 
 [A-Za-z_][A-Za-z_0-9]*				{
 										int len = strlen(yytext);

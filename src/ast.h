@@ -148,7 +148,9 @@ struct VarNode {
 
 struct ExpNode {
 	ExpE tag;
+	int line_number;
 	// TODO: TypeNode* type;
+
 	ExpNode* next;
 	union {
 		// ExpKInt
@@ -220,14 +222,15 @@ extern VarNode* ast_var(IdNode* id);
 extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
 
 // Exp
-extern ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2);
-extern ExpNode* ast_exp_unary(LexSymbol symbol, ExpNode *exp);
+extern ExpNode* ast_exp_binary(int line_number, LexSymbol symbol,
+	ExpNode *exp1, ExpNode *exp2);
+extern ExpNode* ast_exp_unary(int line_number, LexSymbol symbol, ExpNode *exp);
 extern ExpNode* ast_exp_int(int value);
 extern ExpNode* ast_exp_float(float value);
 extern ExpNode* ast_exp_str(const char* value);
 extern ExpNode* ast_exp_var(VarNode* var);
 extern ExpNode* ast_exp_call(CallNode* call);
-extern ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp);
+extern ExpNode* ast_exp_new(int line_number, TypeNode* type, ExpNode* exp);
 
 // Call
 extern CallNode* ast_call(IdNode* id, ExpNode* args);

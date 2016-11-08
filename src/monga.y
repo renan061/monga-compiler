@@ -38,8 +38,9 @@
 
 %token <intvalue>
 	TK_KEY_INT TK_KEY_FLOAT TK_KEY_CHAR TK_KEY_IF TK_KEY_ELSE TK_KEY_WHILE
-	TK_KEY_NEW TK_KEY_RETURN TK_KEY_VOID TK_EQUAL TK_LEQUAL TK_GEQUAL TK_AND
-	TK_OR
+	TK_KEY_NEW TK_KEY_RETURN TK_KEY_VOID
+	'-' '!' '*' '/' '+' TK_EQUAL TK_LEQUAL TK_GEQUAL '<' '>' TK_AND TK_OR '['
+
 %token <intvalue>
 	TK_INT
 %token <floatvalue>
@@ -285,7 +286,7 @@ exp				: exp_or
 
 exp_or			: exp_and TK_OR exp_comp
 					{
-						$$ = ast_exp_binary(TK_OR, $1, $3);
+						$$ = ast_exp_binary($2, TK_OR, $1, $3);
 					}
 				| exp_and
 					{
@@ -295,7 +296,7 @@ exp_or			: exp_and TK_OR exp_comp
 
 exp_and			: exp_and TK_AND exp_comp
 					{
-						$$ = ast_exp_binary(TK_AND, $1, $3);
+						$$ = ast_exp_binary($2, TK_AND, $1, $3);
 					}
 				| exp_comp
 					{
@@ -305,23 +306,23 @@ exp_and			: exp_and TK_AND exp_comp
 
 exp_comp		: exp_comp TK_EQUAL exp_add
 					{
-						$$ = ast_exp_binary(TK_EQUAL, $1, $3);
+						$$ = ast_exp_binary($2, TK_EQUAL, $1, $3);
 					}
 				| exp_comp TK_LEQUAL exp_add
 					{
-						$$ = ast_exp_binary(TK_LEQUAL, $1, $3);
+						$$ = ast_exp_binary($2, TK_LEQUAL, $1, $3);
 					}
 				| exp_comp TK_GEQUAL exp_add
 					{
-						$$ = ast_exp_binary(TK_GEQUAL, $1, $3);
+						$$ = ast_exp_binary($2, TK_GEQUAL, $1, $3);
 					}
 				| exp_comp '<' exp_add
 					{
-						$$ = ast_exp_binary('<', $1, $3);
+						$$ = ast_exp_binary($2, '<', $1, $3);
 					}
 				| exp_comp '>' exp_add
 					{
-						$$ = ast_exp_binary('>', $1, $3);
+						$$ = ast_exp_binary($2, '>', $1, $3);
 					}
 				| exp_add
 					{
@@ -331,11 +332,11 @@ exp_comp		: exp_comp TK_EQUAL exp_add
 
 exp_add			: exp_add '+' exp_mul
 					{
-						$$ = ast_exp_binary('+', $1, $3);
+						$$ = ast_exp_binary($2, '+', $1, $3);
 					}
 				| exp_add '-' exp_mul
 					{
-						$$ = ast_exp_binary('-', $1, $3);
+						$$ = ast_exp_binary($2, '-', $1, $3);
 					}
 				| exp_mul
 					{
@@ -345,11 +346,11 @@ exp_add			: exp_add '+' exp_mul
 
 exp_mul			: exp_mul '*' exp_unary
 					{
-						$$ = ast_exp_binary('*', $1, $3);
+						$$ = ast_exp_binary($2, '*', $1, $3);
 					}
 				| exp_mul '/' exp_unary
 					{
-						$$ = ast_exp_binary('/', $1, $3);
+						$$ = ast_exp_binary($2, '/', $1, $3);
 					}
 				| exp_unary
 					{
@@ -359,11 +360,11 @@ exp_mul			: exp_mul '*' exp_unary
 
 exp_unary		: '-' exp_simple
 					{
-						$$ = ast_exp_unary('-', $2);
+						$$ = ast_exp_unary($1, '-', $2);
 					}
 				| '!' exp_simple
 					{
-						$$ = ast_exp_unary('!', $2);
+						$$ = ast_exp_unary($1, '!', $2);
 					}
 				| exp_simple
 					{
@@ -397,7 +398,7 @@ exp_simple		: TK_INT
 					}
 				| TK_KEY_NEW type '[' exp ']'
 					{
-						$$ = ast_exp_new($2, $4);
+						$$ = ast_exp_new($3, $2, $4);
 					}
 				;
 
