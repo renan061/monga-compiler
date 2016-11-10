@@ -127,21 +127,21 @@ type			: base_type
 					}
 				| type '[' ']'
 					{
-						$$ = ast_type_indexed($2, $1);
+						$$ = ast_type_indexed($1);
 					}
 				;
 
 base_type		: TK_KEY_INT
 					{
-						$$ = ast_type($1, TYPE_INT);
+						$$ = ast_type(TYPE_INT);
 					}
 				| TK_KEY_FLOAT
 					{
-						$$ = ast_type($1, TYPE_FLOAT);
+						$$ = ast_type(TYPE_FLOAT);
 					}
 				| TK_KEY_CHAR
 					{
-						$$ = ast_type($1, TYPE_CHAR);
+						$$ = ast_type(TYPE_CHAR);
 					}
 				;
 
@@ -151,7 +151,7 @@ definition_func	: type TK_ID '(' func_param_list ')' block
 					}
 				| TK_KEY_VOID TK_ID '(' func_param_list ')' block
 					{
-						$$ = ast_def_func(ast_type($1, TYPE_VOID),
+						$$ = ast_def_func(ast_type(TYPE_VOID),
 							ast_id(ID_ARGS($2)), $4, $6);
 					}
 				;

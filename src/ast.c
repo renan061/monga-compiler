@@ -60,22 +60,20 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 }
 
 // Type
-TypeNode* ast_type(int line, TypeE tag) {
+TypeNode* ast_type(TypeE tag) {
 	if (tag == TYPE_INDEXED) {
 		MONGA_INTERNAL_ERR("ast_type: unexpected TYPE_INDEXED");
 	}
 	TypeNode* n;
 	MONGA_MALLOC(n, TypeNode);
 	n->tag = tag;
-	n->line = line;
 	return n;
 }
 
-TypeNode* ast_type_indexed(int line, TypeNode* node) {
+TypeNode* ast_type_indexed(TypeNode* node) {
 	TypeNode* n;
 	MONGA_MALLOC(n, TypeNode);
 	n->tag = TYPE_INDEXED;
-	n->line = node->line;
 	n->indexed = node;
 	return n;
 }
@@ -175,7 +173,7 @@ VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2) {
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_INDEXED;
 	n->line = line;
-	n->type = exp1->type;
+	n->type = NULL;
 	n->u.indexed.exp1 = exp1;
 	n->u.indexed.exp2 = exp2;
 	return n;
@@ -224,7 +222,7 @@ ExpNode* ast_exp_int(int value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KINT;
-	n->type = NULL; // TODO: n->type = IntType?
+	n->type = NULL;
 	n->next = NULL;
 	n->u.intvalue = value;
 	return n;
@@ -234,7 +232,7 @@ ExpNode* ast_exp_float(float value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KFLOAT;
-	n->type = NULL; // TODO: n->type = FloatType?
+	n->type = NULL;
 	n->next = NULL;
 	n->u.floatvalue = value;
 	return n;
@@ -244,7 +242,7 @@ ExpNode* ast_exp_str(const char* value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KSTR;
-	n->type = NULL; // TODO: n->type = StringType?
+	n->type = NULL;
 	n->next = NULL;
 	n->u.strvalue = value;
 	return n;
@@ -266,7 +264,7 @@ ExpNode* ast_exp_call(CallNode* call) {
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_CALL;
 	n->line = call->id->line;
-	n->type = NULL; // TODO: n->type = call->type?
+	n->type = NULL;
 	n->next = NULL;
 	n->u.call = call;
 	return n;

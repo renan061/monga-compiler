@@ -95,7 +95,6 @@ struct DefNode {
 
 struct TypeNode {
 	TypeE tag;
-	int line;
 	TypeNode* indexed; // Only for TYPE_INDEXED
 };
 
@@ -210,8 +209,8 @@ extern DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	CmdNode* block);
 
 // Type
-extern TypeNode* ast_type(int line, TypeE tag);
-extern TypeNode* ast_type_indexed(int line, TypeNode* node);
+extern TypeNode* ast_type(TypeE tag);
+extern TypeNode* ast_type_indexed(TypeNode* node);
 
 // Id
 extern IdNode* ast_id(int line, const char* id);

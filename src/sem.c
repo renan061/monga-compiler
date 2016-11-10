@@ -32,13 +32,13 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
-			sem_error(def->u.var.type->line, "redeclaration",
+			sem_error(def->u.var.id->line, "redeclaration",
 				def->u.var.id->u.str);
 		}
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
-			sem_error(def->u.func.type->line, "redeclaration",
+			sem_error(def->u.func.id->line, "redeclaration",
 				def->u.func.id->u.str);
 		}
 		st_enter_scope(table);
