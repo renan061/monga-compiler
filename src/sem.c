@@ -20,17 +20,17 @@ static void sem_error(int line, const char* details, const char* id) {
 	}
 }
 
-static int type_equal(TypeNode* type1, TypeNode* type2) {
+static int tp_equal(TypeNode* type1, TypeNode* type2) {
 	int equal_tags = (type1->tag == type2->tag);
 	if (type1->indexed == NULL && type2->indexed == NULL) {
 		return equal_tags;
 	}
-	return equal_tags && type_equal(type1->indexed, type2->indexed);
+	return equal_tags && tp_equal(type1->indexed, type2->indexed);
 }
 
-static int type_in(TypeNode* type, TypeNode* types[], int size) {
+static int tp_in(TypeNode* type, TypeNode* types[], int size) {
 	for (int i = 0; i < size; i++) {
-		if (type_equal(type, types[i])) {
+		if (tp_equal(type, types[i])) {
 			return 1;
 		}
 	}
@@ -169,6 +169,8 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 		def = st_find(table, var->u.id);
 		if (def == NULL) {
 			sem_error(var->u.id->line, "var not defined", var->u.id->u.str);
+		} else if (def->tag != DEF_VAR) {
+			sem_error(var->u.id->line, "not a variable", var->u.id->u.str);
 		}
 		var->u.id->u.def = def;
 		var->type = def->u.var.type;
@@ -206,20 +208,21 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		break;
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.exp);
-		exp->type = exp->u.new.type; // TODO: ?
+		exp->type = type_int;
+		// TODO: ?
 		break;
 	case EXP_UNARY:
 		type_check_exp(table, exp->u.unary.exp);
 		type = exp->u.unary.exp->type;
 		if (exp->u.unary.symbol == '-') {
 			TypeNode* types[] = {type_int, type_float};
-			if (type_in(type, types, 2)) {
+			if (tp_in(type, types, 2)) {
 				exp->type = type;
 			} else {
 				sem_error(exp->line, "type error in unary minus", NULL);
 			}
 		} else if (exp->u.unary.symbol == '!') {
-			if (type_equal(type, type_int)) {
+			if (tp_equal(type, type_int)) {
 				exp->type = type_int;
 			} else {
 				sem_error(exp->line, "type error in unary not", NULL);
@@ -268,7 +271,12 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 					sem_error(line, "invalid arguments - too many",
 						def->u.func.id->u.str);
 				}
-				// TODO: Check types and do casting
+				// TODO: Casting
+				if (!tp_equal(arg->type, param->u.var.type)) {
+					sem_error(line, "invalid arguments - mismatching types",
+						def->u.func.id->u.str);	
+				}
+
 				param = param->next;
 				arg = arg->next;
 			}
