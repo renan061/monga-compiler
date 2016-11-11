@@ -190,6 +190,7 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 
 static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 	TypeNode *type;
+	int line = exp->line;
 
 	switch (exp->tag) {
 	case EXP_KINT:
@@ -212,7 +213,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.exp);
 		if (!tp_in(exp->u.new.exp->type, types_int_char, 2)) {
-			sem_error(exp->line, "invalid size type for array", NULL);
+			sem_error(line, "invalid size type for array", NULL);
 		}
 		exp->type = type_int;
 		break;
@@ -221,45 +222,77 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		type = exp->u.unary.exp->type;
 		if (exp->u.unary.symbol == '-') {
 			if (!tp_in(type, types_int_float_char, 3)) {
-				sem_error(exp->line, "invalid type for unary minus", NULL);
+				sem_error(line, "invalid type for unary minus", NULL);
 			}
 			exp->type = type;
 		} else if (exp->u.unary.symbol == '!') {
 			if (!tp_in(type, types_int_char, 2)) {
-				sem_error(exp->line, "invalid type for unary not", NULL);
+				sem_error(line, "invalid type for unary not", NULL);
 			}
 			exp->type = type_int;
 		} else {
 			MONGA_INTERNAL_ERR("type_check_exp unary: invalid symbol");
 		}
 		break;
-	case EXP_BINARY:
+	case EXP_BINARY: {
 		type_check_exp(table, exp->u.binary.exp1);
 		type_check_exp(table, exp->u.binary.exp2);
+		TypeNode* type1 = exp->u.binary.exp1->type;
+		TypeNode* type2 = exp->u.binary.exp2->type;
+
 		switch (exp->u.binary.symbol) {
 		case '*':
 		case '/':
 		case '+':
 		case '-':
-			// TODO
+			if (!tp_in(type1, types_int_float_char, 3)) {
+				sem_error(line,
+					"invalid type for first expression in \"*,/,+,-\"", NULL);
+				// TODO: Print symbol
+			}
+			if (!tp_in(type2, types_int_float_char, 3)) {
+				sem_error(line,
+					"invalid type for second expression in \"*,/,+,-\"", NULL);
+				// TODO: Print symbol
+			}
+			exp->type = (
+					tp_equal(type1, type_float) ||
+					tp_equal(type2, type_float)
+				) ? type_float : type_int;
 			break;
 		case TK_EQUAL:
-			// TODO
+			if (!tp_equal(type1, type2)) {
+				if (!tp_in(type1, types_int_float_char, 3) || 
+					!tp_in(type2, types_int_float_char, 3)) {
+					sem_error(line, "invalid type in \"==\"", NULL);
+				}
+			}
+			exp->type = type_int;
 			break;
 		case TK_LEQUAL:
 		case TK_GEQUAL:
 		case '<':
 		case '>':
-			// TODO
-			break;
 		case TK_AND:
 		case TK_OR:
-			// TODO
+			if (!tp_in(type1, types_int_float_char, 3)) {
+				sem_error(line,
+					"invalid type for first expression in \"<=,>=,<,>,&&,||\"",
+					NULL);
+				// TODO: Print symbol
+			}
+			if (!tp_in(type2, types_int_float_char, 3)) {
+				sem_error(line,
+					"invalid type for second expression in \"<=,>=,<,>,&&,||\"",
+					NULL);
+				// TODO: Print symbol
+			}
+			exp->type = type_int;
 			break;
 		default:
 			MONGA_INTERNAL_ERR("type_check_exp binary: invalid symbol");
 		}
-		break;
+	}	break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_exp: invalid tag");
 	}
