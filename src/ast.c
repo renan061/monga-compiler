@@ -61,12 +61,14 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 
 // Type
 TypeNode* ast_type(TypeE tag) {
+	// TODO: Change this function to work with static types
 	if (tag == TYPE_INDEXED) {
 		MONGA_INTERNAL_ERR("ast_type: unexpected TYPE_INDEXED");
 	}
 	TypeNode* n;
 	MONGA_MALLOC(n, TypeNode);
 	n->tag = tag;
+	n->indexed = NULL;
 	return n;
 }
 
@@ -186,7 +188,7 @@ ExpNode* ast_exp_binary(int line, LexSymbol symbol,
 	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL, TK_GEQUAL,
 		'<', '>', TK_AND, TK_OR};
 	if (!in_array(symbol, symbols)) {
-		MONGA_INTERNAL_ERR("ast_exp_unary: unexpected symbol %c", symbol);
+		MONGA_INTERNAL_ERR("ast_exp_binary: unexpected symbol %c", symbol);
 	}
 
 	ExpNode* n;

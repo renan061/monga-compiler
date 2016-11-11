@@ -11,10 +11,34 @@
 //
 // ==================================================
 
-static void sem_error(int line_number, const char* type, const char* details) {
-	MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line_number, type,
+static void sem_error(int line, const char* type, const char* details) {
+	MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, type,
 		details);
 }
+
+// TODO: Fix, join functions
+static void type_error(int line, const char* details) {
+	MONGA_ERR("semantical error line %d (%s)\n", line, details);	
+}
+
+static int type_equal(TypeNode* type1, TypeNode* type2) {
+	int equal_tags = (type1->tag == type2->tag);
+	if (type1->indexed == NULL && type2->indexed == NULL) {
+		return equal_tags;
+	}
+	return equal_tags && type_equal(type1->indexed, type2->indexed);
+}
+
+static int type_in(TypeNode* type, TypeNode* types[], int size) {
+	for (int i = 0; i < size; i++) {
+		if (type_equal(type, types[i])) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+TypeNode *type_int, *type_float, *type_char;
 
 // ==================================================
 //
@@ -51,7 +75,7 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 		st_leave_scope(table);
 		break;
 	default:
-		MONGA_INTERNAL_ERR("type_def: invalid tag");
+		MONGA_INTERNAL_ERR("type_check_def: invalid tag");
 	}
 
 	if (def->next != NULL) {
@@ -93,17 +117,22 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
+		// TODO: Check if var can be assigned exp
 		break;
 	case CMD_RETURN:
 		if (cmd->u.exp != NULL) {
 			type_check_exp(table, cmd->u.exp);
+			// TODO: Check if func can return exp
+		} else {
+			// TODO: Check if func can return NULL
 		}
+
 		break;
 	case CMD_CALL:
 		type_check_call(table, cmd->u.call);
 		break;
 	default:
-		MONGA_INTERNAL_ERR("type_cmd: invalid tag");
+		MONGA_INTERNAL_ERR("type_check_cmd: invalid tag");
 	}
 
 	// Cmd list
@@ -127,12 +156,23 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 		type_check_exp(table, var->u.indexed.exp2);
 		break;
 	default:
-		MONGA_INTERNAL_ERR("type_var: invalid tag");
+		MONGA_INTERNAL_ERR("type_check_var: invalid tag");
 	}
 }
 
 static void type_check_exp(SymbolTable* table, ExpNode* exp) {
+	TypeNode* type;
+
 	switch (exp->tag) {
+	case EXP_KINT:
+		exp->type = ast_type(TYPE_INT);
+		break;
+	case EXP_KFLOAT:
+		exp->type = ast_type(TYPE_FLOAT);
+		break;
+	case EXP_KSTR:
+		exp->type = ast_type(TYPE_CHAR);
+		break;
 	case EXP_VAR:
 		type_check_var(table, exp->u.var);
 		break;
@@ -141,13 +181,32 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		break;
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.exp);
+		// TODO
 		break;
 	case EXP_UNARY:
 		type_check_exp(table, exp->u.unary.exp);
+		type = exp->u.unary.exp->type;
+		if (exp->u.unary.symbol == '-') {
+			TypeNode* types[] = {type_int, type_float};
+			if (type_in(type, types, 2)) {
+				exp->type = type;
+			} else {
+				type_error(exp->line, "type error in unary minus");
+			}
+		} else if (exp->u.unary.symbol == '!') {
+			if (type_equal(type, type_int)) {
+				exp->type = type_int;
+			} else {
+				type_error(exp->line, "type error in unary not");
+			}
+		} else {
+			MONGA_INTERNAL_ERR("type_check_exp: invalid symbol")
+		}
 		break;
 	case EXP_BINARY:
 		type_check_exp(table, exp->u.binary.exp1);
 		type_check_exp(table, exp->u.binary.exp2);
+		// TODO
 		break;
 	default:
 		break;
@@ -168,6 +227,9 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 	call->id->u.def = def;
 	if (call->args != NULL) {
 		type_check_exp(table, call->args);
+		// TODO: Check if func can be called with args
+	} else {
+		// TODO: Check if func can be called with no args
 	}
 }
 
@@ -177,7 +239,11 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 //
 // ==================================================
 
-void sem_type_program(ProgramNode* program) {
+void sem_type_check_program(ProgramNode* program) {
+	type_int = ast_type(TYPE_INT);
+	type_float = ast_type(TYPE_FLOAT);
+	type_char = ast_type(TYPE_CHAR);
+
 	SymbolTable* table = st_new();
 	type_check_def(table, program->defs);
 	st_free(table);

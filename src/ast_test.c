@@ -30,16 +30,14 @@ static void print_var(VarNode* var, int layer);
 static void print_exp(ExpNode* exp);
 static void print_call(CallNode* call);
 
-int main(int argc, char *argv[]) {
-	if (yyparse()) {
-		printf("Parsing failed");
-		return 0;
-	}
+int main() {
+	ProgramNode* program;
 
-	ProgramNode* program = ast_get_program();
-	sem_type_program(program);
-
+	yyparse();
+	program = ast_get_program();
+	sem_type_check_program(program);
 	print_program(program);
+
     return 0;
 }
 

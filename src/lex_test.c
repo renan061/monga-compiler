@@ -2,7 +2,7 @@
 #include "lex.h"
 #include "yacc.h"
 
-int main(int argc, char *argv[]) {
+int main() {
 	setbuf(stdout, NULL); // FIXME: Possible side effects?
 	
 	int token;

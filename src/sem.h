@@ -3,6 +3,6 @@
 
 #include "ast.h"
 
-extern void sem_type_program(ProgramNode* program);
+extern void sem_type_check_program(ProgramNode* program);
 
 #endif
