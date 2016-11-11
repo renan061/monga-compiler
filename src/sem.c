@@ -328,10 +328,12 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 					sem_error(line, "invalid arguments - too many",
 						def->u.func.id->u.str);
 				}
-				// TODO: Casting
 				if (!tp_equal(arg->type, param->u.var.type)) {
-					sem_error(line, "invalid arguments - mismatching types",
-						def->u.func.id->u.str);	
+					if (!tp_in(arg->type, types_int_float_char, 3) || 
+						!tp_in(param->u.var.type, types_int_float_char, 3)) {
+						sem_error(line, "invalid arguments - mismatching types",
+							def->u.func.id->u.str);
+					}
 				}
 
 				param = param->next;

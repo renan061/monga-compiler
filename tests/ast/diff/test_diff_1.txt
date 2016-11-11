@@ -1,4 +1,4 @@
-int intvalue;																																																													   |	semantical error line 71 (invalid arguments - mismatching types - id "func3")
+int intvalue;																																																													   |	semantical error line 96 (invalid arguments - too few - id "bar")
 float floatvalue;																																																												   <
 char charvalue;																																																													   <
 void func0() {																																																													   <
