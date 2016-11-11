@@ -4,6 +4,7 @@
 #include "macros.h"
 #include "ast.h"
 #include "symtable.h"
+#include "yacc.h"
 
 // ==================================================
 //
@@ -60,6 +61,7 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size) {
 // }
 
 TypeNode *type_int, *type_float, *type_char;
+TypeNode *types_int_char[2], *types_int_float_char[3];
 
 // ==================================================
 //
@@ -139,6 +141,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
 		// TODO: Check if var can be assigned exp
+		// Dont forget int a; a = new float[2];
 		break;
 	case CMD_RETURN:
 		if (cmd->u.exp != NULL) {
@@ -186,7 +189,7 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 }
 
 static void type_check_exp(SymbolTable* table, ExpNode* exp) {
-	TypeNode* type;
+	TypeNode *type;
 
 	switch (exp->tag) {
 	case EXP_KINT:
@@ -208,33 +211,54 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		break;
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.exp);
+		if (!tp_in(exp->u.new.exp->type, types_int_char, 2)) {
+			sem_error(exp->line, "invalid size type for array", NULL);
+		}
 		exp->type = type_int;
 		break;
 	case EXP_UNARY:
 		type_check_exp(table, exp->u.unary.exp);
 		type = exp->u.unary.exp->type;
 		if (exp->u.unary.symbol == '-') {
-			TypeNode* types[] = {type_int, type_float, type_char};
-			if (tp_in(type, types, 3)) {
-				exp->type = type;
-			} else {
+			if (!tp_in(type, types_int_float_char, 3)) {
 				sem_error(exp->line, "invalid type for unary minus", NULL);
 			}
+			exp->type = type;
 		} else if (exp->u.unary.symbol == '!') {
-			TypeNode* types[] = {type_int, type_char};
-			if (tp_in(type, types, 2)) {
-				exp->type = type_int;
-			} else {
+			if (!tp_in(type, types_int_char, 2)) {
 				sem_error(exp->line, "invalid type for unary not", NULL);
 			}
+			exp->type = type_int;
 		} else {
-			MONGA_INTERNAL_ERR("type_check_exp: invalid symbol");
+			MONGA_INTERNAL_ERR("type_check_exp unary: invalid symbol");
 		}
 		break;
 	case EXP_BINARY:
 		type_check_exp(table, exp->u.binary.exp1);
 		type_check_exp(table, exp->u.binary.exp2);
-		// TODO
+		switch (exp->u.binary.symbol) {
+		case '*':
+		case '/':
+		case '+':
+		case '-':
+			// TODO
+			break;
+		case TK_EQUAL:
+			// TODO
+			break;
+		case TK_LEQUAL:
+		case TK_GEQUAL:
+		case '<':
+		case '>':
+			// TODO
+			break;
+		case TK_AND:
+		case TK_OR:
+			// TODO
+			break;
+		default:
+			MONGA_INTERNAL_ERR("type_check_exp binary: invalid symbol");
+		}
 		break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_exp: invalid tag");
@@ -308,6 +332,13 @@ void sem_type_check_program(ProgramNode* program) {
 	type_int = ast_type(TYPE_INT);
 	type_float = ast_type(TYPE_FLOAT);
 	type_char = ast_type(TYPE_CHAR);
+
+	types_int_char[0] = type_int;
+	types_int_char[1] = type_char;
+
+	types_int_float_char[0] = type_int;
+	types_int_float_char[1] = type_float;
+	types_int_float_char[2] = type_char;
 
 	SymbolTable* table = st_new();
 	type_check_def(table, program->defs);
