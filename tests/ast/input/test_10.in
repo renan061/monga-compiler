@@ -1,0 +1,12 @@
+void func0() {}
+void func1(int a1) {}
+void func2(int a2, int b2) {}
+void func3(int a3, int b3, int c3) {}
+
+void main() {
+	/* Testing Call */
+	func0();
+	func1(1);
+	func2(1, 2);
+	func3(1, 2, 3);
+}

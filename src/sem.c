@@ -11,14 +11,13 @@
 //
 // ==================================================
 
-static void sem_error(int line, const char* type, const char* details) {
-	MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, type,
-		details);
-}
-
-// TODO: Fix, join functions
-static void type_error(int line, const char* details) {
-	MONGA_ERR("semantical error line %d (%s)\n", line, details);	
+static void sem_error(int line, const char* details, const char* id) {
+	if (id == NULL) {
+		MONGA_ERR("semantical error line %d (%s)\n", line, details);
+	} else {
+		MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details,
+			id);
+	}
 }
 
 static int type_equal(TypeNode* type1, TypeNode* type2) {
@@ -37,6 +36,28 @@ static int type_in(TypeNode* type, TypeNode* types[], int size) {
 	}
 	return 0;
 }
+
+// static void print_type(TypeNode* type) {
+// 	switch (type->tag) {
+// 	case TYPE_INT:
+// 		printf("TypeInt");
+// 		break;
+// 	case TYPE_FLOAT:
+// 		printf("TypeFloat");
+// 		break;
+// 	case TYPE_CHAR:
+// 		printf("TypeChar");
+// 		break;
+// 	case TYPE_VOID:
+// 		printf("TypeVoid");
+// 		break;
+// 	case TYPE_INDEXED:
+// 		printf("TypeIndexed");
+// 		break;
+// 	default:
+// 		MONGA_INTERNAL_ERR("sem_print_type");
+// 	}
+// }
 
 TypeNode *type_int, *type_float, *type_char;
 
@@ -150,10 +171,12 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 			sem_error(var->u.id->line, "var not defined", var->u.id->u.str);
 		}
 		var->u.id->u.def = def;
+		var->type = def->u.var.type;
 		break;
 	case VAR_INDEXED:
 		type_check_exp(table, var->u.indexed.exp1);
 		type_check_exp(table, var->u.indexed.exp2);
+		// TODO: malloc type
 		break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_var: invalid tag");
@@ -165,23 +188,25 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 
 	switch (exp->tag) {
 	case EXP_KINT:
-		exp->type = ast_type(TYPE_INT);
+		exp->type = type_int;
 		break;
 	case EXP_KFLOAT:
-		exp->type = ast_type(TYPE_FLOAT);
+		exp->type = type_float;
 		break;
 	case EXP_KSTR:
-		exp->type = ast_type(TYPE_CHAR);
+		exp->type = type_char;
 		break;
 	case EXP_VAR:
 		type_check_var(table, exp->u.var);
+		exp->type = exp->u.var->type;
 		break;
 	case EXP_CALL:
 		type_check_call(table, exp->u.call);
+		exp->type = exp->u.call->id->u.def->u.func.type;
 		break;
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.exp);
-		// TODO
+		exp->type = exp->u.new.type; // TODO: ?
 		break;
 	case EXP_UNARY:
 		type_check_exp(table, exp->u.unary.exp);
@@ -191,16 +216,16 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 			if (type_in(type, types, 2)) {
 				exp->type = type;
 			} else {
-				type_error(exp->line, "type error in unary minus");
+				sem_error(exp->line, "type error in unary minus", NULL);
 			}
 		} else if (exp->u.unary.symbol == '!') {
 			if (type_equal(type, type_int)) {
 				exp->type = type_int;
 			} else {
-				type_error(exp->line, "type error in unary not");
+				sem_error(exp->line, "type error in unary not", NULL);
 			}
 		} else {
-			MONGA_INTERNAL_ERR("type_check_exp: invalid symbol")
+			MONGA_INTERNAL_ERR("type_check_exp: invalid symbol");
 		}
 		break;
 	case EXP_BINARY:
@@ -209,7 +234,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		// TODO
 		break;
 	default:
-		break;
+		MONGA_INTERNAL_ERR("type_check_exp: invalid tag");
 	}
 
 	// Exp list
@@ -219,17 +244,49 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 }
 
 static void type_check_call(SymbolTable* table, CallNode* call) {
+	DefNode* params;
+	int line = call->id->line;
+
 	DefNode* def = st_find(table, call->id);
 	if (def == NULL) {
-		sem_error(call->id->line, "func not defined", call->id->u.str);
+		sem_error(line, "func not defined", call->id->u.str);
+	} else if (def->tag != DEF_FUNC) {
+		sem_error(line, "not a function", call->id->u.str);
 	}
-
 	call->id->u.def = def;
+
+	params = def->u.func.params;
 	if (call->args != NULL) {
 		type_check_exp(table, call->args);
-		// TODO: Check if func can be called with args
+		if (params != NULL) {
+			// Call with arguments and function has parameters
+			DefNode* param = params;
+			ExpNode* arg = call->args;
+
+			while (arg != NULL) {
+				if (param == NULL) {
+					sem_error(line, "invalid arguments - too many",
+						def->u.func.id->u.str);
+				}
+				// TODO: Check types and do casting
+				param = param->next;
+				arg = arg->next;
+			}
+			if (param != NULL) {
+				sem_error(line, "invalid arguments - too few",
+						def->u.func.id->u.str);
+			}
+		} else {
+			// Call with arguments, but function has no parameters
+			sem_error(line, "invalid arguments - no parameters",
+				def->u.func.id->u.str);
+		}
 	} else {
-		// TODO: Check if func can be called with no args
+		// Call with no arguments, but function has parameters
+		if (params != NULL) {
+			sem_error(line, "invalid arguments - too few",
+				def->u.func.id->u.str);
+		}
 	}
 }
 

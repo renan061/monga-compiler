@@ -6,9 +6,9 @@ float floatvalue;
 char charvalue;
 
 /* DefFunc */
-void x() {}
-void y(int a) {}
-void z(int a, float b, char c) {}
+void func0() {}
+void func1(int a) {}
+void func3(int a, float b, char c) {}
 
 void foo(char a, int b, float c) {
 /* CmdBlock without vars and cmds */
@@ -66,9 +66,9 @@ void main(char[] x, int[][] y, float[][][] z) {
 			return;
 			return 1 || 2;
 		/* CmdCall */
-			foo();
-			foo(1);
-			foo(1, 2, 3);
+			func0();
+			func1(1);
+			func3(1, 2, 3);
 		/* Crazy cmds */
 		if (1)
 			if (2)
@@ -105,10 +105,10 @@ void main(char[] x, int[][] y, float[][][] z) {
 		/* ExpVar */
 		a = b;
 		/* ExpCall */
-		a = foo();
-		a = foo(1);
-		a = foo(1, 2);
-		a = foo(1, 2, 3);
+		a = func0();
+		a = func1(1);
+		a = bar(1, 2);
+		a = func3(1, 2, 3);
 		/* ExpNew */
 		a = new int[2];
 		/* ExpUnary */

@@ -27,7 +27,7 @@ do
 	OUTPUT_FILE="test_"$i".out"
 
 	../../bin/"$1""test" < $INPUT_FILE >> $OUTPUT_FILE 2>&1
-	diff -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
+	diff -W 1000 -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
 	if [ -s "diff.txt" ]
 	then
 		echo "FAIL $1 test "$i

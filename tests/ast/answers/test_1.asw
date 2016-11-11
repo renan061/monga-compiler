@@ -1,11 +1,11 @@
 int intvalue;
 float floatvalue;
 char charvalue;
-void x() {
+void func0() {
 }
-void y(int a) {
+void func1(int a) {
 }
-void z(int a, float b, char c) {
+void func3(int a, float b, char c) {
 }
 void foo(char a, int b, float c) {
 }
@@ -54,9 +54,9 @@ void main(char[] x, int[][] y, float[][][] z) {
     (a)[(1)] = ((2)||(3));
     return ;
     return ((1)||(2));
-    foo();
-    foo((1));
-    foo((1), (2), (3));
+    func0();
+    func1((1));
+    func3((1), (2), (3));
     (if((1)) {
       (if((2)) {
         a = (3);
@@ -90,10 +90,10 @@ void main(char[] x, int[][] y, float[][][] z) {
     a = (1.100000);
     a = ("111");
     a = (b);
-    a = (foo());
-    a = (foo((1)));
-    a = (foo((1), (2)));
-    a = (foo((1), (2), (3)));
+    a = (func0());
+    a = (func1((1)));
+    a = (bar((1), (2)));
+    a = (func3((1), (2), (3)));
     a = (new int[(2)]);
     a = (-(1));
     a = (!(1));

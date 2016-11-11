@@ -2,7 +2,7 @@
 #include "parser.h"
 
 int main() {
-	if (yyparse()) {
+	if (!yyparse()) {
 		printf("OK\n");
 	}
     return 0;
