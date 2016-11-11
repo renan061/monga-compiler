@@ -178,7 +178,7 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 	case VAR_INDEXED:
 		type_check_exp(table, var->u.indexed.exp1);
 		type_check_exp(table, var->u.indexed.exp2);
-		// TODO: malloc type
+		// TODO: var->type = malloc type
 		break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_var: invalid tag");
@@ -209,23 +209,23 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.exp);
 		exp->type = type_int;
-		// TODO: ?
 		break;
 	case EXP_UNARY:
 		type_check_exp(table, exp->u.unary.exp);
 		type = exp->u.unary.exp->type;
 		if (exp->u.unary.symbol == '-') {
-			TypeNode* types[] = {type_int, type_float};
-			if (tp_in(type, types, 2)) {
+			TypeNode* types[] = {type_int, type_float, type_char};
+			if (tp_in(type, types, 3)) {
 				exp->type = type;
 			} else {
-				sem_error(exp->line, "type error in unary minus", NULL);
+				sem_error(exp->line, "invalid type for unary minus", NULL);
 			}
 		} else if (exp->u.unary.symbol == '!') {
-			if (tp_equal(type, type_int)) {
+			TypeNode* types[] = {type_int, type_char};
+			if (tp_in(type, types, 2)) {
 				exp->type = type_int;
 			} else {
-				sem_error(exp->line, "type error in unary not", NULL);
+				sem_error(exp->line, "invalid type for unary not", NULL);
 			}
 		} else {
 			MONGA_INTERNAL_ERR("type_check_exp: invalid symbol");
