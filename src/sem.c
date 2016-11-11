@@ -6,6 +6,29 @@
 #include "symtable.h"
 #include "yacc.h"
 
+// Temp
+// static void print_type(TypeNode* type) {
+// 	switch (type->tag) {
+// 	case TYPE_INT:
+// 		printf("TypeInt");
+// 		break;
+// 	case TYPE_FLOAT:
+// 		printf("TypeFloat");
+// 		break;
+// 	case TYPE_CHAR:
+// 		printf("TypeChar");
+// 		break;
+// 	case TYPE_VOID:
+// 		printf("TypeVoid");
+// 		break;
+// 	case TYPE_INDEXED:
+// 		printf("TypeIndexed");
+// 		break;
+// 	default:
+// 		MONGA_INTERNAL_ERR("sem_print_type");
+// 	}
+// }
+
 // ==================================================
 //
 //	Auxiliary
@@ -37,28 +60,6 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size) {
 	}
 	return 0;
 }
-
-// static void print_type(TypeNode* type) {
-// 	switch (type->tag) {
-// 	case TYPE_INT:
-// 		printf("TypeInt");
-// 		break;
-// 	case TYPE_FLOAT:
-// 		printf("TypeFloat");
-// 		break;
-// 	case TYPE_CHAR:
-// 		printf("TypeChar");
-// 		break;
-// 	case TYPE_VOID:
-// 		printf("TypeVoid");
-// 		break;
-// 	case TYPE_INDEXED:
-// 		printf("TypeIndexed");
-// 		break;
-// 	default:
-// 		MONGA_INTERNAL_ERR("sem_print_type");
-// 	}
-// }
 
 TypeNode *type_int, *type_float, *type_char;
 TypeNode *types_int_char[2], *types_int_float_char[3];
@@ -140,8 +141,22 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
-		// TODO: Check if var can be assigned exp
-		// Dont forget int a; a = new float[2];
+
+		if (cmd->u.asg.exp->tag == EXP_NEW) { // For "int[] a; a = new int[10];"
+			TypeNode* idxtype = ast_type_indexed(cmd->u.asg.exp->u.new.type);
+			if (!tp_equal(cmd->u.asg.var->type, idxtype)) {
+				sem_error(cmd->u.asg.var->line,
+					"invalid type for array assignment", NULL);
+			}
+			free(idxtype);
+		} else if (!tp_equal(cmd->u.asg.var->type, cmd->u.asg.exp->type)) {
+			if (!tp_in(cmd->u.asg.var->type, types_int_float_char, 3) || 
+				!tp_in(cmd->u.asg.exp->type, types_int_float_char, 3)) {
+				sem_error(cmd->u.asg.var->line, "invalid type for assignment",
+					NULL);
+			}
+		}
+		
 		break;
 	case CMD_RETURN:
 		if (cmd->u.exp != NULL) {
@@ -167,6 +182,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 
 static void type_check_var(SymbolTable* table, VarNode* var) {
 	DefNode* def;
+
 	switch (var->tag) {
 	case VAR_ID:
 		def = st_find(table, var->u.id);
@@ -181,7 +197,13 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 	case VAR_INDEXED:
 		type_check_exp(table, var->u.indexed.exp1);
 		type_check_exp(table, var->u.indexed.exp2);
-		// TODO: var->type = malloc type
+		if (var->u.indexed.exp1->type->tag != TYPE_INDEXED) {
+			sem_error(var->line, "not indexed type", NULL);
+		}
+		if (!tp_in(var->u.indexed.exp2->type, types_int_float_char, 3)) {
+			sem_error(var->line, "invalid index type for array", NULL);
+		}
+		var->type = var->u.indexed.exp1->type->indexed;
 		break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_var: invalid tag");

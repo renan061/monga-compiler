@@ -1,4 +1,4 @@
-int intvalue;																																																													   |	semantical error line 96 (invalid arguments - too few - id "bar")
+int intvalue;																																																													   |	semantical error line 64 (not indexed type)
 float floatvalue;																																																												   <
 char charvalue;																																																													   <
 void func0() {																																																													   <

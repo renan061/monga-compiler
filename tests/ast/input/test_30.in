@@ -1,4 +1,4 @@
 void main() {
-	int a;
+	float[] a;
 	a = new int[10];
 }
