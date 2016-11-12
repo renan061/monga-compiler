@@ -221,6 +221,8 @@ void print_var(VarNode* var, int layer) {
 	case VAR_ID:
 		print_tabs(layer);
 		print_id_ref(var->u.id);
+		printf(":");
+		print_type(var->type);
 		break;
 	case VAR_INDEXED:
 		print_tabs(layer);
@@ -228,6 +230,8 @@ void print_var(VarNode* var, int layer) {
 		printf("[");
 		print_exp(var->u.indexed.exp2);
 		printf("]");
+		printf(":");
+		print_type(var->type);
 		break;
 	default:
 		MONGA_ERR("print_var: invalid tag");

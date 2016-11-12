@@ -6,29 +6,6 @@
 #include "symtable.h"
 #include "yacc.h"
 
-// Temp
-// static void print_type(TypeNode* type) {
-// 	switch (type->tag) {
-// 	case TYPE_INT:
-// 		printf("TypeInt");
-// 		break;
-// 	case TYPE_FLOAT:
-// 		printf("TypeFloat");
-// 		break;
-// 	case TYPE_CHAR:
-// 		printf("TypeChar");
-// 		break;
-// 	case TYPE_VOID:
-// 		printf("TypeVoid");
-// 		break;
-// 	case TYPE_INDEXED:
-// 		printf("TypeIndexed");
-// 		break;
-// 	default:
-// 		MONGA_INTERNAL_ERR("sem_print_type");
-// 	}
-// }
-
 // ==================================================
 //
 //	Auxiliary
