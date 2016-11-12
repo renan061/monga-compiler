@@ -6,6 +6,15 @@
 #include "ast.h"
 #include "yacc.h"
 
+// Only used inside ast_type
+#define AST_NODE_TYPE(node_type, n)	\
+	if (node_type == NULL) {		\
+		MONGA_MALLOC(n, TypeNode);	\
+		node_type = n;				\
+	} else {						\
+		return node_type;			\
+	}								\
+
 // Auxiliary
 static int in_array(LexSymbol symbol, LexSymbol *arr)  {
 	int len = sizeof(arr)/sizeof(arr[0]);
@@ -14,6 +23,11 @@ static int in_array(LexSymbol symbol, LexSymbol *arr)  {
 			return 1;
 	return 0;
 }
+
+TypeNode* node_type_int = NULL;
+TypeNode* node_type_float = NULL;
+TypeNode* node_type_char = NULL;
+TypeNode* node_type_void = NULL;
 
 // ==================================================
 //
@@ -61,12 +75,25 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 
 // Type
 TypeNode* ast_type(TypeE tag) {
-	// TODO: Change this function to work with static types
-	if (tag == TYPE_INDEXED) {
+	TypeNode* n;
+
+	switch (tag) {
+	case TYPE_INT:
+		AST_NODE_TYPE(node_type_int, n);
+		break;
+	case TYPE_FLOAT:
+		AST_NODE_TYPE(node_type_float, n);
+		break;
+	case TYPE_CHAR:
+		AST_NODE_TYPE(node_type_char, n);
+		break;
+	case TYPE_VOID:
+		AST_NODE_TYPE(node_type_void, n);
+		break;
+	default:
 		MONGA_INTERNAL_ERR("ast_type: unexpected TYPE_INDEXED");
 	}
-	TypeNode* n;
-	MONGA_MALLOC(n, TypeNode);
+
 	n->tag = tag;
 	n->indexed = NULL;
 	return n;

@@ -13,7 +13,7 @@
  	fprintf(stderr, "internal error: ");	\
  	MONGA_ERR(__VA_ARGS__);					\
 
-#define MONGA_MALLOC(n, type);							\
+#define MONGA_MALLOC(n, type)							\
 	n = (type*)malloc(sizeof(type));					\
 	if (n == NULL) {									\
 		MONGA_ERR("error: insufficient memory\n");		\
