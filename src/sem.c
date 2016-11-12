@@ -77,6 +77,8 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp);
 static void type_check_call(SymbolTable* table, CallNode* call);
 
 static void type_check_def(SymbolTable* table, DefNode* def) {
+	CmdNode *cmd;
+
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
@@ -96,6 +98,50 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 		if (def->u.func.cmd != NULL) {
 			type_check_cmd(table, def->u.func.cmd);
 		}
+
+		// TODO: Is this really the way to do it?
+		if (def->u.func.type->tag != TYPE_VOID) {
+			cmd = def->u.func.cmd->u.block.cmds;		
+			while (cmd != NULL) {
+				if (cmd->tag == CMD_RETURN) {
+					// TODO: Create function for this
+					if (cmd->u.exp->tag == EXP_NEW) { // For "return new int[10];"
+						TypeNode* idxtype =
+							ast_type_indexed(cmd->u.exp->u.new.type);
+						if (!tp_equal(def->u.func.type, idxtype)) {
+							sem_error(def->u.func.id->line,
+								"invalid type for array return", NULL);
+						}
+						// TODO: Does not have a test
+						free(idxtype);
+					} else if (!tp_equal(def->u.func.type, cmd->u.exp->type)) {
+						if (!tp_in(def->u.func.type, types_int_float_char, 3) || 
+							!tp_in(cmd->u.exp->type, types_int_float_char, 3)) {
+							sem_error(def->u.func.id->line,
+								"invalid type for return", NULL);
+							// TODO: Returning wrong line
+							// More tests for this
+						}
+					}
+				}
+				cmd = cmd->next;
+			}
+		} else {
+			if (def->u.func.cmd != NULL) {
+				cmd = def->u.func.cmd->u.block.cmds;
+				while (cmd != NULL) {
+					if (cmd->tag == CMD_RETURN) {
+						if (cmd->u.exp != NULL) {
+							sem_error(def->u.func.id->line,
+								"invalid type for return - func void", NULL);
+							// TODO: Returning wrong line
+						}
+					}
+					cmd = cmd->next;
+				}
+			}
+		}
+		
 		st_leave_scope(table);
 		break;
 	default:
@@ -161,11 +207,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 	case CMD_RETURN:
 		if (cmd->u.exp != NULL) {
 			type_check_exp(table, cmd->u.exp);
-			// TODO: Check if func can return exp
-		} else {
-			// TODO: Check if func can return NULL
 		}
-
 		break;
 	case CMD_CALL:
 		type_check_call(table, cmd->u.call);
@@ -386,17 +428,17 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 // ==================================================
 
 void sem_type_check_program(ProgramNode* program) {
+	// Auxiliary
 	type_int = ast_type(TYPE_INT);
 	type_float = ast_type(TYPE_FLOAT);
 	type_char = ast_type(TYPE_CHAR);
-
 	types_int_char[0] = type_int;
 	types_int_char[1] = type_char;
-
 	types_int_float_char[0] = type_int;
 	types_int_float_char[1] = type_float;
 	types_int_float_char[2] = type_char;
 
+	// Main
 	SymbolTable* table = st_new();
 	type_check_def(table, program->defs);
 	st_free(table);
