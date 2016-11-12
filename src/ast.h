@@ -45,6 +45,7 @@ typedef enum ExpE {
 	EXP_VAR,
 	EXP_CALL,
 	EXP_NEW,
+	EXP_CAST,
 	EXP_UNARY,
 	EXP_BINARY
 } ExpE;
@@ -88,7 +89,7 @@ struct DefNode {
 			TypeNode* type;
 			IdNode* id;
 			DefNode* params;
-			CmdNode* cmd;
+			CmdNode* block;
 		} func;
 	} u;
 };
@@ -132,7 +133,7 @@ struct CmdNode {
 			ExpNode* exp;
 		} asg;
 		// CmdReturn
-		ExpNode* exp;
+		ExpNode* ret;
 		// CmdCall
 		CallNode* call;
 	} u;
@@ -148,14 +149,14 @@ struct VarNode {
 		IdNode* id;
 		// VarIndexed
 		struct {
-			ExpNode *exp1, *exp2;
+			ExpNode *array, *index;
 		} indexed;
 	} u;
 };
 
 struct ExpNode {
 	ExpE tag;
-	int line; // Uninitialized for ExpInt, ExpFloat and ExpStr
+	int line; // Initialized as "-1" for ExpInt, ExpFloat and ExpStr
 	TypeNode* type;
 	ExpNode* next;
 	
@@ -173,8 +174,13 @@ struct ExpNode {
 		// ExpNew
 		struct {
 			TypeNode* type;
-			ExpNode* exp;
+			ExpNode* size;
 		} new;
+		// ExpCast
+		struct {
+			TypeNode* type;
+			ExpNode* exp;
+		} cast;
 		// ExpUnary
 		struct {
 			LexSymbol symbol;
@@ -226,7 +232,7 @@ extern CmdNode* ast_cmd_call(CallNode* call);
 
 // Var
 extern VarNode* ast_var(IdNode* id);
-extern VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2);
+extern VarNode* ast_var_indexed(int line, ExpNode* array, ExpNode* index);
 
 // Exp
 extern ExpNode* ast_exp_binary(int line, LexSymbol symbol, ExpNode *exp1,
@@ -237,7 +243,7 @@ extern ExpNode* ast_exp_float(float value);
 extern ExpNode* ast_exp_str(const char* value);
 extern ExpNode* ast_exp_var(VarNode* var);
 extern ExpNode* ast_exp_call(CallNode* call);
-extern ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* exp);
+extern ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* size);
 
 // Call
 extern CallNode* ast_call(IdNode* id, ExpNode* args);

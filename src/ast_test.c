@@ -86,7 +86,7 @@ static void print_def(DefNode* def, int layer) {
 			printf(")");
 		}
 		printf(" {\n");
-		print_cmd(def->u.func.cmd, layer + 1);
+		print_cmd(def->u.func.block, layer + 1);
 		print_tabs(layer);
 		printf("}\n");
 		break;
@@ -194,8 +194,8 @@ static void print_cmd(CmdNode* cmd, int layer) {
 	case CMD_RETURN:
 		print_tabs(layer);
 		printf("return ");
-		if (cmd->u.exp != NULL) {
-			print_exp(cmd->u.exp);
+		if (cmd->u.ret != NULL) {
+			print_exp(cmd->u.ret);
 		}
 		printf(";\n");
 		break;
@@ -226,9 +226,9 @@ void print_var(VarNode* var, int layer) {
 		break;
 	case VAR_INDEXED:
 		print_tabs(layer);
-		print_exp(var->u.indexed.exp1);
+		print_exp(var->u.indexed.array);
 		printf("[");
-		print_exp(var->u.indexed.exp2);
+		print_exp(var->u.indexed.index);
 		printf("]");
 		printf(":");
 		print_type(var->type);
@@ -267,7 +267,7 @@ void print_exp(ExpNode* exp) {
 		printf("new ");
 		print_type(exp->u.new.type);
 		printf("[");
-		print_exp(exp->u.new.exp);
+		print_exp(exp->u.new.size);
 		printf("]:");
 		print_type(exp->type);
 		break;

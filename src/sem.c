@@ -72,28 +72,26 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 		if (def->u.func.params != NULL) {
 			type_check_def(table, def->u.func.params);
 		}
-		if (def->u.func.cmd != NULL) {
-			type_check_cmd(table, def->u.func.cmd);
-		}
+		type_check_cmd(table, def->u.func.block);
 
 		// TODO: Is this really the way to do it?
 		if (def->u.func.type->tag != TYPE_VOID) {
-			cmd = def->u.func.cmd->u.block.cmds;		
+			cmd = def->u.func.block->u.block.cmds;		
 			while (cmd != NULL) {
 				if (cmd->tag == CMD_RETURN) {
 					// TODO: Create function for this
-					if (cmd->u.exp->tag == EXP_NEW) { // For "return new int[10];"
+					if (cmd->u.ret->tag == EXP_NEW) { // For "return new int[10];"
 						TypeNode* idxtype =
-							ast_type_indexed(cmd->u.exp->u.new.type);
+							ast_type_indexed(cmd->u.ret->u.new.type);
 						if (!tp_equal(def->u.func.type, idxtype)) {
 							sem_error(def->u.func.id->line,
 								"invalid type for array return", NULL);
 						}
 						// TODO: Does not have a test
 						free(idxtype);
-					} else if (!tp_equal(def->u.func.type, cmd->u.exp->type)) {
+					} else if (!tp_equal(def->u.func.type, cmd->u.ret->type)) {
 						if (!tp_in(def->u.func.type, types_int_float_char, 3) || 
-							!tp_in(cmd->u.exp->type, types_int_float_char, 3)) {
+							!tp_in(cmd->u.ret->type, types_int_float_char, 3)) {
 							sem_error(def->u.func.id->line,
 								"invalid type for return", NULL);
 							// TODO: Returning wrong line
@@ -104,11 +102,11 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 				cmd = cmd->next;
 			}
 		} else {
-			if (def->u.func.cmd != NULL) {
-				cmd = def->u.func.cmd->u.block.cmds;
+			// if (def->u.func.cmd != NULL) {
+				cmd = def->u.func.block->u.block.cmds;
 				while (cmd != NULL) {
 					if (cmd->tag == CMD_RETURN) {
-						if (cmd->u.exp != NULL) {
+						if (cmd->u.ret != NULL) {
 							sem_error(def->u.func.id->line,
 								"invalid type for return - func void", NULL);
 							// TODO: Returning wrong line
@@ -116,7 +114,7 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 					}
 					cmd = cmd->next;
 				}
-			}
+			// }
 		}
 		
 		st_leave_scope(table);
@@ -182,8 +180,8 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		
 		break;
 	case CMD_RETURN:
-		if (cmd->u.exp != NULL) {
-			type_check_exp(table, cmd->u.exp);
+		if (cmd->u.ret != NULL) {
+			type_check_exp(table, cmd->u.ret);
 		}
 		break;
 	case CMD_CALL:
@@ -214,15 +212,15 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 		var->type = def->u.var.type;
 		break;
 	case VAR_INDEXED:
-		type_check_exp(table, var->u.indexed.exp1);
-		type_check_exp(table, var->u.indexed.exp2);
-		if (var->u.indexed.exp1->type->tag != TYPE_INDEXED) {
+		type_check_exp(table, var->u.indexed.array);
+		type_check_exp(table, var->u.indexed.index);
+		if (var->u.indexed.array->type->tag != TYPE_INDEXED) {
 			sem_error(var->line, "not indexed type", NULL);
 		}
-		if (!tp_in(var->u.indexed.exp2->type, types_int_float_char, 3)) {
+		if (!tp_in(var->u.indexed.index->type, types_int_float_char, 3)) {
 			sem_error(var->line, "invalid index type for array", NULL);
 		}
-		var->type = var->u.indexed.exp1->type->indexed;
+		var->type = var->u.indexed.array->type->indexed;
 		break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_var: invalid tag");
@@ -251,8 +249,8 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		exp->type = exp->u.call->id->u.def->u.func.type;
 		break;
 	case EXP_NEW:
-		type_check_exp(table, exp->u.new.exp);
-		if (!tp_in(exp->u.new.exp->type, types_int_char, 2)) {
+		type_check_exp(table, exp->u.new.size);
+		if (!tp_in(exp->u.new.size->type, types_int_char, 2)) {
 			sem_error(line, "invalid size type for array", NULL);
 		}
 		exp->type = type_int;
@@ -261,7 +259,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		TypeNode *type;
 		type_check_exp(table, exp->u.unary.exp);
 		type = exp->u.unary.exp->type;
-		
+
 		switch (exp->u.unary.symbol) {
 		case '-':
 			if (!tp_in(type, types_int_float_char, 3)) {

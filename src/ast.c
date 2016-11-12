@@ -61,7 +61,7 @@ DefNode* ast_def_var(TypeNode* type, IdNode* id) {
 }
 
 DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
-	CmdNode* cmd) {
+	CmdNode* block) {
 
 	DefNode* n;
 	MONGA_MALLOC(n, DefNode);
@@ -70,7 +70,8 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	n->u.func.type = type;
 	n->u.func.id = id;
 	n->u.func.params = params;
-	n->u.func.cmd = cmd;
+	assert(block->tag == CMD_BLOCK);
+	n->u.func.block = block;
 	return n;
 }
 
@@ -174,7 +175,7 @@ CmdNode* ast_cmd_return(ExpNode* exp) {
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_RETURN;
 	n->next = NULL;
-	n->u.exp = exp;
+	n->u.ret = exp;
 	return n;
 }
 
@@ -198,14 +199,14 @@ VarNode* ast_var(IdNode* id) {
 	return n;
 }
 
-VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2) {
+VarNode* ast_var_indexed(int line, ExpNode* array, ExpNode* index) {
 	VarNode* n;
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_INDEXED;
 	n->line = line;
 	n->type = NULL;
-	n->u.indexed.exp1 = exp1;
-	n->u.indexed.exp2 = exp2;
+	n->u.indexed.array = array;
+	n->u.indexed.index = index;
 	return n;
 }
 
@@ -248,6 +249,7 @@ ExpNode* ast_exp_int(int value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KINT;
+	n->line = -1;
 	n->type = NULL;
 	n->next = NULL;
 	n->u.intvalue = value;
@@ -258,6 +260,7 @@ ExpNode* ast_exp_float(float value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KFLOAT;
+	n->line = -1;
 	n->type = NULL;
 	n->next = NULL;
 	n->u.floatvalue = value;
@@ -268,6 +271,7 @@ ExpNode* ast_exp_str(const char* value) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_KSTR;
+	n->line = -1;
 	n->type = NULL;
 	n->next = NULL;
 	n->u.strvalue = value;
@@ -296,7 +300,7 @@ ExpNode* ast_exp_call(CallNode* call) {
 	return n;
 }
 
-ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* exp) {
+ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* size) {
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
 	n->tag = EXP_NEW;
@@ -304,7 +308,7 @@ ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* exp) {
 	n->type = NULL;
 	n->next = NULL;
 	n->u.new.type = type;
-	n->u.new.exp = exp;
+	n->u.new.size = size;
 	return n;
 }
 
