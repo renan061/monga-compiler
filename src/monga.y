@@ -47,8 +47,8 @@
 %token <intvalue>
 	TK_KEY_INT TK_KEY_FLOAT TK_KEY_CHAR TK_KEY_IF TK_KEY_ELSE TK_KEY_WHILE
 	TK_KEY_NEW TK_KEY_RETURN TK_KEY_VOID
-	'-' '!' '*' '/' '+' TK_EQUAL TK_LEQUAL TK_GEQUAL '<' '>' TK_AND TK_OR '['
-
+	'-' '!' '*' '/' '+' TK_EQUAL TK_LEQUAL TK_GEQUAL '<' '>' TK_AND TK_OR
+	'{' '[' '(' '=' ';'
 %token <intvalue>
 	TK_INT
 %token <floatvalue>
@@ -64,7 +64,7 @@
 %type <typenode>
 	type base_type	
 %type <cmdnode>
-	block command command_x command_return command_list
+	block command command_amb command_basic command_return command_list
 %type <varnode>
 	var
 %type <expnode>
@@ -184,7 +184,7 @@ param 			: type TK_ID
 
 block			: '{' defvar_list command_list '}'
 					{
-						$$ = ast_cmd_block($2, $3);
+						$$ = ast_cmd_block($1, $2, $3);
 					}
 				;
 
@@ -210,45 +210,40 @@ command_list	: command_list command
 
 command			: TK_KEY_IF '(' exp ')' command
 					{
-						$$ = ast_cmd_if($3, $5);
+						$$ = ast_cmd_if($2, $3, $5);
 					}
-				| TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command
+				| TK_KEY_IF '(' exp ')' command_amb TK_KEY_ELSE command
 					{
-						$$ = ast_cmd_if_else($3, $5, $7);
+						$$ = ast_cmd_if_else($2, $3, $5, $7);
 					}
 				| TK_KEY_WHILE '(' exp ')' command
 					{
-						$$ = ast_cmd_while($3, $5);
+						$$ = ast_cmd_while($2, $3, $5);
 					}
-				| var '=' exp ';'
-					{
-						$$ = ast_cmd_asg($1, $3);
-					}
-				| command_return ';'
-					{
-						$$ = $1;
-					}
-				| func_call ';'
-					{
-						$$ = ast_cmd_call($1);
-					}
-				| block
+				| command_basic
 					{
 						$$ = $1;
 					}
 				;
 
-command_x		: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
+// For ambiguities
+command_amb		: TK_KEY_IF '(' exp ')' command_amb TK_KEY_ELSE command_amb
 					{
-						$$ = ast_cmd_if_else($3, $5, $7);
+						$$ = ast_cmd_if_else($2, $3, $5, $7);
 					}
-				| TK_KEY_WHILE '(' exp ')' command_x
+				| TK_KEY_WHILE '(' exp ')' command_amb
 					{
-						$$ = ast_cmd_while($3, $5);
+						$$ = ast_cmd_while($2, $3, $5);
 					}
-				| var '=' exp ';'
+				| command_basic
 					{
-						$$ = ast_cmd_asg($1, $3);
+						$$ = $1;
+					}
+				;
+
+command_basic	: var '=' exp ';'
+					{
+						$$ = ast_cmd_asg($2, $1, $3);
 					}
 				| command_return ';'
 					{
@@ -256,7 +251,7 @@ command_x		: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
 					}
 				| func_call ';'
 					{
-						$$ = ast_cmd_call($1);
+						$$ = ast_cmd_call($2, $1);
 					}
 				| block
 					{
@@ -266,11 +261,11 @@ command_x		: TK_KEY_IF '(' exp ')' command_x TK_KEY_ELSE command_x
 
 command_return	: TK_KEY_RETURN
 					{
-						$$ = ast_cmd_return(NULL);
+						$$ = ast_cmd_return($1, NULL);
 					}
 				| TK_KEY_RETURN exp
 					{
-						$$ = ast_cmd_return($2);
+						$$ = ast_cmd_return($1, $2);
 					}
 				;
 

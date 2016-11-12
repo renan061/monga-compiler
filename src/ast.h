@@ -109,6 +109,7 @@ struct IdNode {
 
 struct CmdNode {
 	CmdE tag;
+	int line;
 	CmdNode* next;
 
 	union {
@@ -222,13 +223,14 @@ extern TypeNode* ast_type_indexed(TypeNode* node);
 extern IdNode* ast_id(int line, const char* id);
 
 // Cmd
-extern CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds);
-extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
-extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
-extern CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd);
-extern CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp);
-extern CmdNode* ast_cmd_return(ExpNode* exp);
-extern CmdNode* ast_cmd_call(CallNode* call);
+extern CmdNode* ast_cmd_block(int line, DefNode* defs, CmdNode* cmds);
+extern CmdNode* ast_cmd_if(int line, ExpNode* exp, CmdNode* cmd);
+extern CmdNode* ast_cmd_if_else(int line, ExpNode* exp, CmdNode* ifcmd,
+	CmdNode* elsecmd);
+extern CmdNode* ast_cmd_while(int line, ExpNode* exp, CmdNode* cmd);
+extern CmdNode* ast_cmd_asg(int line, VarNode* var, ExpNode* exp);
+extern CmdNode* ast_cmd_return(int line, ExpNode* exp);
+extern CmdNode* ast_cmd_call(int line, CallNode* call);
 
 // Var
 extern VarNode* ast_var(IdNode* id);

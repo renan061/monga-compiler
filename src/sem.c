@@ -6,52 +6,47 @@
 #include "symtable.h"
 #include "yacc.h"
 
-// ==================================================
-//
-//	Auxiliary
-//
-// ==================================================
+static void type_check_def(SymbolTable* table, DefNode* def);
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd);
+static void type_check_var(SymbolTable* table, VarNode* var);
+static void type_check_exp(SymbolTable* table, ExpNode* exp);
+static void type_check_call(SymbolTable* table, CallNode* call);
 
-static void sem_error(int line, const char* details, const char* id) {
-	if (id == NULL) {
-		MONGA_ERR("semantical error line %d (%s)\n", line, details);
-	} else {
-		MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details,
-			id);
-	}
-}
-
-static int tp_equal(TypeNode* type1, TypeNode* type2) {
-	int equal_tags = (type1->tag == type2->tag);
-	if (type1->indexed == NULL && type2->indexed == NULL) {
-		return equal_tags;
-	}
-	return equal_tags && tp_equal(type1->indexed, type2->indexed);
-}
-
-static int tp_in(TypeNode* type, TypeNode* types[], int size) {
-	for (int i = 0; i < size; i++) {
-		if (tp_equal(type, types[i])) {
-			return 1;
-		}
-	}
-	return 0;
-}
+static void sem_error(int line, const char* details, const char* id);
+static int tp_equal(TypeNode* type1, TypeNode* type2);
+static int tp_in(TypeNode* type, TypeNode* types[], int size);
 
 TypeNode *type_int, *type_float, *type_char;
 TypeNode *types_int_char[2], *types_int_float_char[3];
 
 // ==================================================
 //
-//	Type checking
+//	Exported
 //
 // ==================================================
 
-static void type_check_def(SymbolTable* table, DefNode* def);
-static void type_check_cmd(SymbolTable* table, CmdNode* cmd);
-static void type_check_var(SymbolTable* table, VarNode* var);
-static void type_check_exp(SymbolTable* table, ExpNode* exp);
-static void type_check_call(SymbolTable* table, CallNode* call);
+void sem_type_check_program(ProgramNode* program) {
+	// Auxiliary
+	type_int = ast_type(TYPE_INT);
+	type_float = ast_type(TYPE_FLOAT);
+	type_char = ast_type(TYPE_CHAR);
+	types_int_char[0] = type_int;
+	types_int_char[1] = type_char;
+	types_int_float_char[0] = type_int;
+	types_int_float_char[1] = type_float;
+	types_int_float_char[2] = type_char;
+
+	// Main
+	SymbolTable* table = st_new();
+	type_check_def(table, program->defs);
+	st_free(table);
+}
+
+// ==================================================
+//
+//	Type checking
+//
+// ==================================================
 
 static void type_check_def(SymbolTable* table, DefNode* def) {
 	CmdNode *cmd;
@@ -62,6 +57,7 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 			sem_error(def->u.var.id->line, "redeclaration",
 				def->u.var.id->u.str);
 		}
+		// TODO: cant "void int;"
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
@@ -75,8 +71,8 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 		type_check_cmd(table, def->u.func.block);
 
 		// TODO: Is this really the way to do it?
+		cmd = def->u.func.block->u.block.cmds;
 		if (def->u.func.type->tag != TYPE_VOID) {
-			cmd = def->u.func.block->u.block.cmds;		
 			while (cmd != NULL) {
 				if (cmd->tag == CMD_RETURN) {
 					// TODO: Create function for this
@@ -102,19 +98,16 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 				cmd = cmd->next;
 			}
 		} else {
-			// if (def->u.func.cmd != NULL) {
-				cmd = def->u.func.block->u.block.cmds;
-				while (cmd != NULL) {
-					if (cmd->tag == CMD_RETURN) {
-						if (cmd->u.ret != NULL) {
-							sem_error(def->u.func.id->line,
-								"invalid type for return - func void", NULL);
-							// TODO: Returning wrong line
-						}
+			while (cmd != NULL) {
+				if (cmd->tag == CMD_RETURN) {
+					if (cmd->u.ret != NULL) {
+						sem_error(def->u.func.id->line,
+							"invalid type for return - func void", NULL);
+						// TODO: Returning wrong line
 					}
-					cmd = cmd->next;
 				}
-			// }
+				cmd = cmd->next;
+			}
 		}
 		
 		st_leave_scope(table);
@@ -140,12 +133,20 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		break;
 	case CMD_IF:
 		type_check_exp(table, cmd->u.ifwhile.exp);
+		// TODO: Check exp type int
+		if (0) {
+			sem_error(-1, "invalid type for \"if\" expression", NULL);
+		}
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd);
 		st_leave_scope(table);
 		break;
 	case CMD_IF_ELSE:
 		type_check_exp(table, cmd->u.ifelse.exp);
+		// TODO: Check exp type int
+		if (0) {
+			sem_error(-1, "invalid type for \"ifelse\" expression", NULL);
+		}
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifelse.ifcmd);
 		st_leave_scope(table);
@@ -155,6 +156,10 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		break;
 	case CMD_WHILE:
 		type_check_exp(table, cmd->u.ifwhile.exp);
+		// TODO: Check exp type int
+		if (0) {
+			sem_error(-1, "invalid type for \"while\" expression", NULL);
+		}
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd);
 		st_leave_scope(table);
@@ -402,23 +407,32 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 
 // ==================================================
 //
-//	Functions
+//	Auxiliary
 //
 // ==================================================
 
-void sem_type_check_program(ProgramNode* program) {
-	// Auxiliary
-	type_int = ast_type(TYPE_INT);
-	type_float = ast_type(TYPE_FLOAT);
-	type_char = ast_type(TYPE_CHAR);
-	types_int_char[0] = type_int;
-	types_int_char[1] = type_char;
-	types_int_float_char[0] = type_int;
-	types_int_float_char[1] = type_float;
-	types_int_float_char[2] = type_char;
+static void sem_error(int line, const char* details, const char* id) {
+	if (id == NULL) {
+		MONGA_ERR("semantical error line %d (%s)\n", line, details);
+	} else {
+		MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details,
+			id);
+	}
+}
 
-	// Main
-	SymbolTable* table = st_new();
-	type_check_def(table, program->defs);
-	st_free(table);
+static int tp_equal(TypeNode* type1, TypeNode* type2) {
+	int equal_tags = (type1->tag == type2->tag);
+	if (type1->indexed == NULL && type2->indexed == NULL) {
+		return equal_tags;
+	}
+	return equal_tags && tp_equal(type1->indexed, type2->indexed);
+}
+
+static int tp_in(TypeNode* type, TypeNode* types[], int size) {
+	for (int i = 0; i < size; i++) {
+		if (tp_equal(type, types[i])) {
+			return 1;
+		}
+	}
+	return 0;
 }

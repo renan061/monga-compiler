@@ -119,30 +119,35 @@ IdNode* ast_id(int line, const char* id) {
 }
 
 // Cmd
-CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds) {
+CmdNode* ast_cmd_block(int line, DefNode* defs, CmdNode* cmds) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_BLOCK;
+	n->line = line;
 	n->next = NULL;
 	n->u.block.defs = defs;
 	n->u.block.cmds = cmds;
 	return n;
 }
 
-CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd) {
+CmdNode* ast_cmd_if(int line, ExpNode* exp, CmdNode* cmd) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_IF;
+	n->line = line;
 	n->next = NULL;
 	n->u.ifwhile.exp = exp;
 	n->u.ifwhile.cmd = cmd;
 	return n;
 }
 
-CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd) {
+CmdNode* ast_cmd_if_else(int line, ExpNode* exp, CmdNode* ifcmd,
+	CmdNode* elsecmd) {
+
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_IF_ELSE;
+	n->line = line;
 	n->next = NULL;
 	n->u.ifelse.exp = exp;
 	n->u.ifelse.ifcmd = ifcmd;
@@ -150,39 +155,43 @@ CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd) {
 	return n;
 }
 
-CmdNode* ast_cmd_while(ExpNode* exp, CmdNode* cmd) {
+CmdNode* ast_cmd_while(int line, ExpNode* exp, CmdNode* cmd) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_WHILE;
+	n->line = line;
 	n->next = NULL;
 	n->u.ifwhile.exp = exp;
 	n->u.ifwhile.cmd = cmd;
 	return n;
 }
 
-CmdNode* ast_cmd_asg(VarNode* var, ExpNode* exp) {
+CmdNode* ast_cmd_asg(int line, VarNode* var, ExpNode* exp) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_ASG;
+	n->line = line;
 	n->next = NULL;
 	n->u.asg.var = var;
 	n->u.asg.exp = exp;
 	return n;
 }
 
-CmdNode* ast_cmd_return(ExpNode* exp) {
+CmdNode* ast_cmd_return(int line, ExpNode* exp) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_RETURN;
+	n->line = line;
 	n->next = NULL;
 	n->u.ret = exp;
 	return n;
 }
 
-CmdNode* ast_cmd_call(CallNode* call) {
+CmdNode* ast_cmd_call(int line, CallNode* call) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);
 	n->tag = CMD_CALL;
+	n->line = line;
 	n->next = NULL;
 	n->u.call = call;
 	return n;
