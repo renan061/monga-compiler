@@ -244,26 +244,32 @@ void print_exp(ExpNode* exp) {
 	printf("(");
 	switch (exp->tag) {
 	case EXP_KINT:
-		printf("%d", exp->u.intvalue);
+		printf("%d:", exp->u.intvalue);
+		print_type(exp->type);
 		break;
 	case EXP_KFLOAT:
-		printf("%f", exp->u.floatvalue);
+		printf("%f:", exp->u.floatvalue);
+		print_type(exp->type);
 		break;
 	case EXP_KSTR:
-		printf("%s", exp->u.strvalue);
+		printf("%s:", exp->u.strvalue);
+		print_type(exp->type);
 		break;
 	case EXP_VAR:
 		print_var(exp->u.var, 0);
 		break;
 	case EXP_CALL:
 		print_call(exp->u.call);
+		printf(":");
+		print_type(exp->type);
 		break;
 	case EXP_NEW:
 		printf("new ");
 		print_type(exp->u.new.type);
 		printf("[");
 		print_exp(exp->u.new.exp);
-		printf("]");
+		printf("]:");
+		print_type(exp->type);
 		break;
 	case EXP_UNARY:
 		print_lex_symbol(exp->u.unary.symbol);

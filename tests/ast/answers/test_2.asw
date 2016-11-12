@@ -8,7 +8,7 @@ void func3(int a3, int b3, int c3) {
 }
 void main() {
     func0();
-    func1((1));
-    func2((1), (2));
-    func3((1), (2), (3));
+    func1((1:int));
+    func2((1:int), (2:int));
+    func3((1:int), (2:int), (3:int));
 }

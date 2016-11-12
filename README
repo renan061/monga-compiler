@@ -11,7 +11,7 @@ Gerar binários:
 
 	make
 
-Testar tudo (lex, parser e AST):
+Testar tudo (lex, parser, AST e tipagem):
 
 	make test
 
@@ -23,10 +23,14 @@ Testar somente parser:
 
 	make parser_test
 
-Testar somente AST:
+Testar somente AST / tipagem:
 
 	make ast_test
 
 Para limpar:
 
 	make clean
+
+
+Obs.: Para executar um binário, fazer "binario < INPUT_FILE", onde INPUT_FILE
+é o arquivo de entrada.
