@@ -1,0 +1,4 @@
+void main() {
+	int[] a;
+	if(a) {} else {}
+}

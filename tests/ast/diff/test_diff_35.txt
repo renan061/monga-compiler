@@ -1,0 +1,4 @@
+semantical error line 2																																																												   |	void main() {
+																																																														   >	    (while((main():void)) {
+																																																														   >	    })
+																																																														   >	}
