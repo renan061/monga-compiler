@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "macros.h"
 #include "ast.h"
@@ -91,7 +92,7 @@ TypeNode* ast_type(TypeE tag) {
 		AST_NODE_TYPE(node_type_void, n);
 		break;
 	default:
-		MONGA_INTERNAL_ERR("ast_type: unexpected TYPE_INDEXED");
+		MONGA_INTERNAL_ERR("ast_type: invalid tag");
 	}
 
 	n->tag = tag;
@@ -212,11 +213,9 @@ VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2) {
 ExpNode* ast_exp_binary(int line, LexSymbol symbol,
 	ExpNode *exp1, ExpNode *exp2) {
 
-	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL, TK_GEQUAL,
-		'<', '>', TK_AND, TK_OR};
-	if (!in_array(symbol, symbols)) {
-		MONGA_INTERNAL_ERR("ast_exp_binary: unexpected symbol %c", symbol);
-	}
+	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL,
+		TK_GEQUAL, '<', '>', TK_AND, TK_OR};
+	assert(in_array(symbol, symbols));
 
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);
@@ -232,9 +231,7 @@ ExpNode* ast_exp_binary(int line, LexSymbol symbol,
 
 ExpNode* ast_exp_unary(int line, LexSymbol symbol, ExpNode *exp) {
 	LexSymbol symbols[] = {'-', '!'};
-	if (!in_array(symbol, symbols)) {
-		MONGA_INTERNAL_ERR("ast_exp_unary: unexpected symbol %c", symbol);
-	}
+	assert(in_array(symbol, symbols));
 
 	ExpNode* n;
 	MONGA_MALLOC(n, ExpNode);

@@ -230,7 +230,6 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 }
 
 static void type_check_exp(SymbolTable* table, ExpNode* exp) {
-	TypeNode *type;
 	int line = exp->line;
 
 	switch (exp->tag) {
@@ -258,23 +257,28 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		}
 		exp->type = type_int;
 		break;
-	case EXP_UNARY:
+	case EXP_UNARY: {
+		TypeNode *type;
 		type_check_exp(table, exp->u.unary.exp);
 		type = exp->u.unary.exp->type;
-		if (exp->u.unary.symbol == '-') {
+		
+		switch (exp->u.unary.symbol) {
+		case '-':
 			if (!tp_in(type, types_int_float_char, 3)) {
 				sem_error(line, "invalid type for unary minus", NULL);
 			}
 			exp->type = type;
-		} else if (exp->u.unary.symbol == '!') {
+			break;
+		case '!':
 			if (!tp_in(type, types_int_char, 2)) {
 				sem_error(line, "invalid type for unary not", NULL);
 			}
 			exp->type = type_int;
-		} else {
+			break;
+		default:
 			MONGA_INTERNAL_ERR("type_check_exp unary: invalid symbol");
 		}
-		break;
+	}	break;
 	case EXP_BINARY: {
 		type_check_exp(table, exp->u.binary.exp1);
 		type_check_exp(table, exp->u.binary.exp2);
