@@ -1,0 +1,4 @@
+void main() {
+	float[] a;
+	a = new int[10];
+}

@@ -2,7 +2,9 @@
 #include "lex.h"
 #include "yacc.h"
 
-int main(int argc, char *argv[]) {
+int main() {
+	setbuf(stdout, NULL); // FIXME: Possible side effects?
+	
 	int token;
 	do {
 		token = yylex();
@@ -22,7 +24,7 @@ int main(int argc, char *argv[]) {
 		case TK_AND:			printf("TK_AND");			break;
 		case TK_OR:				printf("TK_OR");			break;
 		case TK_ID:
-			printf("TK_ID - %s", yylval.strvalue);
+			printf("TK_ID - %s", yylval.idnode.str);
 			break;
 		case TK_INT:
 			printf("TK_INT - %d", yylval.intvalue);

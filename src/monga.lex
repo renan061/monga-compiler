@@ -1,8 +1,13 @@
 %x IN_COMMENT
+%option nounput
 %{
-	#include <errno.h>
+	#include <strings.h>
+
+	#include "macros.h"
 	#include "lex.h"
 	#include "yacc.h"
+
+	#define YY_NO_INPUT
 
 	// Holds the current line number
 	static int line_number = 1;
@@ -19,32 +24,33 @@
 
 	// Auxiliary error dealing function
 	static void lex_error(int err) {
-		printf("lexical error line %d (", line_number);
+		char str[100];
+		sprintf(str, "lexical error line %d (", line_number);
+
 		switch (err) {
 		case ERR_ID_MEM:
-			printf("insufficient memory for identifier");
+			strcat(str, "insufficient memory for identifier");
 		case ERR_COMMENT:
-			printf("open commentary");
+			strcat(str, "open commentary");
 			break;
 		case ERR_STR_ESCAPE:
-			printf("invalid escape");
+			strcat(str, "invalid escape");
 			break;
 		case ERR_STR_OPEN:
-			printf("open string");
+			strcat(str, "open string");
 			break;
 		case ERR_STR_LINE:
-			printf("multiline string");
+			strcat(str, "multiline string");
 			break;
 		case ERR_STR_MEM:
-			printf("insufficient memory for string");
+			strcat(str, "insufficient memory for string");
 			break;
 		default:
-			exit(2);
+			MONGA_INTERNAL_ERR("invalid lex error type");
 		}
 
-		printf(")\n");
-		errno = err;
-		exit(1);
+		strcat(str, ")\n");
+		MONGA_ERR("%s", str);
 	}
 
 	// Exported
@@ -57,21 +63,21 @@
 "\t"				{ }
 " "					{ }
 
-"int"				{ return TK_KEY_INT;	}
-"float"				{ return TK_KEY_FLOAT;	}
-"char"				{ return TK_KEY_CHAR;	}
-"if"				{ return TK_KEY_IF;		}
-"else"				{ return TK_KEY_ELSE;	}
-"while"				{ return TK_KEY_WHILE;	}
-"new"				{ return TK_KEY_NEW;	}
-"return"			{ return TK_KEY_RETURN;	}
-"void"				{ return TK_KEY_VOID;	}
+"int"				{ yylval.intvalue = line_number; return TK_KEY_INT;		}
+"float"				{ yylval.intvalue = line_number; return TK_KEY_FLOAT;	}
+"char"				{ yylval.intvalue = line_number; return TK_KEY_CHAR;	}
+"if"				{ yylval.intvalue = line_number; return TK_KEY_IF;		}
+"else"				{ yylval.intvalue = line_number; return TK_KEY_ELSE;	}
+"while"				{ yylval.intvalue = line_number; return TK_KEY_WHILE;	}
+"new"				{ yylval.intvalue = line_number; return TK_KEY_NEW;		}
+"return"			{ yylval.intvalue = line_number; return TK_KEY_RETURN;	}
+"void"				{ yylval.intvalue = line_number; return TK_KEY_VOID;	}
 
-"=="				{ return TK_EQUAL;	}
-"<="				{ return TK_LEQUAL;	}
-">="				{ return TK_GEQUAL;	}
-"&&"				{ return TK_AND;	}
-"||"				{ return TK_OR;		}
+"=="				{ yylval.intvalue = line_number; return TK_EQUAL;	}
+"<="				{ yylval.intvalue = line_number; return TK_LEQUAL;	}
+">="				{ yylval.intvalue = line_number; return TK_GEQUAL;	}
+"&&"				{ yylval.intvalue = line_number; return TK_AND;		}
+"||"				{ yylval.intvalue = line_number; return TK_OR;		}
 
 [A-Za-z_][A-Za-z_0-9]*				{
 										int len = strlen(yytext);
@@ -80,7 +86,8 @@
 									        lex_error(ERR_ID_MEM);
 									    }
 									    memcpy(str, yytext, len + 1);
-									    yylval.strvalue = str;
+									    yylval.idnode.line = line_number;
+									    yylval.idnode.str = str;
 										return TK_ID;
 									}
 [0-9]+								{ 

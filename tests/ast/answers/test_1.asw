@@ -1,0 +1,124 @@
+int intvalue;
+float floatvalue;
+char charvalue;
+int func0() {
+    return (1:int);
+}
+int func1(int a) {
+    return (1:int);
+}
+int func2(int a, int b) {
+    return (1:int);
+}
+int func3(int a, float b, char c) {
+    return (1:int);
+}
+void foo(char a, int b, float c) {
+}
+int fooreturn(char a, int b, float c) {
+    return (1:int);
+}
+void bar(int intvalue1, int intvalue2) {
+    int i;
+    float f;
+    char c;
+    int[] x;
+    int[][] y;
+    int[][][] z;
+    int a1;
+    int b1;
+    float a2;
+    float b2;
+    float c2;
+    char a3;
+    char b3;
+    char c3;
+    char d3;
+    char e3;
+}
+void baz(int intvalue1) {
+    intvalue1:int = (1:int);
+    intvalue1:int = (2:int);
+    intvalue1:int = (3:int);
+    return ;
+}
+int main(char[] x, int[][] y, float[][][] z) {
+    int[] indexed1;
+    int[][][] indexed3;
+    int a;
+    float b;
+    char c;
+    (if(((1:int)||(2:int))) {
+        a:int = (3:int);
+    })
+    (if(((1:int)||(2:int))) {
+        a:int = (3:int);
+    } else {
+        a:int = (4:int);
+    })
+    (while(((1:int)||(2:int))) {
+    })
+    (while(((1:int)||(2:int))) {
+        a:int = (1:int);
+        b:float = (2:int);
+        c:char = (3:int);
+    })
+    (indexed1:int[])[(1:int)]:int = ((2:int)||(3:int));
+    return ((1:int)||(2:int));
+    func0();
+    func1((1:int));
+    func3((1:int), (2:int), (3:int));
+    (if((1:int)) {
+      (if((2:int)) {
+        a:int = (3:int);
+      } else {
+        a:int = (4:int);
+      })
+    } else {
+      (if((5:int)) {
+        (if((6:int)) {
+          a:int = (7:int);
+        } else {
+          (while((8:int)) {
+            (if((9:int)) {
+              a:int = (10:int);
+            } else {
+              (if((11:int)) {
+                a:int = (12:int);
+              } else {
+                a:int = (13:int);
+              })
+            })
+          })
+        })
+      })
+    })
+    a:int = (b:float);
+    a:int = ((indexed1:int[])[(1:int)]:int);
+    a:int = ((((indexed3:int[][][])[(1:int)]:int[][])[(2:int)]:int[])[(3:int)]:int);
+    a:int = ((((indexed3:int[][][])[((0:int)>=(5:int))]:int[][])[(fooreturn((1:int), (func1(((0:int)&&(1:int))):int), (3.000000:float)):int)]:int[])[((1:int)+((indexed1:int[])[(3:int)]:int))]:int);
+    a:int = (1:int);
+    a:int = (1.100000:float);
+    a:int = ("111":char);
+    a:int = (b:float);
+    a:int = (func0():int);
+    a:int = (func1((1:int)):int);
+    a:int = (func2((1:int), (2:int)):int);
+    a:int = (func3((1:int), (2:int), (3:int)):int);
+    indexed1:int[] = (new int[(2:int)]:int);
+    a:int = (-(1:int));
+    a:int = (!(1:int));
+    a:int = ((1:int)*(2:int));
+    a:int = ((1:int)/(2:int));
+    a:int = ((1:int)+(2:int));
+    a:int = ((1:int)-(2:int));
+    a:int = ((1:int)==(2:int));
+    a:int = ((1:int)<=(2:int));
+    a:int = ((1:int)>=(2:int));
+    a:int = ((1:int)<(2:int));
+    a:int = ((1:int)>(2:int));
+    a:int = ((1:int)&&(2:int));
+    a:int = ((1:int)||(2:int));
+    a:int = ((-(1:int))||(((2:int)*(3:int))>=((4:int)+((5:int)/(6:int)))));
+    a:int = ((((0:int)&&(1:int))+(((fooreturn((2:int), (func1(((1:int)+((3:int)/(7:int)))):int), (3:int)):int)/(a:int))*(3:int)))+(new int[(7:int)]:int));
+}

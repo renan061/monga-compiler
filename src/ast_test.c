@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "macros.h"
 #include "parser.h"
 #include "ast.h"
 #include "yacc.h"
+#include "sem.h"
 
 #define DEBUGGING 0
-#define TEST_ERROR(...) printf(__VA_ARGS__); exit(1);
 
 // ==================================================
 //
@@ -23,20 +25,19 @@ static void print_program(ProgramNode* program);
 static void print_def(DefNode* def, int layer);
 static void print_type(TypeNode* type);
 static void print_id(IdNode* id);
-static void print_param(ParamNode* param);
 static void print_cmd(CmdNode* cmd, int layer);
 static void print_var(VarNode* var, int layer);
 static void print_exp(ExpNode* exp);
 static void print_call(CallNode* call);
 
-int main(int argc, char *argv[]) {
-	if (yyparse()) {
-		printf("Parsing failed");
-		return 0;
-	}
+int main() {
+	ProgramNode* program;
 
-	ProgramNode* program = ast_program_node();
+	yyparse();
+	program = ast_get_program();
+	sem_type_check_program(program);
 	print_program(program);
+
     return 0;
 }
 
@@ -70,7 +71,18 @@ static void print_def(DefNode* def, int layer) {
 			printf("()");
 		} else {
 			printf("(");
-			print_param(def->u.func.params);
+			DefNode* aux = def->u.func.params;
+			while (1) { // It's ugly but necessary
+				print_type(aux->u.var.type);
+				printf(" ");
+				print_id(aux->u.var.id);
+				if (aux->next != NULL) {
+					printf(", ");
+					aux = aux->next;
+				} else {
+					break;
+				}
+			}
 			printf(")");
 		}
 		printf(" {\n");
@@ -79,7 +91,7 @@ static void print_def(DefNode* def, int layer) {
 		printf("}\n");
 		break;
 	default:
-		TEST_ERROR("print_def: invalid tag");
+		MONGA_ERR("print_def: invalid tag");
 	}
 
 	if (def->next != NULL) {
@@ -103,35 +115,31 @@ static void print_type(TypeNode* type) {
 	case TYPE_VOID:
 		printf("void");
 		break;
-	case TYPE_ARRAY:
-		print_type(type->array);
+	case TYPE_INDEXED:
+		print_type(type->indexed);
 		printf("[]");
 		break;
 	default:
-		TEST_ERROR("print_type: invalid tag");
+		MONGA_ERR("print_type: invalid tag");
 	}
 }
 
 static void print_id(IdNode* id) {
 	test_log("print_id");
-	printf("%s", id->str);
-
-	// Id list
-	if (id->next != NULL) {
-		printf(", ");
-		print_id(id->next);
-	}
+	printf("%s", id->u.str);
 }
 
-static void print_param(ParamNode* param) {
-	test_log("print_param");
-
-	print_type(param->type);
-	printf(" ");
-	print_id(param->id);
-	if (param->next != NULL) {
-		printf(", ");
-		print_param(param->next);
+static void print_id_ref(IdNode* id) {
+	test_log("print_id_ref");
+	switch (id->u.def->tag) {
+		case DEF_VAR:
+			printf("%s", id->u.def->u.var.id->u.str);
+			break;
+		case DEF_FUNC:
+			printf("%s", id->u.def->u.func.id->u.str);
+			break;
+		default:
+			MONGA_ERR("print_id_def: invalid def tag");
 	}
 }
 
@@ -197,7 +205,7 @@ static void print_cmd(CmdNode* cmd, int layer) {
 		printf(";\n");
 		break;
 	default:
-		TEST_ERROR("print_cmd: invalid tag");
+		MONGA_ERR("print_cmd: invalid tag");
 	}
 
 	// Cmd list
@@ -212,7 +220,9 @@ void print_var(VarNode* var, int layer) {
 	switch (var->tag) {
 	case VAR_ID:
 		print_tabs(layer);
-		print_id(var->u.id);
+		print_id_ref(var->u.id);
+		printf(":");
+		print_type(var->type);
 		break;
 	case VAR_INDEXED:
 		print_tabs(layer);
@@ -220,9 +230,11 @@ void print_var(VarNode* var, int layer) {
 		printf("[");
 		print_exp(var->u.indexed.exp2);
 		printf("]");
+		printf(":");
+		print_type(var->type);
 		break;
 	default:
-		TEST_ERROR("print_var: invalid tag");
+		MONGA_ERR("print_var: invalid tag");
 	}
 }
 
@@ -232,26 +244,32 @@ void print_exp(ExpNode* exp) {
 	printf("(");
 	switch (exp->tag) {
 	case EXP_KINT:
-		printf("%d", exp->u.intvalue);
+		printf("%d:", exp->u.intvalue);
+		print_type(exp->type);
 		break;
 	case EXP_KFLOAT:
-		printf("%f", exp->u.floatvalue);
+		printf("%f:", exp->u.floatvalue);
+		print_type(exp->type);
 		break;
 	case EXP_KSTR:
-		printf("%s", exp->u.strvalue);
+		printf("%s:", exp->u.strvalue);
+		print_type(exp->type);
 		break;
 	case EXP_VAR:
 		print_var(exp->u.var, 0);
 		break;
 	case EXP_CALL:
 		print_call(exp->u.call);
+		printf(":");
+		print_type(exp->type);
 		break;
 	case EXP_NEW:
 		printf("new ");
 		print_type(exp->u.new.type);
 		printf("[");
 		print_exp(exp->u.new.exp);
-		printf("]");
+		printf("]:");
+		print_type(exp->type);
 		break;
 	case EXP_UNARY:
 		print_lex_symbol(exp->u.unary.symbol);
@@ -263,7 +281,7 @@ void print_exp(ExpNode* exp) {
 		print_exp(exp->u.binary.exp2);
 		break;
 	default:
-		TEST_ERROR("print_exp: invalid tag");
+		MONGA_ERR("print_exp: invalid tag");
 	}
 	printf(")");
 
@@ -277,10 +295,10 @@ void print_exp(ExpNode* exp) {
 static void print_call(CallNode* call) {
 	test_log("print_call");
 
-	print_id(call->id);
+	print_id(call->id->u.def->u.func.id);
 	printf("(");
-	if (call->params != NULL) {
-		print_exp(call->params);
+	if (call->args != NULL) {
+		print_exp(call->args);
 	}
 	printf(")");
 }
@@ -330,7 +348,7 @@ static void print_lex_symbol(LexSymbol symbol) {
 		printf(">=");
 		break;
 	default:
-		TEST_ERROR("print_lex_symbol: invalid symbol");
+		MONGA_ERR("print_lex_symbol: invalid symbol");
 	}
 }
 

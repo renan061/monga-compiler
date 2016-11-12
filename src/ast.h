@@ -1,27 +1,12 @@
 #if !defined(ast_h)
 #define ast_h
 
-// ==================================================
-//
-//	Typedefs
-//
-// ==================================================
-
-typedef struct ProgramNode ProgramNode;
-typedef struct DefNode DefNode;
-typedef struct TypeNode TypeNode;
-typedef struct IdNode IdNode;
-typedef struct ParamNode ParamNode;
-typedef struct CmdNode CmdNode;
-typedef struct VarNode VarNode;
-typedef struct ExpNode ExpNode;
-typedef struct CallNode CallNode;
-
+// Aesthetic
 typedef unsigned int LexSymbol;
 
 // ==================================================
 //
-//	Enums
+//	Tags
 //
 // ==================================================
 
@@ -35,7 +20,7 @@ typedef enum TypeE {
 	TYPE_FLOAT,
 	TYPE_CHAR,
 	TYPE_VOID,
-	TYPE_ARRAY,
+	TYPE_INDEXED,
 } TypeE;
 
 typedef enum CmdE {
@@ -71,9 +56,18 @@ typedef enum CallE {
 
 // ==================================================
 //
-//	Structs
+//	Node Structs
 //
 // ==================================================
+
+typedef struct ProgramNode ProgramNode;
+typedef struct DefNode DefNode;
+typedef struct TypeNode TypeNode;
+typedef struct IdNode IdNode;
+typedef struct CmdNode CmdNode;
+typedef struct VarNode VarNode;
+typedef struct ExpNode ExpNode;
+typedef struct CallNode CallNode;
 
 struct ProgramNode {
 	DefNode* defs;
@@ -82,15 +76,18 @@ struct ProgramNode {
 struct DefNode {
 	DefE tag;
 	DefNode* next;
+	
 	union {
+		// DefVar
 		struct {
 			TypeNode* type;
 			IdNode* id;
 		} var;
+		// DefFunc
 		struct {
 			TypeNode* type;
 			IdNode* id;
-			ParamNode* params;
+			DefNode* params;
 			CmdNode* cmd;
 		} func;
 	} u;
@@ -98,23 +95,21 @@ struct DefNode {
 
 struct TypeNode {
 	TypeE tag;
-	TypeNode* array; // Only for TYPE_ARRAY
+	TypeNode* indexed; // Only for TYPE_INDEXED
 };
 
 struct IdNode {
-	const char* str;
-	IdNode* next;
-};
-
-struct ParamNode {
-	ParamNode* next;
-	TypeNode* type;
-	IdNode* id;
+	int line;
+	union {
+		const char* str;
+		DefNode* def;
+	} u;
 };
 
 struct CmdNode {
 	CmdE tag;
 	CmdNode* next;
+
 	union {
 		// CmdBlock
 		struct {
@@ -145,6 +140,9 @@ struct CmdNode {
 
 struct VarNode {
 	VarE tag;
+	int line;
+	TypeNode* type;
+
 	union {
 		// VarId
 		IdNode* id;
@@ -157,7 +155,10 @@ struct VarNode {
 
 struct ExpNode {
 	ExpE tag;
+	int line; // Uninitialized for ExpInt, ExpFloat and ExpStr
+	TypeNode* type;
 	ExpNode* next;
+	
 	union {
 		// ExpKInt
 		int intvalue;
@@ -189,7 +190,7 @@ struct ExpNode {
 
 struct CallNode {
 	IdNode* id;
-	ExpNode* params;
+	ExpNode* args;
 };
 
 // ==================================================
@@ -199,29 +200,22 @@ struct CallNode {
 // ==================================================
 
 // Program
-extern ProgramNode* ast_program_node(); // Getter
+extern ProgramNode* ast_get_program(); // Getter
 extern void ast_program(DefNode *defs); // Setter
 
 // Def
-extern DefNode* ast_def_list(DefNode* list, DefNode* def);
 extern DefNode* ast_def_var(TypeNode* type, IdNode* id);
-extern DefNode* ast_def_func(TypeNode* type, IdNode* id, ParamNode* params,
+extern DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	CmdNode* block);
 
 // Type
 extern TypeNode* ast_type(TypeE tag);
-extern TypeNode* ast_type_array(TypeNode* node);
+extern TypeNode* ast_type_indexed(TypeNode* node);
 
 // Id
-extern IdNode* ast_id_list(IdNode* list, IdNode* id);
-extern IdNode* ast_id(const char* id);
-
-// Param
-extern ParamNode* ast_param_list(ParamNode* list, ParamNode* param);
-extern ParamNode* ast_param(TypeNode* type, IdNode* id);
+extern IdNode* ast_id(int line, const char* id);
 
 // Cmd
-extern CmdNode* ast_cmd_list(CmdNode* list, CmdNode* cmd);
 extern CmdNode* ast_cmd_block(DefNode* defs, CmdNode* cmds);
 extern CmdNode* ast_cmd_if(ExpNode* exp, CmdNode* cmd);
 extern CmdNode* ast_cmd_if_else(ExpNode* exp, CmdNode* ifcmd, CmdNode* elsecmd);
@@ -232,20 +226,20 @@ extern CmdNode* ast_cmd_call(CallNode* call);
 
 // Var
 extern VarNode* ast_var(IdNode* id);
-extern VarNode* ast_var_indexed(ExpNode* exp1, ExpNode* exp2);
+extern VarNode* ast_var_indexed(int line, ExpNode* exp1, ExpNode* exp2);
 
 // Exp
-extern ExpNode* ast_exp_list(ExpNode* list, ExpNode* exp);
-extern ExpNode* ast_exp_binary(LexSymbol symbol, ExpNode *exp1, ExpNode *exp2);
-extern ExpNode* ast_exp_unary(LexSymbol symbol, ExpNode *exp);
+extern ExpNode* ast_exp_binary(int line, LexSymbol symbol, ExpNode *exp1,
+	ExpNode *exp2);
+extern ExpNode* ast_exp_unary(int line, LexSymbol symbol, ExpNode *exp);
 extern ExpNode* ast_exp_int(int value);
 extern ExpNode* ast_exp_float(float value);
 extern ExpNode* ast_exp_str(const char* value);
 extern ExpNode* ast_exp_var(VarNode* var);
 extern ExpNode* ast_exp_call(CallNode* call);
-extern ExpNode* ast_exp_new(TypeNode* type, ExpNode* exp);
+extern ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* exp);
 
 // Call
-extern CallNode* ast_call(IdNode* id, ExpNode* params);
+extern CallNode* ast_call(IdNode* id, ExpNode* args);
 
 #endif
