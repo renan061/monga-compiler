@@ -1,15 +1,36 @@
 /* Ok type checking */
-void func0() {}
-void func1(int a1) {}
-void func2(int a2, int b2) {}
-void func3(int a3, int b3, int c3) {}
-
 void main() {
-	/* Testing Call */
-	func0();
-	func1(1);
-	func2(1, 2);
-	func3(1, 2, 3);
+	char c;
+	int i;
+	float f;
+	char[] str;
+	int[] intarray1;
+	int[] intarray2;
+	float[][][] floatarray1;
+	float[][][] floatarray2;
 
-	/* */
+	/* Cmd */
+		/* CmdIf */
+		if (c) {}
+		if (i) {}
+		/* CmdIfElse */
+		if (c) {} else {}
+		if (i) {} else {}
+		/* CmdWhile */
+		while (c) {}
+		while (i) {}
+		/* CmdAsg */
+		c = "c";
+		i = c;
+		i = 1;
+		f = c;
+		f = i;
+		f = 1.0;
+		str = new char[10];
+		intarray1 = intarray1;
+		intarray1[0] = intarray1[0];
+		floatarray1 = floatarray2;
+		floatarray1[0] = floatarray2[0];
+		/* CmdReturn */
+		/* CmdCall */
 }

@@ -271,6 +271,11 @@ void print_exp(ExpNode* exp) {
 		printf("]:");
 		print_type(exp->type);
 		break;
+	case EXP_CAST:
+		print_exp(exp->u.cast);
+		printf(" as ");
+		print_type(exp->type);
+		break;
 	case EXP_UNARY:
 		print_lex_symbol(exp->u.unary.symbol);
 		print_exp(exp->u.unary.exp);

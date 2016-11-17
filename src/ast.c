@@ -321,6 +321,17 @@ ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* size) {
 	return n;
 }
 
+ExpNode* ast_exp_cast(TypeNode* type, ExpNode* exp) {
+	ExpNode* n;
+	MONGA_MALLOC(n, ExpNode);
+	n->tag = EXP_CAST;
+	n->line = exp->line;
+	n->type = type;
+	n->next = NULL;
+	n->u.cast = exp;
+	return n;	
+}
+
 // Call
 CallNode* ast_call(IdNode* id, ExpNode* args) {
 	CallNode* n;

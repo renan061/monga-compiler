@@ -16,8 +16,56 @@ static void sem_error(int line, const char* details, const char* id);
 static int tp_equal(TypeNode* type1, TypeNode* type2);
 static int tp_in(TypeNode* type, TypeNode* types[], int size);
 
+static void check_and_cast(int line, const char* details, 
+	TypeNode* desirable, ExpNode** ptrexp);
+
 TypeNode *type_int, *type_float, *type_char;
 TypeNode *types_int_char[2], *types_int_float_char[3];
+
+// ==================================================
+//
+//	Error Handling
+//
+// ==================================================
+
+static void print_type_for_error(TypeNode* type) {
+	if (type == NULL) {
+		return;
+	}
+
+	switch (type->tag) {
+	case TYPE_INT:
+		fprintf(stderr, "int");
+		break;
+	case TYPE_FLOAT:
+		fprintf(stderr, "float");
+		break;
+	case TYPE_CHAR:
+		fprintf(stderr, "char");
+		break;
+	case TYPE_VOID:
+		fprintf(stderr, "void");
+		break;
+	case TYPE_INDEXED:
+		print_type_for_error(type->indexed);
+		fprintf(stderr, "[]");
+		break;
+	default:
+		MONGA_INTERNAL_ERR("print_type_for_error: invalid tag");
+	}
+}
+
+static void type_error(int line, const char* details, TypeNode* desirable,
+	TypeNode* obtained) {
+
+	fprintf(stderr, "semantical error line %d (%s - cannot use \"",
+		line, details);
+	print_type_for_error(obtained);
+	fprintf(stderr, "\" as \"");
+	print_type_for_error(desirable);
+	fprintf(stderr, "\")\n");
+	exit(1);
+}
 
 // ==================================================
 //
@@ -122,6 +170,8 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 }
 
 static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
+	int line = cmd->line;
+
 	switch (cmd->tag) {
 	case CMD_BLOCK:
 		if (cmd->u.block.defs != NULL) {
@@ -133,20 +183,16 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		break;
 	case CMD_IF:
 		type_check_exp(table, cmd->u.ifwhile.exp);
-		// TODO: Check exp type int
-		if (0) {
-			sem_error(-1, "invalid type for \"if\" expression", NULL);
-		}
+		check_and_cast(line, "invalid \"if\" expression",
+			type_int, &cmd->u.ifwhile.exp);
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd);
 		st_leave_scope(table);
 		break;
 	case CMD_IF_ELSE:
 		type_check_exp(table, cmd->u.ifelse.exp);
-		// TODO: Check exp type int
-		if (0) {
-			sem_error(-1, "invalid type for \"ifelse\" expression", NULL);
-		}
+		check_and_cast(line, "invalid \"if else\" expression",
+			type_int, &cmd->u.ifwhile.exp);
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifelse.ifcmd);
 		st_leave_scope(table);
@@ -156,10 +202,8 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		break;
 	case CMD_WHILE:
 		type_check_exp(table, cmd->u.ifwhile.exp);
-		// TODO: Check exp type int
-		if (0) {
-			sem_error(-1, "invalid type for \"while\" expression", NULL);
-		}
+		check_and_cast(line, "invalid \"while\" expression",
+			type_int, &cmd->u.ifwhile.exp);
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd);
 		st_leave_scope(table);
@@ -167,22 +211,8 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
-
-		if (cmd->u.asg.exp->tag == EXP_NEW) { // For "int[] a; a = new int[10];"
-			TypeNode* idxtype = ast_type_indexed(cmd->u.asg.exp->u.new.type);
-			if (!tp_equal(cmd->u.asg.var->type, idxtype)) {
-				sem_error(cmd->u.asg.var->line,
-					"invalid type for array assignment", NULL);
-			}
-			free(idxtype);
-		} else if (!tp_equal(cmd->u.asg.var->type, cmd->u.asg.exp->type)) {
-			if (!tp_in(cmd->u.asg.var->type, types_int_float_char, 3) || 
-				!tp_in(cmd->u.asg.exp->type, types_int_float_char, 3)) {
-				sem_error(cmd->u.asg.var->line, "invalid type for assignment",
-					NULL);
-			}
-		}
-		
+		check_and_cast(line, "invalid assignment expression",
+			cmd->u.asg.var->type, &cmd->u.asg.exp);
 		break;
 	case CMD_RETURN:
 		if (cmd->u.ret != NULL) {
@@ -435,4 +465,83 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size) {
 		}
 	}
 	return 0;
+}
+
+
+// Temp
+void print_exp_tag(ExpE tag) {
+	fprintf(stderr, "print_exp_tag\n");
+	switch (tag) {
+		case EXP_KINT:		fprintf(stderr, "ExpKInt\n");	break;
+		case EXP_KFLOAT:	fprintf(stderr, "ExpKFloat\n");	break;
+		case EXP_KSTR:		fprintf(stderr, "ExpKStr\n");	break;
+		case EXP_VAR:		fprintf(stderr, "ExpVar\n");	break;
+		case EXP_CALL:		fprintf(stderr, "ExpCall\n");	break;
+		case EXP_NEW:		fprintf(stderr, "ExpNew\n");	break;
+		case EXP_CAST:		fprintf(stderr, "ExpCast\n");	break;
+		case EXP_UNARY:		fprintf(stderr, "ExpUnary\n");	break;
+		case EXP_BINARY:	fprintf(stderr, "ExpBinary\n");	break;
+		default:
+			fprintf(stderr, "wtf %d\n", tag);
+	}
+}
+
+
+// Always cast up, never cast down:
+// 	- char > int > float
+// 	- type1[] never casts to type2[]
+static void check_and_cast(int line, const char* details, 
+	TypeNode* desirable, ExpNode** ptrexp) {
+
+	ExpNode* exp = *ptrexp;
+
+	// For "int[] a; a = new int[10];"
+	// For "int[] func() { return new int[10]; }"
+	if (exp->tag == EXP_NEW) {
+		TypeNode* idxtype = ast_type_indexed(exp->u.new.type);
+		if (!tp_equal(desirable, idxtype)) {
+			type_error(line, "invalid type for array",
+				desirable, idxtype);
+		}
+		free(idxtype);
+		return;
+	}
+
+	switch (desirable->tag) {
+		case TYPE_CHAR:
+			if (exp->type->tag != TYPE_CHAR) {
+				type_error(line, details, desirable, exp->type);
+			}
+			return;
+		case TYPE_INT:
+			switch (exp->type->tag) {
+			case TYPE_CHAR:
+				*ptrexp = ast_exp_cast(type_int, exp);
+			case TYPE_INT:
+				return;
+			default:
+				type_error(line, details, desirable, exp->type);
+			}
+		case TYPE_FLOAT:
+			switch (exp->type->tag) {
+			case TYPE_CHAR:
+			case TYPE_INT:
+				*ptrexp = ast_exp_cast(type_float, exp);
+			case TYPE_FLOAT:
+				return;
+			default:
+				type_error(line, details, desirable, exp->type);
+			}
+		case TYPE_VOID:
+			// TODO: Test
+			type_error(line, details, desirable, exp->type);
+		case TYPE_INDEXED:
+			if (exp->tag != EXP_VAR || exp->type->tag != TYPE_INDEXED ||
+				!tp_equal(desirable, exp->u.var->type)) {
+				type_error(line, details, desirable, exp->u.var->type);
+			}
+			return;
+		default:
+			MONGA_INTERNAL_ERR("check_and_cast: invalid type tag");
+	}
 }

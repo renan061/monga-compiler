@@ -178,10 +178,7 @@ struct ExpNode {
 			ExpNode* size;
 		} new;
 		// ExpCast
-		struct {
-			TypeNode* type;
-			ExpNode* exp;
-		} cast;
+		ExpNode* cast;
 		// ExpUnary
 		struct {
 			LexSymbol symbol;
@@ -246,6 +243,7 @@ extern ExpNode* ast_exp_str(const char* value);
 extern ExpNode* ast_exp_var(VarNode* var);
 extern ExpNode* ast_exp_call(CallNode* call);
 extern ExpNode* ast_exp_new(int line, TypeNode* type, ExpNode* size);
+extern ExpNode* ast_exp_cast(TypeNode* type, ExpNode* exp); // Used by sem.c
 
 // Call
 extern CallNode* ast_call(IdNode* id, ExpNode* args);

@@ -1,1 +1,1 @@
-semantical error line 4 (invalid type for assignment)
+semantical error line 4 (invalid assignment expression - cannot use "int[]" as "float")

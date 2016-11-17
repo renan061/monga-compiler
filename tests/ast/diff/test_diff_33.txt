@@ -1,4 +1,0 @@
-semantical error line 2																																																												   |	void main() {
-																																																														   >	    (if((main():void)) {
-																																																														   >	    })
-																																																														   >	}
