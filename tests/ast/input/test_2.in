@@ -1,5 +1,5 @@
 /* Ok type checking */
-void main() {
+float main() {
 	char c;
 	int i;
 	float f;
@@ -41,5 +41,7 @@ void main() {
 		floatarray1 = floatarray2;
 		floatarray1[0] = floatarray2[0];
 		/* CmdReturn */
-		/* CmdCall */
+		return c;
+		return i;
+		return f;
 }

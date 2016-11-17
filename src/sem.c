@@ -7,7 +7,8 @@
 #include "yacc.h"
 
 static void type_check_def(SymbolTable* table, DefNode* def);
-static void type_check_cmd(SymbolTable* table, CmdNode* cmd);
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
+	TypeNode* funcreturn);
 static void type_check_var(SymbolTable* table, VarNode* var);
 static void type_check_exp(SymbolTable* table, ExpNode* exp);
 static void type_check_call(SymbolTable* table, CallNode* call);
@@ -19,7 +20,7 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size);
 static void check_and_cast(int line, const char* details, 
 	TypeNode* desirable, ExpNode** ptrexp);
 
-TypeNode *type_int, *type_float, *type_char;
+TypeNode *type_int, *type_float, *type_char, *type_void;
 TypeNode *types_int_char[2], *types_int_float_char[3];
 
 // ==================================================
@@ -78,6 +79,7 @@ void sem_type_check_program(ProgramNode* program) {
 	type_int = ast_type(TYPE_INT);
 	type_float = ast_type(TYPE_FLOAT);
 	type_char = ast_type(TYPE_CHAR);
+	type_void = ast_type(TYPE_VOID);
 	types_int_char[0] = type_int;
 	types_int_char[1] = type_char;
 	types_int_float_char[0] = type_int;
@@ -97,15 +99,12 @@ void sem_type_check_program(ProgramNode* program) {
 // ==================================================
 
 static void type_check_def(SymbolTable* table, DefNode* def) {
-	CmdNode *cmd;
-
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
 			sem_error(def->u.var.id->line, "redeclaration",
 				def->u.var.id->u.str);
 		}
-		// TODO: cant "void int;"
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
@@ -116,48 +115,7 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 		if (def->u.func.params != NULL) {
 			type_check_def(table, def->u.func.params);
 		}
-		type_check_cmd(table, def->u.func.block);
-
-		// TODO: Is this really the way to do it?
-		cmd = def->u.func.block->u.block.cmds;
-		if (def->u.func.type->tag != TYPE_VOID) {
-			while (cmd != NULL) {
-				if (cmd->tag == CMD_RETURN) {
-					// TODO: Create function for this
-					if (cmd->u.ret->tag == EXP_NEW) { // For "return new int[10];"
-						TypeNode* idxtype =
-							ast_type_indexed(cmd->u.ret->u.new.type);
-						if (!tp_equal(def->u.func.type, idxtype)) {
-							sem_error(def->u.func.id->line,
-								"invalid type for array return", NULL);
-						}
-						// TODO: Does not have a test
-						free(idxtype);
-					} else if (!tp_equal(def->u.func.type, cmd->u.ret->type)) {
-						if (!tp_in(def->u.func.type, types_int_float_char, 3) || 
-							!tp_in(cmd->u.ret->type, types_int_float_char, 3)) {
-							sem_error(def->u.func.id->line,
-								"invalid type for return", NULL);
-							// TODO: Returning wrong line
-							// More tests for this
-						}
-					}
-				}
-				cmd = cmd->next;
-			}
-		} else {
-			while (cmd != NULL) {
-				if (cmd->tag == CMD_RETURN) {
-					if (cmd->u.ret != NULL) {
-						sem_error(def->u.func.id->line,
-							"invalid type for return - func void", NULL);
-						// TODO: Returning wrong line
-					}
-				}
-				cmd = cmd->next;
-			}
-		}
-		
+		type_check_cmd(table, def->u.func.block, def->u.func.type);		
 		st_leave_scope(table);
 		break;
 	default:
@@ -169,7 +127,9 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 	}
 }
 
-static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
+	TypeNode* funcreturn) {
+
 	int line = cmd->line;
 
 	switch (cmd->tag) {
@@ -178,7 +138,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 			type_check_def(table, cmd->u.block.defs);
 		}
 		if (cmd->u.block.cmds != NULL) {
-			type_check_cmd(table, cmd->u.block.cmds);
+			type_check_cmd(table, cmd->u.block.cmds, funcreturn);
 		}
 		break;
 	case CMD_IF:
@@ -186,7 +146,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		check_and_cast(line, "invalid \"if\" expression",
 			type_int, &cmd->u.ifwhile.exp);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifwhile.cmd);
+		type_check_cmd(table, cmd->u.ifwhile.cmd, funcreturn);
 		st_leave_scope(table);
 		break;
 	case CMD_IF_ELSE:
@@ -194,10 +154,10 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		check_and_cast(line, "invalid \"if else\" expression",
 			type_int, &cmd->u.ifwhile.exp);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifelse.ifcmd);
+		type_check_cmd(table, cmd->u.ifelse.ifcmd, funcreturn);
 		st_leave_scope(table);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifelse.elsecmd);
+		type_check_cmd(table, cmd->u.ifelse.elsecmd, funcreturn);
 		st_leave_scope(table);
 		break;
 	case CMD_WHILE:
@@ -205,7 +165,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 		check_and_cast(line, "invalid \"while\" expression",
 			type_int, &cmd->u.ifwhile.exp);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifwhile.cmd);
+		type_check_cmd(table, cmd->u.ifwhile.cmd, funcreturn);
 		st_leave_scope(table);
 		break;
 	case CMD_ASG:
@@ -217,6 +177,11 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 	case CMD_RETURN:
 		if (cmd->u.ret != NULL) {
 			type_check_exp(table, cmd->u.ret);
+			check_and_cast(line, "invalid type for return", funcreturn,
+				&cmd->u.ret);
+		} else if (funcreturn != NULL) {
+			type_error(line, "invalid type for return", funcreturn,
+				type_void);
 		}
 		break;
 	case CMD_CALL:
@@ -228,7 +193,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd) {
 
 	// Cmd list
 	if (cmd->next != NULL) {
-		type_check_cmd(table, cmd->next);
+		type_check_cmd(table, cmd->next, funcreturn);
 	}
 }
 
@@ -529,13 +494,11 @@ static void check_and_cast(int line, const char* details,
 			default:
 				type_error(line, details, desirable, exp->type);
 			}
-		case TYPE_VOID:
-			// TODO: Test
+		case TYPE_VOID: // TODO: Test
 			type_error(line, details, desirable, exp->type);
 		case TYPE_INDEXED:
-			if (exp->tag != EXP_VAR || exp->type->tag != TYPE_INDEXED ||
-				!tp_equal(desirable, exp->u.var->type)) {
-				type_error(line, details, desirable, exp->u.var->type);
+			if (!tp_equal(desirable, exp->type)) {
+				type_error(line, details, desirable, exp->type);
 			}
 			return;
 		default:

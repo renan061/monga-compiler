@@ -1,4 +1,4 @@
-void main() {
+float main() {
     char c;
     int i;
     float f;
@@ -37,4 +37,7 @@ void main() {
     (intarray1:int[])[(0:int)]:int = ((intarray1:int[])[(0:int)]:int);
     floatarray1:float[][][] = (floatarray2:float[][][]);
     (floatarray1:float[][][])[(0:int)]:float[][] = ((floatarray2:float[][][])[(0:int)]:float[][]);
+    return ((c:char) as float);
+    return ((i:int) as float);
+    return (f:float);
 }
