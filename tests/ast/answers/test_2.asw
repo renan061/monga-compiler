@@ -7,6 +7,11 @@ void main() {
     int[] intarray2;
     float[][][] floatarray1;
     float[][][] floatarray2;
+    c:char = ("c":char);
+    i:int = (1:int);
+    f:float = (1.000000:float);
+    (intarray1:int[])[((c:char) as int)]:int = (1:int);
+    (intarray1:int[])[(0:int)]:int = (1:int);
     (if(((c:char) as int)) {
     })
     (if((i:int)) {

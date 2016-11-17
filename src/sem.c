@@ -252,9 +252,8 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 		if (var->u.indexed.array->type->tag != TYPE_INDEXED) {
 			sem_error(var->line, "not indexed type", NULL);
 		}
-		if (!tp_in(var->u.indexed.index->type, types_int_float_char, 3)) {
-			sem_error(var->line, "invalid index type for array", NULL);
-		}
+		check_and_cast(var->line, "invalid index type for array", type_int,
+			&var->u.indexed.index);
 		var->type = var->u.indexed.array->type->indexed;
 		break;
 	default:
@@ -467,28 +466,26 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size) {
 	return 0;
 }
 
-
-// Temp
-void print_exp_tag(ExpE tag) {
-	fprintf(stderr, "print_exp_tag\n");
-	switch (tag) {
-		case EXP_KINT:		fprintf(stderr, "ExpKInt\n");	break;
-		case EXP_KFLOAT:	fprintf(stderr, "ExpKFloat\n");	break;
-		case EXP_KSTR:		fprintf(stderr, "ExpKStr\n");	break;
-		case EXP_VAR:		fprintf(stderr, "ExpVar\n");	break;
-		case EXP_CALL:		fprintf(stderr, "ExpCall\n");	break;
-		case EXP_NEW:		fprintf(stderr, "ExpNew\n");	break;
-		case EXP_CAST:		fprintf(stderr, "ExpCast\n");	break;
-		case EXP_UNARY:		fprintf(stderr, "ExpUnary\n");	break;
-		case EXP_BINARY:	fprintf(stderr, "ExpBinary\n");	break;
-		default:
-			fprintf(stderr, "wtf %d\n", tag);
-	}
-}
-
+// // Temp
+// void print_exp_tag(ExpE tag) {
+// 	fprintf(stderr, "print_exp_tag\n");
+// 	switch (tag) {
+// 		case EXP_KINT:		fprintf(stderr, "ExpKInt\n");	break;
+// 		case EXP_KFLOAT:	fprintf(stderr, "ExpKFloat\n");	break;
+// 		case EXP_KSTR:		fprintf(stderr, "ExpKStr\n");	break;
+// 		case EXP_VAR:		fprintf(stderr, "ExpVar\n");	break;
+// 		case EXP_CALL:		fprintf(stderr, "ExpCall\n");	break;
+// 		case EXP_NEW:		fprintf(stderr, "ExpNew\n");	break;
+// 		case EXP_CAST:		fprintf(stderr, "ExpCast\n");	break;
+// 		case EXP_UNARY:		fprintf(stderr, "ExpUnary\n");	break;
+// 		case EXP_BINARY:	fprintf(stderr, "ExpBinary\n");	break;
+// 		default:
+// 			fprintf(stderr, "wtf %d\n", tag);
+// 	}
+// }
 
 // Always cast up, never cast down:
-// 	- char > int > float
+// 	- char < int < float
 // 	- type1[] never casts to type2[]
 static void check_and_cast(int line, const char* details, 
 	TypeNode* desirable, ExpNode** ptrexp) {

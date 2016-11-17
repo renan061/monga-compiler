@@ -9,6 +9,15 @@ void main() {
 	float[][][] floatarray1;
 	float[][][] floatarray2;
 
+	/* Var */
+		/* VarId */
+		c = "c";
+		i = 1;
+		f = 1.0;
+		/* VarIndexed */
+		intarray1[c] = 1;
+		intarray1[0] = 1;
+
 	/* Cmd */
 		/* CmdIf */
 		if (c) {}
