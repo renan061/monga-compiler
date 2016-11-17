@@ -327,7 +327,8 @@ ExpNode* ast_exp_cast(TypeNode* type, ExpNode* exp) {
 	n->tag = EXP_CAST;
 	n->line = exp->line;
 	n->type = type;
-	n->next = NULL;
+	n->next = exp->next;
+	exp->next = NULL;
 	n->u.cast = exp;
 	return n;	
 }

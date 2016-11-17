@@ -1,3 +1,6 @@
+float foo(char c, int a, float b) {
+    return b;
+}
 /* Ok type checking */
 float main() {
 	char c;
@@ -44,4 +47,7 @@ float main() {
 		return c;
 		return i;
 		return f;
+		/* CmdCall */
+		main();
+		foo(c, c, c);
 }

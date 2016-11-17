@@ -13,7 +13,6 @@ static void type_check_var(SymbolTable* table, VarNode* var);
 static void type_check_exp(SymbolTable* table, ExpNode* exp);
 static void type_check_call(SymbolTable* table, CallNode* call);
 
-static void sem_error(int line, const char* details, const char* id);
 static int tp_equal(TypeNode* type1, TypeNode* type2);
 static int tp_in(TypeNode* type, TypeNode* types[], int size);
 
@@ -66,6 +65,15 @@ static void type_error(int line, const char* details, TypeNode* desirable,
 	print_type_for_error(desirable);
 	fprintf(stderr, "\")\n");
 	exit(1);
+}
+
+static void sem_error(int line, const char* details, const char* id) {
+	if (id == NULL) {
+		MONGA_ERR("semantical error line %d (%s)\n", line, details);
+	} else {
+		MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details,
+			id);
+	}
 }
 
 // ==================================================
@@ -360,40 +368,33 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 	params = def->u.func.params;
 	if (call->args != NULL) {
 		type_check_exp(table, call->args);
-		if (params != NULL) {
-			// Call with arguments and function has parameters
+		if (params != NULL) { // Call with arguments and function has parameters
 			DefNode* param = params;
-			ExpNode* arg = call->args;
-
+			ExpNode *arg = call->args, *previous = NULL;
 			while (arg != NULL) {
 				if (param == NULL) {
-					sem_error(line, "invalid arguments - too many",
+					sem_error(line, "too many arguments",
 						def->u.func.id->u.str);
 				}
-				if (!tp_equal(arg->type, param->u.var.type)) {
-					if (!tp_in(arg->type, types_int_float_char, 3) || 
-						!tp_in(param->u.var.type, types_int_float_char, 3)) {
-						sem_error(line, "invalid arguments - mismatching types",
-							def->u.func.id->u.str);
-					}
+				check_and_cast(line, "mismatching types of arguments",
+					param->u.var.type, &arg);
+				if (previous != NULL) {
+					previous->next = arg;
 				}
-
 				param = param->next;
+				previous = arg;
 				arg = arg->next;
 			}
 			if (param != NULL) {
-				sem_error(line, "invalid arguments - too few",
-						def->u.func.id->u.str);
+				sem_error(line, "too few arguments", def->u.func.id->u.str);
 			}
-		} else {
-			// Call with arguments, but function has no parameters
+		} else { // Call with arguments, but function has no parameters
 			sem_error(line, "invalid arguments - no parameters",
 				def->u.func.id->u.str);
 		}
-	} else {
-		// Call with no arguments, but function has parameters
+	} else { // Call with no arguments, but function has parameters
 		if (params != NULL) {
-			sem_error(line, "invalid arguments - too few",
+			sem_error(line, "too few arguments",
 				def->u.func.id->u.str);
 		}
 	}
@@ -404,15 +405,6 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 //	Auxiliary
 //
 // ==================================================
-
-static void sem_error(int line, const char* details, const char* id) {
-	if (id == NULL) {
-		MONGA_ERR("semantical error line %d (%s)\n", line, details);
-	} else {
-		MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details,
-			id);
-	}
-}
 
 static int tp_equal(TypeNode* type1, TypeNode* type2) {
 	int equal_tags = (type1->tag == type2->tag);
@@ -452,6 +444,7 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size) {
 // Always cast up, never cast down:
 // 	- char < int < float
 // 	- type1[] never casts to type2[]
+// Returns 1 when a cast is performed
 static void check_and_cast(int line, const char* details, 
 	TypeNode* desirable, ExpNode** ptrexp) {
 
@@ -494,7 +487,7 @@ static void check_and_cast(int line, const char* details,
 			default:
 				type_error(line, details, desirable, exp->type);
 			}
-		case TYPE_VOID: // TODO: Test
+		case TYPE_VOID:
 			type_error(line, details, desirable, exp->type);
 		case TYPE_INDEXED:
 			if (!tp_equal(desirable, exp->type)) {
