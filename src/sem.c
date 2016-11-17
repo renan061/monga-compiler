@@ -18,6 +18,8 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size);
 
 static void check_and_cast(int line, const char* details, 
 	TypeNode* desirable, ExpNode** ptrexp);
+static int tp_num(TypeNode* type);
+static TypeNode* highest_type_order(TypeNode* type1, TypeNode* type2);
 
 TypeNode *type_int, *type_float, *type_char, *type_void;
 TypeNode *types_int_char[2], *types_int_float_char[3];
@@ -257,9 +259,8 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		break;
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.size);
-		if (!tp_in(exp->u.new.size->type, types_int_char, 2)) {
-			sem_error(line, "invalid size type for array", NULL);
-		}
+		check_and_cast(line, "invalid size type for array", type_int,
+			&exp->u.new.size);
 		exp->type = type_int;
 		break;
 	case EXP_UNARY: {
@@ -269,15 +270,15 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 
 		switch (exp->u.unary.symbol) {
 		case '-':
-			if (!tp_in(type, types_int_float_char, 3)) {
+			if (!tp_num(type)) {
 				sem_error(line, "invalid type for unary minus", NULL);
+				// TODO: This is type_error
 			}
 			exp->type = type;
 			break;
 		case '!':
-			if (!tp_in(type, types_int_char, 2)) {
-				sem_error(line, "invalid type for unary not", NULL);
-			}
+			check_and_cast(line, "invalid type for unary not",
+				type_int, &exp->u.unary.exp);
 			exp->type = type_int;
 			break;
 		default:
@@ -287,33 +288,39 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 	case EXP_BINARY: {
 		type_check_exp(table, exp->u.binary.exp1);
 		type_check_exp(table, exp->u.binary.exp2);
-		TypeNode* type1 = exp->u.binary.exp1->type;
-		TypeNode* type2 = exp->u.binary.exp2->type;
+		ExpNode *exp1 = exp->u.binary.exp1, *exp2 = exp->u.binary.exp2;
+		TypeNode *type1 = exp1->type, *type2 = exp2->type;
 
 		switch (exp->u.binary.symbol) {
 		case '*':
 		case '/':
 		case '+':
 		case '-':
-			if (!tp_in(type1, types_int_float_char, 3)) {
+		// TODO: Type checking
+			if (!tp_num(type1)) {
 				sem_error(line,
 					"invalid type for first expression in \"*,/,+,-\"", NULL);
 				// TODO: Print symbol
 			}
-			if (!tp_in(type2, types_int_float_char, 3)) {
+			if (!tp_num(type2)) {
 				sem_error(line,
 					"invalid type for second expression in \"*,/,+,-\"", NULL);
 				// TODO: Print symbol
 			}
-			exp->type = (
-					tp_equal(type1, type_float) ||
-					tp_equal(type2, type_float)
-				) ? type_float : type_int;
+			exp->type = highest_type_order(type1, type2);
+			check_and_cast(line, "", exp->type, &exp1);
+			check_and_cast(line, "", exp->type, &exp2);
 			break;
 		case TK_EQUAL:
+			// TODO: Type checking
 			if (!tp_equal(type1, type2)) {
-				if (!tp_in(type1, types_int_float_char, 3) || 
-					!tp_in(type2, types_int_float_char, 3)) {
+				if (tp_num(type1) && tp_num(type2)) {
+					TypeNode* highest = highest_type_order(type1, type2);
+					check_and_cast(line, "invalid type in \"==\"", highest,
+						&exp1);
+					check_and_cast(line, "invalid type in \"==\"", highest,
+						&exp2);
+				} else {
 					sem_error(line, "invalid type in \"==\"", NULL);
 				}
 			}
@@ -441,10 +448,8 @@ static int tp_in(TypeNode* type, TypeNode* types[], int size) {
 // 	}
 // }
 
-// Always cast up, never cast down:
-// 	- char < int < float
-// 	- type1[] never casts to type2[]
-// Returns 1 when a cast is performed
+// Always casts up, never casts down: char < int < float
+// Obs.: type1[] never casts to type2[]
 static void check_and_cast(int line, const char* details, 
 	TypeNode* desirable, ExpNode** ptrexp) {
 
@@ -497,4 +502,20 @@ static void check_and_cast(int line, const char* details,
 		default:
 			MONGA_INTERNAL_ERR("check_and_cast: invalid type tag");
 	}
+}
+
+// Checks if type is TypeChar, TypeInt or TypeFloat
+static int tp_num(TypeNode* type) {
+	return !(type->tag == TYPE_VOID || type->tag == TYPE_INDEXED);
+}
+
+// char == int < float
+static TypeNode* highest_type_order(TypeNode* type1, TypeNode* type2) {
+	if (!tp_num(type1) || tp_num(type2)) {
+		return NULL;
+	}
+	if (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT) {
+		return type_float;
+	}
+	return type_int;
 }

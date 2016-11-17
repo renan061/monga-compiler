@@ -1,1 +1,1 @@
-semantical error line 3 (invalid size type for array)
+semantical error line 3 (invalid size type for array - cannot use "float" as "int")

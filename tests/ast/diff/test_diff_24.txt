@@ -1,0 +1,1 @@
+semantical error line 2 (invalid type in "==" - cannot use "void" as "int")			   |	semantical error line 2 (invalid type in "==")
