@@ -1,4 +1,0 @@
-semantical error line 3										   |	void main() {
-												   >	    char c;
-												   >	    c:char = ("str":char);
-												   >	}

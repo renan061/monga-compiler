@@ -6,6 +6,7 @@
 #include "ast.h"
 #include "yacc.h"
 #include "sem.h"
+#include "lex.h"
 
 #define DEBUGGING 0
 
@@ -18,7 +19,6 @@
 // Auxiliary
 static void test_log(const char* str);
 static void print_tabs(int layer);
-static void print_lex_symbol(LexSymbol symbol);
 
 // Print
 static void print_program(ProgramNode* program);
@@ -277,12 +277,16 @@ void print_exp(ExpNode* exp) {
 		print_type(exp->type);
 		break;
 	case EXP_UNARY:
-		print_lex_symbol(exp->u.unary.symbol);
+		printf("%s", lex_symbol(exp->u.unary.symbol));
 		print_exp(exp->u.unary.exp);
+		printf(":");
+		print_type(exp->type);
 		break;
 	case EXP_BINARY:
 		print_exp(exp->u.binary.exp1);
-		print_lex_symbol(exp->u.binary.symbol);
+		printf("%s", lex_symbol(exp->u.binary.symbol));
+		printf(":");
+		print_type(exp->type);
 		print_exp(exp->u.binary.exp2);
 		break;
 	default:
@@ -325,35 +329,3 @@ static void print_tabs(int layer) {
 		printf("  ");
 	}
 }
-
-static void print_lex_symbol(LexSymbol symbol) {
-	switch (symbol) {
-	case '!':
-	case '>':
-	case '<':
-	case '+':
-	case '-':
-	case '*':
-	case '/':
-		printf("%c", symbol);
-		break;
-	case TK_OR:
-		printf("||");
-		break;
-	case TK_AND:
-		printf("&&");
-		break;
-	case TK_EQUAL:
-		printf("==");
-		break;
-	case TK_LEQUAL:
-		printf("<=");
-		break;
-	case TK_GEQUAL:
-		printf(">=");
-		break;
-	default:
-		MONGA_ERR("print_lex_symbol: invalid symbol");
-	}
-}
-

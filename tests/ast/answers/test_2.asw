@@ -1,6 +1,9 @@
 float foo(char c, int a, float b) {
     return (b:float);
 }
+char[] bar() {
+    return ("str":char[]);
+}
 float main() {
     char c;
     int i;
@@ -35,7 +38,7 @@ float main() {
     f:float = ((c:char) as float);
     f:float = ((i:int) as float);
     f:float = (1.000000:float);
-    str:char[] = (new char[(10:int)]:int);
+    str:char[] = (new char[(10:int)]:char[]);
     intarray1:int[] = (intarray1:int[]);
     (intarray1:int[])[(0:int)]:int = ((intarray1:int[])[(0:int)]:int);
     floatarray1:float[][][] = (floatarray2:float[][][]);
@@ -45,4 +48,19 @@ float main() {
     return (f:float);
     main();
     foo((c:char), ((c:char) as int), ((c:char) as float));
+    c:char = ("":char);
+    str:char[] = ("str":char[]);
+    intarray1:int[] = (new int[(1:int)]:int[]);
+    i:int = (-(("1":char) as int):int);
+    i:int = (!(1:int):int);
+    i:int = (!(("1":char) as int):int);
+    i:int = ((("a":char) as int)+:int(("b":char) as int));
+    i:int = ((("c":char) as int)-:int(1:int));
+    i:int = ((1:int)*:int(2:int));
+    f:float = (((("a":char) as int)/:int(("b":char) as int)) as float);
+    f:float = (((("c":char) as int)+:int(1:int)) as float);
+    f:float = ((("c":char) as float)-:float(1.000000:float));
+    f:float = (((1:int)*:int(2:int)) as float);
+    f:float = (((1:int) as float)/:float(2.000000:float));
+    f:float = ((1.000000:float)+:float(2.000000:float));
 }

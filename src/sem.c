@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "macros.h"
 #include "ast.h"
 #include "symtable.h"
 #include "yacc.h"
+#include "lex.h"
 
 static void type_check_def(SymbolTable* table, DefNode* def);
 static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
@@ -13,9 +15,9 @@ static void type_check_var(SymbolTable* table, VarNode* var);
 static void type_check_exp(SymbolTable* table, ExpNode* exp);
 static void type_check_call(SymbolTable* table, CallNode* call);
 
+// Aux
 static int tp_equal(TypeNode* type1, TypeNode* type2);
 static int tp_in(TypeNode* type, TypeNode* types[], int size);
-
 static void check_and_cast(int line, const char* details, 
 	TypeNode* desirable, ExpNode** ptrexp);
 static int tp_num(TypeNode* type);
@@ -69,13 +71,19 @@ static void type_error(int line, const char* details, TypeNode* desirable,
 	exit(1);
 }
 
-static void sem_error(int line, const char* details, const char* id) {
-	if (id == NULL) {
-		MONGA_ERR("semantical error line %d (%s)\n", line, details);
-	} else {
-		MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details,
-			id);
-	}
+static void sem_error(int line, const char* details) {
+	MONGA_ERR("semantical error line %d (%s)\n", line, details);
+}
+
+static void sem_error_id(int line, const char* details, const char* id) {
+	MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details, id);
+}
+
+static void err_binop(int line, int expnum, LexSymbol symbol) {
+	const char *msg, *order, *sym = lex_symbol(symbol);
+	msg = "semantical error line %d (invalid type for %s expression in \"%s\")";
+	order = (expnum == 1) ? "first" : (expnum == 2) ? "second" : "";
+	MONGA_ERR(msg, line, order, sym);
 }
 
 // ==================================================
@@ -112,13 +120,13 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
-			sem_error(def->u.var.id->line, "redeclaration",
+			sem_error_id(def->u.var.id->line, "redeclaration",
 				def->u.var.id->u.str);
 		}
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
-			sem_error(def->u.func.id->line, "redeclaration",
+			sem_error_id(def->u.func.id->line, "redeclaration",
 				def->u.func.id->u.str);
 		}
 		st_enter_scope(table);
@@ -214,9 +222,9 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 	case VAR_ID:
 		def = st_find(table, var->u.id);
 		if (def == NULL) {
-			sem_error(var->u.id->line, "var not defined", var->u.id->u.str);
+			sem_error_id(var->u.id->line, "var not defined", var->u.id->u.str);
 		} else if (def->tag != DEF_VAR) {
-			sem_error(var->u.id->line, "not a variable", var->u.id->u.str);
+			sem_error_id(var->u.id->line, "not a variable", var->u.id->u.str);
 		}
 		var->u.id->u.def = def;
 		var->type = def->u.var.type;
@@ -225,7 +233,7 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 		type_check_exp(table, var->u.indexed.array);
 		type_check_exp(table, var->u.indexed.index);
 		if (var->u.indexed.array->type->tag != TYPE_INDEXED) {
-			sem_error(var->line, "not indexed type", NULL);
+			sem_error(var->line, "not indexed type");
 		}
 		check_and_cast(var->line, "invalid index type for array", type_int,
 			&var->u.indexed.index);
@@ -247,7 +255,8 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		exp->type = type_float;
 		break;
 	case EXP_KSTR:
-		exp->type = type_char;
+		exp->type = ((strlen(exp->u.strvalue) - 2) > 1) ?
+			ast_type_indexed(type_char) : type_char;
 		break;
 	case EXP_VAR:
 		type_check_var(table, exp->u.var);
@@ -261,7 +270,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		type_check_exp(table, exp->u.new.size);
 		check_and_cast(line, "invalid size type for array", type_int,
 			&exp->u.new.size);
-		exp->type = type_int;
+		exp->type = ast_type_indexed(exp->u.new.type);
 		break;
 	case EXP_UNARY: {
 		TypeNode *type;
@@ -271,10 +280,13 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		switch (exp->u.unary.symbol) {
 		case '-':
 			if (!tp_num(type)) {
-				sem_error(line, "invalid type for unary minus", NULL);
-				// TODO: This is type_error
+				sem_error(line, "invalid type for unary minus");
+			} else if (tp_equal(type, type_char)) {
+				check_and_cast(line, "", type_int, &exp->u.unary.exp);
+				exp->type = type_int;
+			} else {
+				exp->type = type;
 			}
-			exp->type = type;
 			break;
 		case '!':
 			check_and_cast(line, "invalid type for unary not",
@@ -296,20 +308,24 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		case '/':
 		case '+':
 		case '-':
-		// TODO: Type checking
+
+// =============================================================================
+// =============================================================================
+//
+//	binop
+//
+// =============================================================================
+// =============================================================================
+
 			if (!tp_num(type1)) {
-				sem_error(line,
-					"invalid type for first expression in \"*,/,+,-\"", NULL);
-				// TODO: Print symbol
+				err_binop(line, 1, exp->u.binary.symbol);
 			}
 			if (!tp_num(type2)) {
-				sem_error(line,
-					"invalid type for second expression in \"*,/,+,-\"", NULL);
-				// TODO: Print symbol
+				err_binop(line, 2, exp->u.binary.symbol);
 			}
 			exp->type = highest_type_order(type1, type2);
-			check_and_cast(line, "", exp->type, &exp1);
-			check_and_cast(line, "", exp->type, &exp2);
+			check_and_cast(line, "", exp->type, &exp->u.binary.exp1);
+			check_and_cast(line, "", exp->type, &exp->u.binary.exp2);
 			break;
 		case TK_EQUAL:
 			// TODO: Type checking
@@ -321,7 +337,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 					check_and_cast(line, "invalid type in \"==\"", highest,
 						&exp2);
 				} else {
-					sem_error(line, "invalid type in \"==\"", NULL);
+					sem_error(line, "invalid type in \"==\"");
 				}
 			}
 			exp->type = type_int;
@@ -334,14 +350,12 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		case TK_OR:
 			if (!tp_in(type1, types_int_float_char, 3)) {
 				sem_error(line,
-					"invalid type for first expression in \"<=,>=,<,>,&&,||\"",
-					NULL);
+					"invalid type for first expression in \"<=,>=,<,>,&&,||\"");
 				// TODO: Print symbol
 			}
 			if (!tp_in(type2, types_int_float_char, 3)) {
 				sem_error(line,
-					"invalid type for second expression in \"<=,>=,<,>,&&,||\"",
-					NULL);
+					"invalid type for second expression in \"<=,>=,<,>,&&,||\"");
 				// TODO: Print symbol
 			}
 			exp->type = type_int;
@@ -366,9 +380,9 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 
 	DefNode* def = st_find(table, call->id);
 	if (def == NULL) {
-		sem_error(line, "func not defined", call->id->u.str);
+		sem_error_id(line, "func not defined", call->id->u.str);
 	} else if (def->tag != DEF_FUNC) {
-		sem_error(line, "not a function", call->id->u.str);
+		sem_error_id(line, "not a function", call->id->u.str);
 	}
 	call->id->u.def = def;
 
@@ -380,7 +394,7 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 			ExpNode *arg = call->args, *previous = NULL;
 			while (arg != NULL) {
 				if (param == NULL) {
-					sem_error(line, "too many arguments",
+					sem_error_id(line, "too many arguments",
 						def->u.func.id->u.str);
 				}
 				check_and_cast(line, "mismatching types of arguments",
@@ -393,16 +407,15 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 				arg = arg->next;
 			}
 			if (param != NULL) {
-				sem_error(line, "too few arguments", def->u.func.id->u.str);
+				sem_error_id(line, "too few arguments", def->u.func.id->u.str);
 			}
 		} else { // Call with arguments, but function has no parameters
-			sem_error(line, "invalid arguments - no parameters",
+			sem_error_id(line, "invalid arguments - no parameters",
 				def->u.func.id->u.str);
 		}
 	} else { // Call with no arguments, but function has parameters
 		if (params != NULL) {
-			sem_error(line, "too few arguments",
-				def->u.func.id->u.str);
+			sem_error_id(line, "too few arguments", def->u.func.id->u.str);
 		}
 	}
 }
@@ -454,19 +467,6 @@ static void check_and_cast(int line, const char* details,
 	TypeNode* desirable, ExpNode** ptrexp) {
 
 	ExpNode* exp = *ptrexp;
-
-	// For "int[] a; a = new int[10];"
-	// For "int[] func() { return new int[10]; }"
-	if (exp->tag == EXP_NEW) {
-		TypeNode* idxtype = ast_type_indexed(exp->u.new.type);
-		if (!tp_equal(desirable, idxtype)) {
-			type_error(line, "invalid type for array",
-				desirable, idxtype);
-		}
-		free(idxtype);
-		return;
-	}
-
 	switch (desirable->tag) {
 		case TYPE_CHAR:
 			if (exp->type->tag != TYPE_CHAR) {
@@ -511,7 +511,8 @@ static int tp_num(TypeNode* type) {
 
 // char == int < float
 static TypeNode* highest_type_order(TypeNode* type1, TypeNode* type2) {
-	if (!tp_num(type1) || tp_num(type2)) {
+	// TODO: Check if necessary
+	if (!tp_num(type1) || !tp_num(type2)) {
 		return NULL;
 	}
 	if (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT) {

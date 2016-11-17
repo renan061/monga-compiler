@@ -52,11 +52,6 @@
 		strcat(str, ")\n");
 		MONGA_ERR("%s", str);
 	}
-
-	// Exported
-	int current_line() {
-		return line_number;
-	}
 %}
 %%
 "\n"				{ line_number++; }
@@ -166,3 +161,27 @@
 
 . { yylval.intvalue = line_number; return yytext[0]; }
 %%
+
+int current_line() {
+	return line_number;
+}
+
+// Auxiliary
+const char* lex_symbol(LexSymbol symbol) {
+	switch (symbol) {
+	case '!': 		return "!";
+	case '>': 		return ">";
+	case '<': 		return "<";
+	case '+': 		return "+";
+	case '-': 		return "-";
+	case '*': 		return "*";
+	case '/': 		return "/";
+	case TK_OR:		return "||";
+	case TK_AND: 	return "&&";
+	case TK_EQUAL:	return "==";
+	case TK_LEQUAL:	return "<=";
+	case TK_GEQUAL:	return ">=";
+	default:
+		MONGA_INTERNAL_ERR("lex_symbol: invalid symbol \'%c\'", symbol);
+	}
+}

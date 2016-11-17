@@ -27,7 +27,6 @@ do
 	OUTPUT_FILE="test_"$i".out"
 
 	../../bin/"$1""test" < $INPUT_FILE >> $OUTPUT_FILE 2>&1
-	# ../../bin/"$1""test" < "input/test_31.in"
 	diff -W 200 -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
 	if [ -s "diff.txt" ]
 	then

@@ -1,1 +1,1 @@
-semantical error line 3 (invalid type for array - cannot use "int[]" as "float[]")
+semantical error line 3 (invalid assignment expression - cannot use "int[]" as "float[]")
