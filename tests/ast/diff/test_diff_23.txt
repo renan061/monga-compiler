@@ -1,1 +1,0 @@
-semantical error line 3 (invalid type in "==" - cannot use "int[][]" as "int")			   |	semantical error line 3 (invalid type in "==")

@@ -63,4 +63,11 @@ float main() {
     f:float = (((1:int)*:int(2:int)) as float);
     f:float = (((1:int) as float)/:float(2.000000:float));
     f:float = ((1.000000:float)+:float(2.000000:float));
+    i:int = ((("a":char) as int)==:int(("b":char) as int));
+    i:int = ((("c":char) as int)<=:int(1:int));
+    i:int = ((("c":char) as float)>=:int(1.000000:float));
+    i:int = ((1:int)<:int(2:int));
+    i:int = (((1:int) as float)>:int(2.000000:float));
+    i:int = ((1.000000:float)&&:int(2.000000:float));
+    i:int = ((("c":char) as float)||:int(0.000000:float));
 }

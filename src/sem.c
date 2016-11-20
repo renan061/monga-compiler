@@ -17,11 +17,11 @@ static void type_check_call(SymbolTable* table, CallNode* call);
 
 // Aux
 static int tp_equal(TypeNode* type1, TypeNode* type2);
-static int tp_in(TypeNode* type, TypeNode* types[], int size);
-static void check_and_cast(int line, const char* details, 
-	TypeNode* desirable, ExpNode** ptrexp);
+static void tp_cast(ExpNode** ptr, TypeNode* desirable);
+static void tp_check(int line, const char* err, ExpNode** ptr,
+	TypeNode* desirable);
 static int tp_num(TypeNode* type);
-static TypeNode* highest_type_order(TypeNode* type1, TypeNode* type2);
+static TypeNode* tp_highest(TypeNode* type1, TypeNode* type2);
 
 TypeNode *type_int, *type_float, *type_char, *type_void;
 TypeNode *types_int_char[2], *types_int_float_char[3];
@@ -148,8 +148,6 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 	TypeNode* funcreturn) {
 
-	int line = cmd->line;
-
 	switch (cmd->tag) {
 	case CMD_BLOCK:
 		if (cmd->u.block.defs != NULL) {
@@ -161,16 +159,16 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 		break;
 	case CMD_IF:
 		type_check_exp(table, cmd->u.ifwhile.exp);
-		check_and_cast(line, "invalid \"if\" expression",
-			type_int, &cmd->u.ifwhile.exp);
+		tp_check(cmd->line, "invalid \"if\" expression", &cmd->u.ifwhile.exp,
+			type_int);
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd, funcreturn);
 		st_leave_scope(table);
 		break;
 	case CMD_IF_ELSE:
 		type_check_exp(table, cmd->u.ifelse.exp);
-		check_and_cast(line, "invalid \"if else\" expression",
-			type_int, &cmd->u.ifwhile.exp);
+		tp_check(cmd->line, "invalid \"if else\" expression",
+			&cmd->u.ifwhile.exp, type_int);
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifelse.ifcmd, funcreturn);
 		st_leave_scope(table);
@@ -180,8 +178,8 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 		break;
 	case CMD_WHILE:
 		type_check_exp(table, cmd->u.ifwhile.exp);
-		check_and_cast(line, "invalid \"while\" expression",
-			type_int, &cmd->u.ifwhile.exp);
+		tp_check(cmd->line, "invalid \"while\" expression", &cmd->u.ifwhile.exp,
+			type_int);
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd, funcreturn);
 		st_leave_scope(table);
@@ -189,16 +187,16 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
-		check_and_cast(line, "invalid assignment expression",
-			cmd->u.asg.var->type, &cmd->u.asg.exp);
+		tp_check(cmd->line, "invalid assignment expression", &cmd->u.asg.exp,
+			cmd->u.asg.var->type);
 		break;
 	case CMD_RETURN:
 		if (cmd->u.ret != NULL) {
 			type_check_exp(table, cmd->u.ret);
-			check_and_cast(line, "invalid type for return", funcreturn,
-				&cmd->u.ret);
+			tp_check(cmd->line, "invalid type for return", &cmd->u.ret,
+				funcreturn);
 		} else if (funcreturn != NULL) {
-			type_error(line, "invalid type for return", funcreturn,
+			type_error(cmd->line, "invalid type for return", funcreturn,
 				type_void);
 		}
 		break;
@@ -216,11 +214,9 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 }
 
 static void type_check_var(SymbolTable* table, VarNode* var) {
-	DefNode* def;
-
 	switch (var->tag) {
-	case VAR_ID:
-		def = st_find(table, var->u.id);
+	case VAR_ID: {
+		DefNode* def = st_find(table, var->u.id);
 		if (def == NULL) {
 			sem_error_id(var->u.id->line, "var not defined", var->u.id->u.str);
 		} else if (def->tag != DEF_VAR) {
@@ -228,25 +224,23 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 		}
 		var->u.id->u.def = def;
 		var->type = def->u.var.type;
-		break;
-	case VAR_INDEXED:
+	}	break;
+	case VAR_INDEXED: {
 		type_check_exp(table, var->u.indexed.array);
 		type_check_exp(table, var->u.indexed.index);
 		if (var->u.indexed.array->type->tag != TYPE_INDEXED) {
 			sem_error(var->line, "not indexed type");
 		}
-		check_and_cast(var->line, "invalid index type for array", type_int,
-			&var->u.indexed.index);
+		tp_check(var->line, "invalid index type for array",
+			&var->u.indexed.index, type_int);
 		var->type = var->u.indexed.array->type->indexed;
-		break;
+	}	break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_var: invalid tag");
 	}
 }
 
 static void type_check_exp(SymbolTable* table, ExpNode* exp) {
-	int line = exp->line;
-
 	switch (exp->tag) {
 	case EXP_KINT:
 		exp->type = type_int;
@@ -255,6 +249,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		exp->type = type_float;
 		break;
 	case EXP_KSTR:
+		// TODO: \n
 		exp->type = ((strlen(exp->u.strvalue) - 2) > 1) ?
 			ast_type_indexed(type_char) : type_char;
 		break;
@@ -268,102 +263,63 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		break;
 	case EXP_NEW:
 		type_check_exp(table, exp->u.new.size);
-		check_and_cast(line, "invalid size type for array", type_int,
-			&exp->u.new.size);
+		tp_check(exp->line, "invalid size type for array", &exp->u.new.size,
+			type_int);
 		exp->type = ast_type_indexed(exp->u.new.type);
 		break;
-	case EXP_UNARY: {
-		TypeNode *type;
+	case EXP_UNARY:
 		type_check_exp(table, exp->u.unary.exp);
-		type = exp->u.unary.exp->type;
 
+		TypeNode* type = exp->u.unary.exp->type;
 		switch (exp->u.unary.symbol) {
 		case '-':
 			if (!tp_num(type)) {
-				sem_error(line, "invalid type for unary minus");
-			} else if (tp_equal(type, type_char)) {
-				check_and_cast(line, "", type_int, &exp->u.unary.exp);
+				sem_error(exp->line, "invalid type for unary minus");
+			} else if (type->tag == TYPE_CHAR) {
+				tp_cast(&exp->u.unary.exp, type_int);
 				exp->type = type_int;
 			} else {
 				exp->type = type;
 			}
 			break;
 		case '!':
-			check_and_cast(line, "invalid type for unary not",
-				type_int, &exp->u.unary.exp);
+			tp_check(exp->line, "invalid type for unary not", &exp->u.unary.exp,
+				type_int);
 			exp->type = type_int;
 			break;
 		default:
 			MONGA_INTERNAL_ERR("type_check_exp unary: invalid symbol");
 		}
-	}	break;
-	case EXP_BINARY: {
+		break;
+	case EXP_BINARY:
 		type_check_exp(table, exp->u.binary.exp1);
 		type_check_exp(table, exp->u.binary.exp2);
-		ExpNode *exp1 = exp->u.binary.exp1, *exp2 = exp->u.binary.exp2;
-		TypeNode *type1 = exp1->type, *type2 = exp2->type;
 
-		switch (exp->u.binary.symbol) {
-		case '*':
-		case '/':
-		case '+':
-		case '-':
+		TypeNode* type1 = exp->u.binary.exp1->type;
+		TypeNode* type2 = exp->u.binary.exp2->type;
+		LexSymbol symbol = exp->u.binary.symbol;
 
-// =============================================================================
-// =============================================================================
-//
-//	binop
-//
-// =============================================================================
-// =============================================================================
-
-			if (!tp_num(type1)) {
-				err_binop(line, 1, exp->u.binary.symbol);
-			}
-			if (!tp_num(type2)) {
-				err_binop(line, 2, exp->u.binary.symbol);
-			}
-			exp->type = highest_type_order(type1, type2);
-			check_and_cast(line, "", exp->type, &exp->u.binary.exp1);
-			check_and_cast(line, "", exp->type, &exp->u.binary.exp2);
-			break;
-		case TK_EQUAL:
-			// TODO: Type checking
-			if (!tp_equal(type1, type2)) {
-				if (tp_num(type1) && tp_num(type2)) {
-					TypeNode* highest = highest_type_order(type1, type2);
-					check_and_cast(line, "invalid type in \"==\"", highest,
-						&exp1);
-					check_and_cast(line, "invalid type in \"==\"", highest,
-						&exp2);
-				} else {
-					sem_error(line, "invalid type in \"==\"");
-				}
-			}
-			exp->type = type_int;
-			break;
-		case TK_LEQUAL:
-		case TK_GEQUAL:
-		case '<':
-		case '>':
-		case TK_AND:
-		case TK_OR:
-			if (!tp_in(type1, types_int_float_char, 3)) {
-				sem_error(line,
-					"invalid type for first expression in \"<=,>=,<,>,&&,||\"");
-				// TODO: Print symbol
-			}
-			if (!tp_in(type2, types_int_float_char, 3)) {
-				sem_error(line,
-					"invalid type for second expression in \"<=,>=,<,>,&&,||\"");
-				// TODO: Print symbol
-			}
-			exp->type = type_int;
-			break;
-		default:
-			MONGA_INTERNAL_ERR("type_check_exp binary: invalid symbol");
+		if (!tp_num(type1)) {
+			err_binop(exp->line, 1, symbol);
 		}
-	}	break;
+		if (!tp_num(type2)) {
+			err_binop(exp->line, 2, symbol);
+		}
+
+		exp->type = tp_highest(type1, type2);
+		if (type1 != exp->type) {
+			tp_cast(&exp->u.binary.exp1, exp->type);
+		}
+		if (type2 != exp->type) {
+			tp_cast(&exp->u.binary.exp2, exp->type);
+		}
+		
+		if (symbol == TK_EQUAL || symbol == TK_LEQUAL || symbol == TK_GEQUAL ||
+			symbol == '<' || symbol == '>' || symbol == TK_AND ||
+			symbol == TK_OR) {
+			exp->type = type_int;
+		}
+		break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_exp: invalid tag");
 	}
@@ -397,8 +353,8 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 					sem_error_id(line, "too many arguments",
 						def->u.func.id->u.str);
 				}
-				check_and_cast(line, "mismatching types of arguments",
-					param->u.var.type, &arg);
+				tp_check(line, "mismatching types of arguments", &arg,
+					param->u.var.type);
 				if (previous != NULL) {
 					previous->next = arg;
 				}
@@ -426,81 +382,74 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 //
 // ==================================================
 
+// Checks for type equality recursively
 static int tp_equal(TypeNode* type1, TypeNode* type2) {
-	int equal_tags = (type1->tag == type2->tag);
-	if (type1->indexed == NULL && type2->indexed == NULL) {
-		return equal_tags;
-	}
-	return equal_tags && tp_equal(type1->indexed, type2->indexed);
+	int boolean = (type1->tag == type2->tag);
+	return (type1->indexed == NULL || type2->indexed == NULL)
+		? boolean : boolean && tp_equal(type1->indexed, type2->indexed);
 }
-
-static int tp_in(TypeNode* type, TypeNode* types[], int size) {
-	for (int i = 0; i < size; i++) {
-		if (tp_equal(type, types[i])) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
-// // Temp
-// void print_exp_tag(ExpE tag) {
-// 	fprintf(stderr, "print_exp_tag\n");
-// 	switch (tag) {
-// 		case EXP_KINT:		fprintf(stderr, "ExpKInt\n");	break;
-// 		case EXP_KFLOAT:	fprintf(stderr, "ExpKFloat\n");	break;
-// 		case EXP_KSTR:		fprintf(stderr, "ExpKStr\n");	break;
-// 		case EXP_VAR:		fprintf(stderr, "ExpVar\n");	break;
-// 		case EXP_CALL:		fprintf(stderr, "ExpCall\n");	break;
-// 		case EXP_NEW:		fprintf(stderr, "ExpNew\n");	break;
-// 		case EXP_CAST:		fprintf(stderr, "ExpCast\n");	break;
-// 		case EXP_UNARY:		fprintf(stderr, "ExpUnary\n");	break;
-// 		case EXP_BINARY:	fprintf(stderr, "ExpBinary\n");	break;
-// 		default:
-// 			fprintf(stderr, "wtf %d\n", tag);
-// 	}
-// }
 
 // Always casts up, never casts down: char < int < float
 // Obs.: type1[] never casts to type2[]
-static void check_and_cast(int line, const char* details, 
-	TypeNode* desirable, ExpNode** ptrexp) {
+static void tp_cast(ExpNode** ptr, TypeNode* desirable) {
+	ExpNode* exp = *ptr;
+	TypeNode* type;
 
-	ExpNode* exp = *ptrexp;
+	switch (desirable->tag) {
+	case TYPE_INT:
+		// Can only cast "char" to "int"
+		if (exp->type->tag != TYPE_CHAR) {
+			MONGA_INTERNAL_ERR("invalid cast to int");
+		}
+		type = type_int;
+		break;
+	case TYPE_FLOAT:
+		// Can only cast "char" or "int" to "float"
+		if (exp->type->tag != TYPE_CHAR && exp->type->tag != TYPE_INT) {
+			MONGA_INTERNAL_ERR("invalid cast to float");
+		}
+		type = type_float;
+		break;
+	default:
+		MONGA_INTERNAL_ERR("invalid type to cast");
+	}
+
+	*ptr = ast_exp_cast(type, exp);
+}
+
+// Checks for type equality and casts if necessary
+// Deals with errors internally
+static void tp_check(int line, const char* err, ExpNode** ptr,
+	TypeNode* desirable) {
+
+	ExpNode* exp = *ptr;
 	switch (desirable->tag) {
 		case TYPE_CHAR:
 			if (exp->type->tag != TYPE_CHAR) {
-				type_error(line, details, desirable, exp->type);
+				type_error(line, err, desirable, exp->type);
 			}
-			return;
+			break;
 		case TYPE_INT:
 			switch (exp->type->tag) {
-			case TYPE_CHAR:
-				*ptrexp = ast_exp_cast(type_int, exp);
-			case TYPE_INT:
-				return;
-			default:
-				type_error(line, details, desirable, exp->type);
+			case TYPE_CHAR:	tp_cast(ptr, type_int);
+			case TYPE_INT:	return;
+			default: type_error(line, err, desirable, exp->type);
 			}
 		case TYPE_FLOAT:
 			switch (exp->type->tag) {
-			case TYPE_CHAR:
-			case TYPE_INT:
-				*ptrexp = ast_exp_cast(type_float, exp);
-			case TYPE_FLOAT:
-				return;
-			default:
-				type_error(line, details, desirable, exp->type);
+			case TYPE_CHAR:	case TYPE_INT:	tp_cast(ptr, type_float);
+			case TYPE_FLOAT:				return;
+			default: type_error(line, err, desirable, exp->type);
 			}
 		case TYPE_VOID:
-			type_error(line, details, desirable, exp->type);
+			type_error(line, err, desirable, exp->type);
 		case TYPE_INDEXED:
 			if (!tp_equal(desirable, exp->type)) {
-				type_error(line, details, desirable, exp->type);
+				type_error(line, err, desirable, exp->type);
 			}
-			return;
+			break;
 		default:
-			MONGA_INTERNAL_ERR("check_and_cast: invalid type tag");
+			MONGA_INTERNAL_ERR("tp_check: invalid type tag");
 	}
 }
 
@@ -510,13 +459,7 @@ static int tp_num(TypeNode* type) {
 }
 
 // char == int < float
-static TypeNode* highest_type_order(TypeNode* type1, TypeNode* type2) {
-	// TODO: Check if necessary
-	if (!tp_num(type1) || !tp_num(type2)) {
-		return NULL;
-	}
-	if (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT) {
-		return type_float;
-	}
-	return type_int;
+static TypeNode* tp_highest(TypeNode* type1, TypeNode* type2) {
+	return (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT)
+		? type_float : type_int;
 }
