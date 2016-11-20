@@ -33,7 +33,6 @@ int main() {
 			printf("TK_FLOAT - %f", yylval.floatvalue);
 			break;
 		case TK_STR:
-			// TODO: Remove \"\" from strings
 			printf("TK_STR - \"%s\"", yylval.strvalue);
 			break;
 		case 0:

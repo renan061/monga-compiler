@@ -41,7 +41,6 @@ typedef enum VarE {
 typedef enum ExpE {
 	EXP_KINT,
 	EXP_KFLOAT,
-	// TODO: EXP_KCHAR,
 	EXP_KSTR,
 	EXP_VAR,
 	EXP_CALL,
@@ -167,9 +166,6 @@ struct ExpNode {
 		int intvalue;
 		// ExpKFloat
 		double floatvalue;
-		// TODO:
-		// ExpKChar
-		// const char charvalue;
 		// ExpKStr
 		const char* strvalue;
 		// ExpVar

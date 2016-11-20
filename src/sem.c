@@ -9,88 +9,27 @@
 #include "lex.h"
 
 static void type_check_def(SymbolTable* table, DefNode* def);
-static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
-	TypeNode* funcreturn);
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret);
 static void type_check_var(SymbolTable* table, VarNode* var);
 static void type_check_exp(SymbolTable* table, ExpNode* exp);
 static void type_check_call(SymbolTable* table, CallNode* call);
 
-// Aux
+// Auxiliary
 static int tp_equal(TypeNode* type1, TypeNode* type2);
 static void tp_cast(ExpNode** ptr, TypeNode* desirable);
 static void tp_check(int line, const char* err, ExpNode** ptr,
 	TypeNode* desirable);
 static int tp_num(TypeNode* type);
-static TypeNode* tp_highest(TypeNode* type1, TypeNode* type2);
 
+// Errors
+static void err(int line, const char* msg);
+static void err_id(int line, const char* msg, const char* id);
+static void err_type(int line, const char* err, TypeNode* desirable,
+	TypeNode* obtained);
+static void err_binop(int line, int expnum, LexSymbol symbol);
+
+// Base types
 TypeNode *type_int, *type_float, *type_char, *type_void;
-TypeNode *types_int_char[2], *types_int_float_char[3];
-
-// ==================================================
-//
-//	Error Handling
-//
-// ==================================================
-
-static void print_type_for_error(TypeNode* type) {
-	if (type == NULL) {
-		return;
-	}
-
-	switch (type->tag) {
-	case TYPE_INT:
-		fprintf(stderr, "int");
-		break;
-	case TYPE_FLOAT:
-		fprintf(stderr, "float");
-		break;
-	case TYPE_CHAR:
-		fprintf(stderr, "char");
-		break;
-	case TYPE_VOID:
-		fprintf(stderr, "void");
-		break;
-	case TYPE_INDEXED:
-		print_type_for_error(type->indexed);
-		fprintf(stderr, "[]");
-		break;
-	default:
-		MONGA_INTERNAL_ERR("print_type_for_error: invalid tag");
-	}
-}
-
-static void type_error(int line, const char* details, TypeNode* desirable,
-	TypeNode* obtained) {
-
-	fprintf(stderr, "semantical error line %d (%s - cannot use \"",
-		line, details);
-	print_type_for_error(obtained);
-	fprintf(stderr, "\" as \"");
-	print_type_for_error(desirable);
-	fprintf(stderr, "\")\n");
-	exit(1);
-}
-
-static void sem_error(int line, const char* details) {
-	MONGA_ERR("semantical error line %d (%s)\n", line, details);
-}
-
-static void sem_error_id(int line, const char* details, const char* id) {
-	MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, details, id);
-}
-
-static void err_binop(int line, int expnum, LexSymbol symbol) {
-	const char *msg, *order, *sym = lex_symbol(symbol);
-	msg = "semantical error line %d (invalid type for %s expression in \"%s\")";
-	order = (expnum == 1) ? "first" : (expnum == 2) ? "second" : "";
-	MONGA_ERR(msg, line, order, sym);
-}
-
-// ==================================================
-//
-//	Exported
-//
-// ==================================================
 
 void sem_type_check_program(ProgramNode* program) {
 	// Auxiliary
@@ -98,11 +37,6 @@ void sem_type_check_program(ProgramNode* program) {
 	type_float = ast_type(TYPE_FLOAT);
 	type_char = ast_type(TYPE_CHAR);
 	type_void = ast_type(TYPE_VOID);
-	types_int_char[0] = type_int;
-	types_int_char[1] = type_char;
-	types_int_float_char[0] = type_int;
-	types_int_float_char[1] = type_float;
-	types_int_float_char[2] = type_char;
 
 	// Main
 	SymbolTable* table = st_new();
@@ -120,13 +54,12 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		if (!st_insert(table, def)) {
-			sem_error_id(def->u.var.id->line, "redeclaration",
-				def->u.var.id->u.str);
+			err_id(def->u.var.id->line, "redeclaration", def->u.var.id->u.str);
 		}
 		break;
 	case DEF_FUNC:
 		if (!st_insert(table, def)) {
-			sem_error_id(def->u.func.id->line, "redeclaration",
+			err_id(def->u.func.id->line, "redeclaration",
 				def->u.func.id->u.str);
 		}
 		st_enter_scope(table);
@@ -145,16 +78,15 @@ static void type_check_def(SymbolTable* table, DefNode* def) {
 	}
 }
 
-static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
-	TypeNode* funcreturn) {
-
+// Parameter "ret" is only used for CmdReturn
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
 		if (cmd->u.block.defs != NULL) {
 			type_check_def(table, cmd->u.block.defs);
 		}
 		if (cmd->u.block.cmds != NULL) {
-			type_check_cmd(table, cmd->u.block.cmds, funcreturn);
+			type_check_cmd(table, cmd->u.block.cmds, ret);
 		}
 		break;
 	case CMD_IF:
@@ -162,7 +94,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 		tp_check(cmd->line, "invalid \"if\" expression", &cmd->u.ifwhile.exp,
 			type_int);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifwhile.cmd, funcreturn);
+		type_check_cmd(table, cmd->u.ifwhile.cmd, ret);
 		st_leave_scope(table);
 		break;
 	case CMD_IF_ELSE:
@@ -170,10 +102,10 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 		tp_check(cmd->line, "invalid \"if else\" expression",
 			&cmd->u.ifwhile.exp, type_int);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifelse.ifcmd, funcreturn);
+		type_check_cmd(table, cmd->u.ifelse.ifcmd, ret);
 		st_leave_scope(table);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifelse.elsecmd, funcreturn);
+		type_check_cmd(table, cmd->u.ifelse.elsecmd, ret);
 		st_leave_scope(table);
 		break;
 	case CMD_WHILE:
@@ -181,7 +113,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 		tp_check(cmd->line, "invalid \"while\" expression", &cmd->u.ifwhile.exp,
 			type_int);
 		st_enter_scope(table);
-		type_check_cmd(table, cmd->u.ifwhile.cmd, funcreturn);
+		type_check_cmd(table, cmd->u.ifwhile.cmd, ret);
 		st_leave_scope(table);
 		break;
 	case CMD_ASG:
@@ -193,11 +125,9 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 	case CMD_RETURN:
 		if (cmd->u.ret != NULL) {
 			type_check_exp(table, cmd->u.ret);
-			tp_check(cmd->line, "invalid type for return", &cmd->u.ret,
-				funcreturn);
-		} else if (funcreturn != NULL) {
-			type_error(cmd->line, "invalid type for return", funcreturn,
-				type_void);
+			tp_check(cmd->line, "invalid type for return", &cmd->u.ret, ret);
+		} else if (ret != NULL) {
+			err_type(cmd->line, "invalid type for return", ret, type_void);
 		}
 		break;
 	case CMD_CALL:
@@ -207,9 +137,8 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd,
 		MONGA_INTERNAL_ERR("type_check_cmd: invalid tag");
 	}
 
-	// Cmd list
 	if (cmd->next != NULL) {
-		type_check_cmd(table, cmd->next, funcreturn);
+		type_check_cmd(table, cmd->next, ret);
 	}
 }
 
@@ -218,9 +147,9 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 	case VAR_ID: {
 		DefNode* def = st_find(table, var->u.id);
 		if (def == NULL) {
-			sem_error_id(var->u.id->line, "var not defined", var->u.id->u.str);
+			err_id(var->u.id->line, "var not defined", var->u.id->u.str);
 		} else if (def->tag != DEF_VAR) {
-			sem_error_id(var->u.id->line, "not a variable", var->u.id->u.str);
+			err_id(var->u.id->line, "not a variable", var->u.id->u.str);
 		}
 		var->u.id->u.def = def;
 		var->type = def->u.var.type;
@@ -229,7 +158,7 @@ static void type_check_var(SymbolTable* table, VarNode* var) {
 		type_check_exp(table, var->u.indexed.array);
 		type_check_exp(table, var->u.indexed.index);
 		if (var->u.indexed.array->type->tag != TYPE_INDEXED) {
-			sem_error(var->line, "not indexed type");
+			err(var->line, "not indexed type");
 		}
 		tp_check(var->line, "invalid index type for array",
 			&var->u.indexed.index, type_int);
@@ -249,7 +178,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		exp->type = type_float;
 		break;
 	case EXP_KSTR:
-		exp->type = ((strlen(exp->u.strvalue)) > 1) ?
+		exp->type = (strlen(exp->u.strvalue) > 1) ?
 			ast_type_indexed(type_char) : type_char;
 		break;
 	case EXP_VAR:
@@ -273,7 +202,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		switch (exp->u.unary.symbol) {
 		case '-':
 			if (!tp_num(type)) {
-				sem_error(exp->line, "invalid type for unary minus");
+				err(exp->line, "invalid type for unary minus");
 			} else if (type->tag == TYPE_CHAR) {
 				tp_cast(&exp->u.unary.exp, type_int);
 				exp->type = type_int;
@@ -305,14 +234,16 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 			err_binop(exp->line, 2, symbol);
 		}
 
-		exp->type = tp_highest(type1, type2);
+		// char == int < float
+		exp->type = (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT) ?
+			type_float : type_int;
 		if (type1 != exp->type) {
 			tp_cast(&exp->u.binary.exp1, exp->type);
 		}
 		if (type2 != exp->type) {
 			tp_cast(&exp->u.binary.exp2, exp->type);
 		}
-		
+
 		if (symbol == TK_EQUAL || symbol == TK_LEQUAL || symbol == TK_GEQUAL ||
 			symbol == '<' || symbol == '>' || symbol == TK_AND ||
 			symbol == TK_OR) {
@@ -323,25 +254,21 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		MONGA_INTERNAL_ERR("type_check_exp: invalid tag");
 	}
 
-	// Exp list
 	if (exp->next != NULL) {
 		type_check_exp(table, exp->next);
 	}
 }
 
 static void type_check_call(SymbolTable* table, CallNode* call) {
-	DefNode* params;
-	int line = call->id->line;
-
 	DefNode* def = st_find(table, call->id);
 	if (def == NULL) {
-		sem_error_id(line, "func not defined", call->id->u.str);
+		err_id(call->id->line, "func not defined", call->id->u.str);
 	} else if (def->tag != DEF_FUNC) {
-		sem_error_id(line, "not a function", call->id->u.str);
+		err_id(call->id->line, "not a function", call->id->u.str);
 	}
 	call->id->u.def = def;
 
-	params = def->u.func.params;
+	DefNode* params = def->u.func.params;
 	if (call->args != NULL) {
 		type_check_exp(table, call->args);
 		if (params != NULL) { // Call with arguments and function has parameters
@@ -349,10 +276,10 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 			ExpNode *arg = call->args, *previous = NULL;
 			while (arg != NULL) {
 				if (param == NULL) {
-					sem_error_id(line, "too many arguments",
+					err_id(call->id->line, "too many arguments",
 						def->u.func.id->u.str);
 				}
-				tp_check(line, "mismatching types of arguments", &arg,
+				tp_check(call->id->line, "mismatching types of arguments", &arg,
 					param->u.var.type);
 				if (previous != NULL) {
 					previous->next = arg;
@@ -362,15 +289,16 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 				arg = arg->next;
 			}
 			if (param != NULL) {
-				sem_error_id(line, "too few arguments", def->u.func.id->u.str);
+				err_id(call->id->line, "too few arguments",
+					def->u.func.id->u.str);
 			}
 		} else { // Call with arguments, but function has no parameters
-			sem_error_id(line, "invalid arguments - no parameters",
+			err_id(call->id->line, "invalid arguments - no parameters",
 				def->u.func.id->u.str);
 		}
 	} else { // Call with no arguments, but function has parameters
 		if (params != NULL) {
-			sem_error_id(line, "too few arguments", def->u.func.id->u.str);
+			err_id(call->id->line, "too few arguments", def->u.func.id->u.str);
 		}
 	}
 }
@@ -384,8 +312,8 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 // Checks for type equality recursively
 static int tp_equal(TypeNode* type1, TypeNode* type2) {
 	int boolean = (type1->tag == type2->tag);
-	return (type1->indexed == NULL || type2->indexed == NULL)
-		? boolean : boolean && tp_equal(type1->indexed, type2->indexed);
+	return (type1->indexed == NULL || type2->indexed == NULL) ?
+		boolean : boolean && tp_equal(type1->indexed, type2->indexed);
 }
 
 // Always casts up, never casts down: char < int < float
@@ -425,26 +353,26 @@ static void tp_check(int line, const char* err, ExpNode** ptr,
 	switch (desirable->tag) {
 		case TYPE_CHAR:
 			if (exp->type->tag != TYPE_CHAR) {
-				type_error(line, err, desirable, exp->type);
+				err_type(line, err, desirable, exp->type);
 			}
 			break;
 		case TYPE_INT:
 			switch (exp->type->tag) {
 			case TYPE_CHAR:	tp_cast(ptr, type_int);
 			case TYPE_INT:	return;
-			default: type_error(line, err, desirable, exp->type);
+			default: err_type(line, err, desirable, exp->type);
 			}
 		case TYPE_FLOAT:
 			switch (exp->type->tag) {
 			case TYPE_CHAR:	case TYPE_INT:	tp_cast(ptr, type_float);
 			case TYPE_FLOAT:				return;
-			default: type_error(line, err, desirable, exp->type);
+			default: err_type(line, err, desirable, exp->type);
 			}
 		case TYPE_VOID:
-			type_error(line, err, desirable, exp->type);
+			err_type(line, err, desirable, exp->type);
 		case TYPE_INDEXED:
 			if (!tp_equal(desirable, exp->type)) {
-				type_error(line, err, desirable, exp->type);
+				err_type(line, err, desirable, exp->type);
 			}
 			break;
 		default:
@@ -457,8 +385,50 @@ static int tp_num(TypeNode* type) {
 	return !(type->tag == TYPE_VOID || type->tag == TYPE_INDEXED);
 }
 
-// char == int < float
-static TypeNode* tp_highest(TypeNode* type1, TypeNode* type2) {
-	return (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT)
-		? type_float : type_int;
+// ==================================================
+//
+//	Errors
+//
+// ==================================================
+
+static void err(int line, const char* msg) {
+	MONGA_ERR("semantical error line %d (%s)\n", line, msg);
+}
+
+static void err_id(int line, const char* msg, const char* id) {
+	MONGA_ERR("semantical error line %d (%s - id \"%s\")\n", line, msg, id);
+}
+
+static void err_print_type(TypeNode* type) {
+	switch (type->tag) {
+	case TYPE_INT:		fprintf(stderr, "int");		break;
+	case TYPE_FLOAT:	fprintf(stderr, "float");	break;
+	case TYPE_CHAR:		fprintf(stderr, "char");	break;
+	case TYPE_VOID:		fprintf(stderr, "void");	break;
+	case TYPE_INDEXED:
+		if (type->indexed != NULL) {
+			err_print_type(type->indexed);
+		}
+		fprintf(stderr, "[]");
+		break;
+	default: MONGA_INTERNAL_ERR("tp_print_err: invalid tag");
+	}
+}
+
+static void err_type(int line, const char* err, TypeNode* desirable,
+	TypeNode* obtained) {
+
+	fprintf(stderr, "semantical error line %d (%s - cannot use \"", line, err);
+	err_print_type(obtained);
+	fprintf(stderr, "\" as \"");
+	err_print_type(desirable);
+	fprintf(stderr, "\")\n");
+	exit(1);
+}
+
+static void err_binop(int line, int expnum, LexSymbol symbol) {
+	const char *msg, *order, *sym = lex_symbol(symbol);
+	msg = "semantical error line %d (invalid type for %s expression in \"%s\")";
+	order = (expnum == 1) ? "first" : (expnum == 2) ? "second" : "";
+	MONGA_ERR(msg, line, order, sym);
 }
