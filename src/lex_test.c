@@ -34,7 +34,7 @@ int main() {
 			break;
 		case TK_STR:
 			// TODO: Remove \"\" from strings
-			printf("TK_STR - %s", yylval.strvalue);
+			printf("TK_STR - \"%s\"", yylval.strvalue);
 			break;
 		case 0:
 			return 0;

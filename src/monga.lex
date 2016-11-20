@@ -110,7 +110,7 @@
 							char c, *str, *result;
 
 							// Calculating malloc size
-							for (i = 0; i < yytext_len; i++) {
+							for (i = 1; i < yytext_len - 1; i++) {
 								c = yytext[i];
 								if (c == '\\') {
 									continue;
@@ -119,13 +119,13 @@
 							}
 
 							// Result string malloc
-							result = (char*)malloc(malloc_len * sizeof(char));
+							result = (char*)malloc(++malloc_len * sizeof(char));
 							if (result == NULL) {
 								lex_error(ERR_STR_MEM);
 							}
 
 							// Filling the result
-							for (i = 0; i < yytext_len; i++) {
+							for (i = 1; i < yytext_len - 1; i++) {
 								str = &yytext[i];
 								if (*str == '\n') {
 									free(result);
@@ -154,6 +154,7 @@
 								}
 							}
 
+							result[k] = '\0';
 							yylval.strvalue = result;
 							return TK_STR;
 						}

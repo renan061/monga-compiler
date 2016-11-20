@@ -70,4 +70,5 @@ float main() {
     i:int = (((1:int) as float)>:int(2.000000:float));
     i:int = ((1.000000:float)&&:int(2.000000:float));
     i:int = ((("c":char) as float)||:int(0.000000:float));
+    c:char = ("\":char);
 }

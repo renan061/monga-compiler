@@ -252,7 +252,7 @@ void print_exp(ExpNode* exp) {
 		print_type(exp->type);
 		break;
 	case EXP_KSTR:
-		printf("%s:", exp->u.strvalue);
+		printf("\"%s\":", exp->u.strvalue);
 		print_type(exp->type);
 		break;
 	case EXP_VAR:

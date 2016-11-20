@@ -249,8 +249,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		exp->type = type_float;
 		break;
 	case EXP_KSTR:
-		// TODO: \n
-		exp->type = ((strlen(exp->u.strvalue) - 2) > 1) ?
+		exp->type = ((strlen(exp->u.strvalue)) > 1) ?
 			ast_type_indexed(type_char) : type_char;
 		break;
 	case EXP_VAR:
