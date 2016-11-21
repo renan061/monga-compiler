@@ -33,7 +33,7 @@ int main() {
 			printf("TK_FLOAT - %f", yylval.floatvalue);
 			break;
 		case TK_STR:
-			printf("TK_STR - %s", yylval.strvalue);
+			printf("TK_STR - \"%s\"", yylval.strvalue);
 			break;
 		case 0:
 			return 0;

@@ -1,1 +1,1 @@
-semantical error line 1 (invalid type for return)
+semantical error line 2 (invalid type for return - cannot use "int" as "int[]")

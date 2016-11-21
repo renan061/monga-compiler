@@ -1,15 +1,91 @@
+float foo(char c, int a, float b) {
+    return b;
+}
+char[] bar() {
+	return "str";
+}
+void baz() {
+    return;
+}
 /* Ok type checking */
-void func0() {}
-void func1(int a1) {}
-void func2(int a2, int b2) {}
-void func3(int a3, int b3, int c3) {}
+float main() {
+	char c;
+	int i;
+	float f;
+	char[] str;
+	int[] intarray1;
+	int[] intarray2;
+	float[][][] floatarray1;
+	float[][][] floatarray2;
 
-void main() {
-	/* Testing Call */
-	func0();
-	func1(1);
-	func2(1, 2);
-	func3(1, 2, 3);
+	/* Var */
+		/* VarId */
+		c = "c";
+		i = 1;
+		f = 1.0;
+		/* VarIndexed */
+		intarray1[c] = 1;
+		intarray1[0] = 1;
 
-	/* */
+	/* Cmd */
+		/* CmdIf */
+		if (c) {}
+		if (i) {}
+		/* CmdIfElse */
+		if (c) {} else {}
+		if (i) {} else {}
+		/* CmdWhile */
+		while (c) {}
+		while (i) {}
+		/* CmdAsg */
+		c = "c";
+		i = c;
+		i = 1;
+		f = c;
+		f = i;
+		f = 1.0;
+		str = new char[10];
+		intarray1 = intarray1;
+		intarray1[0] = intarray1[0];
+		floatarray1 = floatarray2;
+		floatarray1[0] = floatarray2[0];
+		/* CmdReturn */
+		return c;
+		return i;
+		return f;
+		/* CmdCall */
+		main();
+		foo(c, c, c);
+
+	/* Exp */
+		/* ExpKStr */
+		c = "";
+		str = "str";
+		/* ExpNew */
+		intarray1 = new int[1];
+		/* ExpUnary */
+		i = -"1";
+		i = !1;
+		i = !"1";
+		/* ExpBinary */
+			/* Mul, Div, Add, Sub */
+			i = "a" + "b";
+			i = "c" - 1;
+			i = 1 * 2;
+			f = "a" / "b";
+			f = "c" + 1;
+			f = "c" - 1.0;
+			f = 1 * 2;
+			f = 1 / 2.0;
+			f = 1.0 + 2.0;
+			/* ==, <=, >=, <, >, &&, || */
+			i = "a" == "b";
+			i = "c" <= 1;
+			i = "c" >= 1.0;
+			i = 1 < 2;
+			i = 1 > 2.0;
+			i = 1.0 && 2.0;
+			i = "c" || 0.0;
+	/* Special */
+	c = "\\";
 }

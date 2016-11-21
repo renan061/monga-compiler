@@ -6,6 +6,7 @@
 #include "ast.h"
 #include "yacc.h"
 #include "sem.h"
+#include "lex.h"
 
 #define DEBUGGING 0
 
@@ -18,7 +19,6 @@
 // Auxiliary
 static void test_log(const char* str);
 static void print_tabs(int layer);
-static void print_lex_symbol(LexSymbol symbol);
 
 // Print
 static void print_program(ProgramNode* program);
@@ -86,7 +86,7 @@ static void print_def(DefNode* def, int layer) {
 			printf(")");
 		}
 		printf(" {\n");
-		print_cmd(def->u.func.cmd, layer + 1);
+		print_cmd(def->u.func.block, layer + 1);
 		print_tabs(layer);
 		printf("}\n");
 		break;
@@ -194,8 +194,8 @@ static void print_cmd(CmdNode* cmd, int layer) {
 	case CMD_RETURN:
 		print_tabs(layer);
 		printf("return ");
-		if (cmd->u.exp != NULL) {
-			print_exp(cmd->u.exp);
+		if (cmd->u.ret != NULL) {
+			print_exp(cmd->u.ret);
 		}
 		printf(";\n");
 		break;
@@ -226,9 +226,9 @@ void print_var(VarNode* var, int layer) {
 		break;
 	case VAR_INDEXED:
 		print_tabs(layer);
-		print_exp(var->u.indexed.exp1);
+		print_exp(var->u.indexed.array);
 		printf("[");
-		print_exp(var->u.indexed.exp2);
+		print_exp(var->u.indexed.index);
 		printf("]");
 		printf(":");
 		print_type(var->type);
@@ -252,7 +252,7 @@ void print_exp(ExpNode* exp) {
 		print_type(exp->type);
 		break;
 	case EXP_KSTR:
-		printf("%s:", exp->u.strvalue);
+		printf("\"%s\":", exp->u.strvalue);
 		print_type(exp->type);
 		break;
 	case EXP_VAR:
@@ -267,17 +267,26 @@ void print_exp(ExpNode* exp) {
 		printf("new ");
 		print_type(exp->u.new.type);
 		printf("[");
-		print_exp(exp->u.new.exp);
+		print_exp(exp->u.new.size);
 		printf("]:");
 		print_type(exp->type);
 		break;
+	case EXP_CAST:
+		print_exp(exp->u.cast);
+		printf(" as ");
+		print_type(exp->type);
+		break;
 	case EXP_UNARY:
-		print_lex_symbol(exp->u.unary.symbol);
+		printf("%s", lex_symbol(exp->u.unary.symbol));
 		print_exp(exp->u.unary.exp);
+		printf(":");
+		print_type(exp->type);
 		break;
 	case EXP_BINARY:
 		print_exp(exp->u.binary.exp1);
-		print_lex_symbol(exp->u.binary.symbol);
+		printf("%s", lex_symbol(exp->u.binary.symbol));
+		printf(":");
+		print_type(exp->type);
 		print_exp(exp->u.binary.exp2);
 		break;
 	default:
@@ -320,35 +329,3 @@ static void print_tabs(int layer) {
 		printf("  ");
 	}
 }
-
-static void print_lex_symbol(LexSymbol symbol) {
-	switch (symbol) {
-	case '!':
-	case '>':
-	case '<':
-	case '+':
-	case '-':
-	case '*':
-	case '/':
-		printf("%c", symbol);
-		break;
-	case TK_OR:
-		printf("||");
-		break;
-	case TK_AND:
-		printf("&&");
-		break;
-	case TK_EQUAL:
-		printf("==");
-		break;
-	case TK_LEQUAL:
-		printf("<=");
-		break;
-	case TK_GEQUAL:
-		printf(">=");
-		break;
-	default:
-		MONGA_ERR("print_lex_symbol: invalid symbol");
-	}
-}
-

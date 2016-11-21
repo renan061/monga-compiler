@@ -1,1 +1,1 @@
-semantical error line 2 (invalid arguments - mismatching types - id "main")
+semantical error line 2 (mismatching types of arguments - cannot use "void" as "int")

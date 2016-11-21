@@ -52,11 +52,6 @@
 		strcat(str, ")\n");
 		MONGA_ERR("%s", str);
 	}
-
-	// Exported
-	int current_line() {
-		return line_number;
-	}
 %}
 %%
 "\n"				{ line_number++; }
@@ -115,7 +110,7 @@
 							char c, *str, *result;
 
 							// Calculating malloc size
-							for (i = 0; i < yytext_len; i++) {
+							for (i = 1; i < yytext_len - 1; i++) {
 								c = yytext[i];
 								if (c == '\\') {
 									continue;
@@ -124,13 +119,13 @@
 							}
 
 							// Result string malloc
-							result = (char*)malloc(malloc_len * sizeof(char));
+							result = (char*)malloc(++malloc_len * sizeof(char));
 							if (result == NULL) {
 								lex_error(ERR_STR_MEM);
 							}
 
 							// Filling the result
-							for (i = 0; i < yytext_len; i++) {
+							for (i = 1; i < yytext_len - 1; i++) {
 								str = &yytext[i];
 								if (*str == '\n') {
 									free(result);
@@ -159,6 +154,7 @@
 								}
 							}
 
+							result[k] = '\0';
 							yylval.strvalue = result;
 							return TK_STR;
 						}
@@ -166,3 +162,27 @@
 
 . { yylval.intvalue = line_number; return yytext[0]; }
 %%
+
+int current_line() {
+	return line_number;
+}
+
+// Auxiliary
+const char* lex_symbol(LexSymbol symbol) {
+	switch (symbol) {
+	case '!': 		return "!";
+	case '>': 		return ">";
+	case '<': 		return "<";
+	case '+': 		return "+";
+	case '-': 		return "-";
+	case '*': 		return "*";
+	case '/': 		return "/";
+	case TK_OR:		return "||";
+	case TK_AND: 	return "&&";
+	case TK_EQUAL:	return "==";
+	case TK_LEQUAL:	return "<=";
+	case TK_GEQUAL:	return ">=";
+	default:
+		MONGA_INTERNAL_ERR("lex_symbol: invalid symbol \'%c\'", symbol);
+	}
+}
