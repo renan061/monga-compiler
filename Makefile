@@ -10,7 +10,17 @@ CC := gcc -std=c99 -Wall
 OBJS := $(wildcard obj/*.o)
 EXES := $(wildcard bin/*)
 
-all: main
+main: objs
+	@- $(CC) $(CFLAGS) -o bin/rmc	  										\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o obj/codegen.o	\
+	src/main.c -ll
+	# TODO: LLVM link
+
+# 
+# Objs
+# 
+
+objs: lex parser sem codegen
 
 parser:
 	@- bison -v -d src/monga.y
@@ -20,36 +30,56 @@ parser:
 	@- $(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
 	@- $(RM) src/yacc.c
 
-sem: parser
-	@- $(CC) $(CFLAGS) -c src/symtable.c -o obj/symtable.o
-	@- $(CC) $(CFLAGS) -c src/sem.c -o obj/sem.o
-
 lex: parser
 	@- flex src/monga.lex
 	@- $(CC) $(CFLAGS) -c lex.yy.c -o obj/lex.o -Isrc/
 	@- $(RM) lex.yy.c
 
-main: lex sem parser
-	@- $(CC) $(CFLAGS) -o bin/lextest 								\
-		obj/lex.o obj/parser.o obj/ast.o 							\
-		src/lex_test.c -ll
-	@- $(CC) $(CFLAGS) -o bin/parsertest 							\
-		obj/lex.o obj/parser.o obj/ast.o 							\
-		src/parser_test.c -ll
-	@- $(CC) $(CFLAGS) -o bin/asttest 								\
-		obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
-		src/ast_test.c -ll
+sem: parser
+	@- $(CC) $(CFLAGS) -c src/symtable.c -o obj/symtable.o
+	@- $(CC) $(CFLAGS) -c src/sem.c -o obj/sem.o
 
-lex_test: main
+codegen: sem
+	@- $(CC) $(CFLAGS) -c src/codegen.c -o obj/codegen.o
+
+# 
+# Tests
+# 
+
+lex_test: objs
+	@- $(CC) $(CFLAGS) -o bin/lextest 										\
+	obj/lex.o obj/parser.o obj/ast.o 										\
+	src/lex_test.c -ll
+
 	@- sh tests/test.sh lex
 
-parser_test: main
+parser_test: objs
+	@- $(CC) $(CFLAGS) -o bin/parsertest 									\
+	obj/lex.o obj/parser.o obj/ast.o 										\
+	src/parser_test.c -ll
+
 	@- sh tests/test.sh parser
 
-ast_test: main
+ast_test: objs
+	@- $(CC) $(CFLAGS) -o bin/asttest 										\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 				\
+	src/ast_test.c -ll
+
 	@- sh tests/test.sh ast
 
-test: lex_test parser_test ast_test
+codegen_test: objs
+	@- $(CC) $(CFLAGS) -o bin/codegentest									\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o obj/codegen.o	\
+	src/main.c -ll
+
+	# @- sh tests/test.sh codegen
+	@- bin/codegentest < "tests/codegen/input/test_1.in"
+
+test: lex_test parser_test ast_test codegen_test
+
+# 
+# Clean
+# 
 
 clean:
 	@- $(RM) src/yacc.h

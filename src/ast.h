@@ -50,11 +50,6 @@ typedef enum ExpE {
 	EXP_BINARY
 } ExpE;
 
-typedef enum CallE {
-	CALL_EMPTY,
-	CALL_PARAMS
-} CallE;
-
 // ==================================================
 //
 //	Node Structs

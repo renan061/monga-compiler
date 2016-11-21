@@ -31,10 +31,8 @@ static void print_exp(ExpNode* exp);
 static void print_call(CallNode* call);
 
 int main() {
-	ProgramNode* program;
-
 	yyparse();
-	program = ast_get_program();
+	ProgramNode* program = ast_get_program();
 	sem_type_check_program(program);
 	print_program(program);
 
