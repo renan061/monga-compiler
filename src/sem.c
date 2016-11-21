@@ -126,7 +126,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 		if (cmd->u.ret != NULL) {
 			type_check_exp(table, cmd->u.ret);
 			tp_check(cmd->line, "invalid type for return", &cmd->u.ret, ret);
-		} else if (ret != NULL) {
+		} else if (ret->tag != TYPE_VOID) {
 			err_type(cmd->line, "invalid type for return", ret, type_void);
 		}
 		break;

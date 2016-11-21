@@ -1,4 +1,4 @@
-int intvalue;											   |	semantical error line 50 (invalid type for return - cannot use "void" as "void")
+int intvalue;											   |	semantical error line 77 (invalid assignment expression - cannot use "int" as "char")
 float floatvalue;										   <
 char charvalue;											   <
 int func0() {											   <
