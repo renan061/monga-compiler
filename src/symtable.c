@@ -132,7 +132,7 @@ void st_leave_scope(SymbolTable* table) {
 SymbolTable* st_new() {
 	SymbolTable* table;
 	MONGA_MALLOC(table, SymbolTable);
-	table->first = NULL; // FIXME: Do I need this here?
+	table->first = NULL;
 	st_enter_scope(table);
 	return table;
 }
