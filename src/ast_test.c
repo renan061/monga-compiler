@@ -62,6 +62,7 @@ static void print_def(DefNode* def, int layer) {
 		printf(";\n");
 		break;
 	case DEF_FUNC:
+		// define i32 @main() #0 {
 		print_type(def->u.func.type);
 		printf(" ");
 		print_id(def->u.func.id);
@@ -71,15 +72,14 @@ static void print_def(DefNode* def, int layer) {
 			printf("(");
 			DefNode* aux = def->u.func.params;
 			while (1) { // It's ugly but necessary
-				print_type(aux->u.var.type);
+				cg_type(aux->u.var.type);
 				printf(" ");
-				print_id(aux->u.var.id);
-				if (aux->next != NULL) {
-					printf(", ");
-					aux = aux->next;
-				} else {
+				cg_id(aux->u.var.id); // Not a %t? Conflicts if user writes t2?
+				if (aux->next == NULL) {
 					break;
 				}
+				printf(", ");
+				aux = aux->next;
 			}
 			printf(")");
 		}

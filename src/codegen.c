@@ -5,13 +5,14 @@
 
 // Aux
 static void cg_def(DefNode* def);
+static void cg_type(TypeNode* type);
+static void cg_id(IdNode* id);
 static void cg_cmd(CmdNode* cmd);
 static void cg_var(VarNode* cmd);
 static void cg_exp(ExpNode* exp);
 static void cg_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
-	printf("codegen\n");
 	cg_def(program->defs);
 }
 
@@ -27,8 +28,29 @@ static void cg_def(DefNode* def) {
 		// TODO
 		break;
 	case DEF_FUNC:
-		// TODO
+		printf("define ");
+		cg_type(def->u.func.type);
+		printf(" @");
+		cg_id(def->u.func.id);
+		printf("(");
+		
+		if (def->u.func.params != NULL) {
+			DefNode* aux = def->u.func.params;
+			while (1) { // It's ugly but necessary
+				cg_type(aux->u.var.type);
+				printf(" ");
+				cg_id(aux->u.var.id); // TODO: Conflicts when user writes t2?
+				if (aux->next == NULL) {
+					break;
+				}
+				printf(", ");
+				aux = aux->next;
+			}
+		}
+
+		printf(") {\n");
 		cg_cmd(def->u.func.block);
+		printf("}\n");
 		break;
 	default:
 		MONGA_INTERNAL_ERR("cg_def: invalid tag");
@@ -37,6 +59,24 @@ static void cg_def(DefNode* def) {
 	if (def->next != NULL) {
 		cg_def(def->next);
 	}
+}
+
+static void cg_type(TypeNode* type) {
+	switch (type->tag) {
+	case TYPE_INT:		printf("i32");			break;
+	case TYPE_FLOAT:	printf("float");		break;
+	case TYPE_CHAR:		printf("signext i8");	break; // TODO: ???
+	case TYPE_VOID:		printf("void"); 		break;
+	case TYPE_INDEXED:
+		// TODO
+		break;
+	default: MONGA_ERR("cg: invalid tag");
+	}
+}
+
+// TODO: Maybe this is only used inside cg_def for funcs?
+static void cg_id(IdNode* id) {
+	printf("%s", id->u.str);
 }
 
 static void cg_cmd(CmdNode* cmd) {

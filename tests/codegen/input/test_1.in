@@ -1,3 +1,7 @@
-void main() {
-	
+float foo(int i, float f, char c) {
+
+}
+
+int main() {
+
 }
