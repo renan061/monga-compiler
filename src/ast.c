@@ -166,6 +166,16 @@ CmdNode* ast_cmd_while(int line, ExpNode* exp, CmdNode* cmd) {
 	return n;
 }
 
+CmdNode* ast_cmd_print(int line, ExpNode* exp) {
+	CmdNode* n;
+	MONGA_MALLOC(n, CmdNode);
+	n->tag = CMD_PRINT;
+	n->line = line;
+	n->next = NULL;
+	n->u.print = exp;
+	return n;
+}
+
 CmdNode* ast_cmd_asg(int line, VarNode* var, ExpNode* exp) {
 	CmdNode* n;
 	MONGA_MALLOC(n, CmdNode);

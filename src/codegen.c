@@ -3,20 +3,30 @@
 #include "macros.h"
 #include "ast.h"
 
-// Aux
-static void cg_def(DefNode* def);
-static void cg_type(TypeNode* type);
-static void cg_id(IdNode* id);
-static void cg_cmd(CmdNode* cmd);
-static void cg_var(VarNode* cmd);
-static void cg_exp(ExpNode* exp);
-static void cg_call(CallNode* call);
-
+// Auxiliary
 static int tablvl;
 static void tabs();
 
+static void print_char(const char c);
+static void print_int(int i);
+static void print_float(double f);
+static void print_string(const char* str);
+
+// Code generator
+static void code_def(DefNode* def);
+static void code_type(TypeNode* type);
+static void code_id(IdNode* id);
+static void code_cmd(CmdNode* cmd);
+static void code_var(VarNode* cmd);
+static void code_exp(ExpNode* exp);
+static void code_call(CallNode* call);
+
 void codegen(ProgramNode* program) {
-	cg_def(program->defs);
+	// TODO: Setup?
+	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n");
+	printf("declare i32 @putchar(i32)\n\n");
+
+	code_def(program->defs);
 }
 
 // ==================================================
@@ -25,24 +35,24 @@ void codegen(ProgramNode* program) {
 //
 // ==================================================
 
-static void cg_def(DefNode* def) {
+static void code_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		// TODO
 		break;
 	case DEF_FUNC:
 		printf("define ");
-		cg_type(def->u.func.type);
+		code_type(def->u.func.type);
 		printf(" @");
-		cg_id(def->u.func.id);
+		code_id(def->u.func.id);
 		printf("(");
 		
 		if (def->u.func.params != NULL) {
 			DefNode* aux = def->u.func.params;
 			while (1) { // It's ugly but necessary
-				cg_type(aux->u.var.type);
+				code_type(aux->u.var.type);
 				printf(" ");
-				cg_id(aux->u.var.id); // Not a %t? Conflicts if user writes t2?
+				code_id(aux->u.var.id); // Not a %t? Conflicts if user writes t2?
 				if (aux->next == NULL) {
 					break;
 				}
@@ -52,19 +62,21 @@ static void cg_def(DefNode* def) {
 		}
 
 		printf(") {\n");
-		cg_cmd(def->u.func.block);
+		tablvl++;
+		code_cmd(def->u.func.block);
+		tablvl--;
 		printf("}\n");
 		break;
 	default:
-		MONGA_INTERNAL_ERR("cg_def: invalid tag");
+		MONGA_INTERNAL_ERR("code_def: invalid tag");
 	}
 
 	if (def->next != NULL) {
-		cg_def(def->next);
+		code_def(def->next);
 	}
 }
 
-static void cg_type(TypeNode* type) {
+static void code_type(TypeNode* type) {
 	switch (type->tag) {
 	case TYPE_INT:		printf("i32");		break;
 	case TYPE_FLOAT:	printf("float");	break;
@@ -77,20 +89,20 @@ static void cg_type(TypeNode* type) {
 	}
 }
 
-// TODO: Maybe this is only used inside cg_def for funcs?
-static void cg_id(IdNode* id) {
+// TODO: Maybe this is only used inside code_def for funcs?
+static void code_id(IdNode* id) {
 	printf("%s", id->u.str);
 }
 
-static void cg_cmd(CmdNode* cmd) {
+static void code_cmd(CmdNode* cmd) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
 		// TODO
 		if (cmd->u.block.defs != NULL) {
-			cg_def(cmd->u.block.defs);
+			code_def(cmd->u.block.defs);
 		}
 		if (cmd->u.block.cmds != NULL) {
-			cg_cmd(cmd->u.block.cmds);
+			code_cmd(cmd->u.block.cmds);
 		}
 		break;
 	case CMD_IF:
@@ -102,27 +114,51 @@ static void cg_cmd(CmdNode* cmd) {
 	case CMD_WHILE:
 		// TODO
 		break;
+	case CMD_PRINT:
+		switch (cmd->u.print->type->tag) {
+		case TYPE_CHAR:
+			print_char(cmd->u.print->u.strvalue[0]);
+			break;
+		case TYPE_INT:
+			print_int(cmd->u.print->u.intvalue);
+			break;
+		case TYPE_FLOAT:
+			print_float(cmd->u.print->u.floatvalue);
+			break;
+		case TYPE_INDEXED:
+			if (cmd->u.print->type->indexed->tag == TYPE_CHAR) {
+				print_string(cmd->u.print->u.strvalue);
+			} else {
+				// TODO
+				// Print address or "explode" if not set
+			}
+			break;
+		default:
+			MONGA_INTERNAL_ERR("todo");
+		}
+		break;
 	case CMD_ASG:
 		// TODO
-		cg_var(cmd->u.asg.var);
-		cg_exp(cmd->u.asg.exp);
+		code_var(cmd->u.asg.var);
+		code_exp(cmd->u.asg.exp);
 		break;
 	case CMD_RETURN:
 		// TODO
+		printf("ret i32 0\n");
 		break;
 	case CMD_CALL:
 		// TODO
 		break;
 	default:
-		MONGA_INTERNAL_ERR("cg_cmd: invalid tag");
+		MONGA_INTERNAL_ERR("code_cmd: invalid tag");
 	}
 
 	if (cmd->next != NULL) {
-		cg_cmd(cmd->next);
+		code_cmd(cmd->next);
 	}
 }
 
-static void cg_var(VarNode* var) {
+static void code_var(VarNode* var) {
 	switch (var->tag) {
 	case VAR_ID:
 		tabs();
@@ -132,11 +168,11 @@ static void cg_var(VarNode* var) {
 		// TODO
 		break;
 	default:
-		MONGA_INTERNAL_ERR("cg_var: invalid tag");
+		MONGA_INTERNAL_ERR("code_var: invalid tag");
 	}
 }
 
-static void cg_exp(ExpNode* exp) {
+static void code_exp(ExpNode* exp) {
 	switch (exp->tag) {
 	case EXP_KINT:
 		// TODO
@@ -152,7 +188,7 @@ static void cg_exp(ExpNode* exp) {
 		break;
 	case EXP_CALL:
 		// TODO
-		cg_call(exp->u.call);
+		code_call(exp->u.call);
 		break;
 	case EXP_NEW:
 		// TODO
@@ -164,15 +200,15 @@ static void cg_exp(ExpNode* exp) {
 		// TODO
 		break;
 	default:
-		MONGA_INTERNAL_ERR("cg_exp: invalid tag");
+		MONGA_INTERNAL_ERR("code_exp: invalid tag");
 	}
 
 	if (exp->next != NULL) {
-		cg_exp(exp->next);
+		code_exp(exp->next);
 	}
 }
 
-static void cg_call(CallNode* call) {
+static void code_call(CallNode* call) {
 	// TODO
 }
 
@@ -185,5 +221,35 @@ static void cg_call(CallNode* call) {
 static void tabs() {
 	for (int i = 0; i < tablvl; i++) {
 		printf("  ");
+	}
+}
+
+static void print_char(const char c) {
+	tabs();
+	printf("call i32 @putchar(i32 %d)\n", c);
+}
+
+static void print_uint(unsigned int i) {
+    if (i / 10 != 0) {
+        print_uint(i / 10);
+    }
+    print_char((i % 10) + '0');
+}
+
+static void print_int(int i) {
+    if (i < 0) {
+        print_char('-');
+        i = -i;
+    }
+    print_uint((unsigned int) i);
+}
+
+static void print_float(double f) {
+    print_int((int) f); // TODO
+}
+
+static void print_string(const char* str) {
+	for (int i = 0; str[i] != '\0'; i++) {
+		print_char(str[i]);
 	}
 }

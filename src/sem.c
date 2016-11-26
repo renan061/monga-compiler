@@ -121,6 +121,9 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 		type_check_cmd(table, cmd->u.ifwhile.cmd, ret);
 		st_leave_scope(table);
 		break;
+	case CMD_PRINT:
+		type_check_exp(table, cmd->u.print);
+		break;
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
@@ -342,10 +345,9 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 			err_id(call->id->line, "invalid arguments - no parameters",
 				def->u.func.id->u.str);
 		}
-	} else { // Call with no arguments, but function has parameters
-		if (params != NULL) {
-			err_id(call->id->line, "too few arguments", def->u.func.id->u.str);
-		}
+	} else if (params != NULL) {
+		// Call with no arguments, but function has parameters
+		err_id(call->id->line, "too few arguments", def->u.func.id->u.str);
 	}
 }
 

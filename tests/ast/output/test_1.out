@@ -64,6 +64,7 @@ int main(char[] x, int[][] y, float[][][] z) {
         b:float = ((2:int) as float);
         c:char = ("3":char);
     })
+    @((1:int)+:int(2:int));
     (indexed1:int[])[(1:int)]:int = ((2:int)||:int(3:int));
     return ((1:int)||:int(2:int));
     func0();

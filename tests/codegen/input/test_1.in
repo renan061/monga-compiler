@@ -1,7 +1,10 @@
-float foo(int i, float f, char c) {
-
-}
-
 int main() {
-
+	@"c";
+	@"\n";
+	@1769;
+	@"\n";
+	@123.45;
+	@"\n";
+	@"uma string\n";
+	return 0;
 }

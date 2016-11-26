@@ -72,8 +72,14 @@ codegen_test: objs
 	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o obj/codegen.o	\
 	src/main.c -ll
 
-	# @- sh tests/test.sh codegen
-	@- bin/codegentest < "tests/codegen/input/test_1.in"
+	@- echo ""
+	@- bin/codegentest < tests/codegen/input/test_1.in > tests/codegen/output/test_1.ll
+	@- cat tests/codegen/output/test_1.ll
+	@- clang tests/codegen/output/test_1.ll -o prog.o
+	@- echo "\n***\n"
+	@- ./prog.o
+	@- echo "\n***\n"
+	@- $(RM) prog.o
 
 test: lex_test parser_test ast_test codegen_test
 

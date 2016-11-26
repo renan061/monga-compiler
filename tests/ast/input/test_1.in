@@ -77,6 +77,8 @@ int main(char[] x, int[][] y, float[][][] z) {
 				b = 2;
 				c = "3";
 			}
+		/* CmdPrint */
+			@ 1 + 2;
 		/* CmdAsg */
 			indexed1[1] = 2 || 3;
 		/* CmdReturn */

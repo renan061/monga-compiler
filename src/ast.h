@@ -28,6 +28,7 @@ typedef enum CmdE {
 	CMD_IF,
 	CMD_IF_ELSE,
 	CMD_WHILE,
+	CMD_PRINT,
 	CMD_ASG,
 	CMD_RETURN,
 	CMD_CALL
@@ -123,6 +124,8 @@ struct CmdNode {
 			ExpNode* exp;
 			CmdNode *ifcmd, *elsecmd;
 		} ifelse;
+		// CmdPrint
+		ExpNode* print;
 		// CmdAsg
 		struct {
 			VarNode* var;
@@ -220,6 +223,7 @@ extern CmdNode* ast_cmd_if(int line, ExpNode* exp, CmdNode* cmd);
 extern CmdNode* ast_cmd_if_else(int line, ExpNode* exp, CmdNode* ifcmd,
 	CmdNode* elsecmd);
 extern CmdNode* ast_cmd_while(int line, ExpNode* exp, CmdNode* cmd);
+extern CmdNode* ast_cmd_print(int line, ExpNode* exp);
 extern CmdNode* ast_cmd_asg(int line, VarNode* var, ExpNode* exp);
 extern CmdNode* ast_cmd_return(int line, ExpNode* exp);
 extern CmdNode* ast_cmd_call(int line, CallNode* call);

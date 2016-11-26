@@ -62,7 +62,6 @@ static void print_def(DefNode* def, int layer) {
 		printf(";\n");
 		break;
 	case DEF_FUNC:
-		// define i32 @main() #0 {
 		print_type(def->u.func.type);
 		printf(" ");
 		print_id(def->u.func.id);
@@ -182,6 +181,12 @@ static void print_cmd(CmdNode* cmd, int layer) {
 		print_cmd(cmd->u.ifwhile.cmd, layer + 1);
 		print_tabs(layer);
 		printf("})\n");
+		break;
+	case CMD_PRINT:
+		print_tabs(layer);
+		printf("@");
+		print_exp(cmd->u.print);
+		printf(";\n");
 		break;
 	case CMD_ASG:
 		print_var(cmd->u.asg.var, layer);
