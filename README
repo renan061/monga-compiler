@@ -6,6 +6,7 @@
 	Matrícula: 1211055
 */
 
+TODO: Remove: clang -S -emit-llvm main.c
 
 Gerar binários:
 

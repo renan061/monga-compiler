@@ -12,6 +12,9 @@ static void cg_var(VarNode* cmd);
 static void cg_exp(ExpNode* exp);
 static void cg_call(CallNode* call);
 
+static int tablvl;
+static void tabs();
+
 void codegen(ProgramNode* program) {
 	cg_def(program->defs);
 }
@@ -39,7 +42,7 @@ static void cg_def(DefNode* def) {
 			while (1) { // It's ugly but necessary
 				cg_type(aux->u.var.type);
 				printf(" ");
-				cg_id(aux->u.var.id); // TODO: Conflicts when user writes t2?
+				cg_id(aux->u.var.id); // Not a %t? Conflicts if user writes t2?
 				if (aux->next == NULL) {
 					break;
 				}
@@ -63,10 +66,10 @@ static void cg_def(DefNode* def) {
 
 static void cg_type(TypeNode* type) {
 	switch (type->tag) {
-	case TYPE_INT:		printf("i32");			break;
-	case TYPE_FLOAT:	printf("float");		break;
-	case TYPE_CHAR:		printf("signext i8");	break; // TODO: ???
-	case TYPE_VOID:		printf("void"); 		break;
+	case TYPE_INT:		printf("i32");		break;
+	case TYPE_FLOAT:	printf("float");	break;
+	case TYPE_CHAR:		printf("i8");		break; // TODO: ???
+	case TYPE_VOID:		printf("void"); 	break;
 	case TYPE_INDEXED:
 		// TODO
 		break;
@@ -122,6 +125,7 @@ static void cg_cmd(CmdNode* cmd) {
 static void cg_var(VarNode* var) {
 	switch (var->tag) {
 	case VAR_ID:
+		tabs();
 		// TODO
 		break;
 	case VAR_INDEXED:
@@ -170,4 +174,16 @@ static void cg_exp(ExpNode* exp) {
 
 static void cg_call(CallNode* call) {
 	// TODO
+}
+
+// ==================================================
+//
+//	Auxiliary
+//
+// ==================================================
+
+static void tabs() {
+	for (int i = 0; i < tablvl; i++) {
+		printf("  ");
+	}
 }

@@ -38,5 +38,5 @@ do
 	fi
 
 	# Cleaning up
-	rm $OUTPUT_FILE
+	mv $OUTPUT_FILE "output/"$OUTPUT_FILE
 done

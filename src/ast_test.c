@@ -72,9 +72,9 @@ static void print_def(DefNode* def, int layer) {
 			printf("(");
 			DefNode* aux = def->u.func.params;
 			while (1) { // It's ugly but necessary
-				cg_type(aux->u.var.type);
+				print_type(aux->u.var.type);
 				printf(" ");
-				cg_id(aux->u.var.id); // Not a %t? Conflicts if user writes t2?
+				print_id(aux->u.var.id);
 				if (aux->next == NULL) {
 					break;
 				}
