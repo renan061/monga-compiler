@@ -74,7 +74,7 @@ codegen_test: objs
 
 	@- echo ""
 	@- bin/codegentest < tests/codegen/input/test_1.in > tests/codegen/output/test_1.ll
-	@- cat tests/codegen/output/test_1.ll
+	@- bin/codegentest < tests/codegen/input/test_1.in
 	@- clang tests/codegen/output/test_1.ll -o prog.o
 	@- echo "\n***\n"
 	@- ./prog.o

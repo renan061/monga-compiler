@@ -1,6 +1,14 @@
 int main() {
-	int i;
-	i = 65;
-	@i;
+	{
+		int i;
+		i = (65 + (-10) + 10 - 10 + 10)*2/2;
+		@i;
+	}
+
+	{
+		char c;
+		char[] b;
+	}
+
 	return 0;
 }
