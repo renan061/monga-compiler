@@ -4,7 +4,8 @@
 #include "ast.h"
 
 // Auxiliary
-static int tablvl;
+static int tablvl, temp;
+
 static void tabs();
 
 static void print_char(const char c);
@@ -22,9 +23,11 @@ static void code_exp(ExpNode* exp);
 static void code_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
-	// TODO: Setup?
-	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n");
+	// Setup
+	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n"); // TODO
 	printf("declare i32 @putchar(i32)\n\n");
+	tablvl = 0;
+	temp = 1;
 
 	code_def(program->defs);
 }
@@ -38,7 +41,13 @@ void codegen(ProgramNode* program) {
 static void code_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
-		// TODO
+		tabs();
+
+		def->temp = temp++;
+		printf("%%t%d = alloca ", def->temp);
+		code_type(def->u.var.type);
+		printf("\n");
+
 		break;
 	case DEF_FUNC:
 		printf("define ");
@@ -79,8 +88,8 @@ static void code_def(DefNode* def) {
 static void code_type(TypeNode* type) {
 	switch (type->tag) {
 	case TYPE_INT:		printf("i32");		break;
-	case TYPE_FLOAT:	printf("float");	break;
-	case TYPE_CHAR:		printf("i8");		break; // TODO: ???
+	case TYPE_FLOAT:	printf("double");	break;
+	case TYPE_CHAR:		printf("i8");		break;
 	case TYPE_VOID:		printf("void"); 	break;
 	case TYPE_INDEXED:
 		// TODO
@@ -115,23 +124,40 @@ static void code_cmd(CmdNode* cmd) {
 		// TODO
 		break;
 	case CMD_PRINT:
-		switch (cmd->u.print->type->tag) {
-		case TYPE_CHAR:
-			print_char(cmd->u.print->u.strvalue[0]);
+		switch (cmd->u.print->tag) {
+		case EXP_KSTR:
+			// TODO
+			if (cmd->u.print->type->indexed == NULL) {
+				print_char(cmd->u.print->u.strvalue[0]);
+			} else {
+				print_string(cmd->u.print->u.strvalue);
+			}
 			break;
-		case TYPE_INT:
+		case EXP_KINT:
 			print_int(cmd->u.print->u.intvalue);
 			break;
-		case TYPE_FLOAT:
+		case EXP_KFLOAT:
 			print_float(cmd->u.print->u.floatvalue);
 			break;
-		case TYPE_INDEXED:
-			if (cmd->u.print->type->indexed->tag == TYPE_CHAR) {
-				print_string(cmd->u.print->u.strvalue);
-			} else {
-				// TODO
-				// Print address or "explode" if not set
-			}
+		case EXP_VAR:
+			tabs();
+			printf("%%t%d = load ", temp++);
+			code_type(cmd->u.print->type);
+			printf(", ");
+			code_type(cmd->u.print->type);
+			printf("* %%t%d\n", cmd->u.print->u.var->u.id->u.def->temp); // TODO: VarIndexed?
+			// tabs();
+			// printf("%%t5 = sext i8 %%t4 to i32\n");
+			tabs();
+			printf("call i32 @putchar(i32 %%t2)\n");
+			break;
+		case EXP_CALL:
+		case EXP_NEW:
+		case EXP_CAST:
+		case EXP_UNARY:
+		case EXP_BINARY:
+			// TODO
+			// Print address or "explode" if not set
 			break;
 		default:
 			MONGA_INTERNAL_ERR("todo");
@@ -141,6 +167,27 @@ static void code_cmd(CmdNode* cmd) {
 		// TODO
 		code_var(cmd->u.asg.var);
 		code_exp(cmd->u.asg.exp);
+
+		printf("store ");
+		code_type(cmd->u.asg.var->type);
+
+		switch (cmd->u.asg.exp->tag) {
+		case EXP_KSTR:
+			// TODO: store i8 99, i8* %c
+			break;
+		case EXP_KINT:
+			printf(" %d, ", cmd->u.asg.exp->u.intvalue);
+			break;
+		case EXP_KFLOAT:
+			printf(" %f, ", cmd->u.asg.exp->u.floatvalue);
+			break;
+		default:
+			break; // TODO
+		}
+
+		code_type(cmd->u.asg.var->type);
+		printf("* %%t%d\n", cmd->u.asg.var->u.id->u.def->temp); // TODO: VarIndexed ?
+
 		break;
 	case CMD_RETURN:
 		// TODO
@@ -176,9 +223,17 @@ static void code_exp(ExpNode* exp) {
 	switch (exp->tag) {
 	case EXP_KINT:
 		// TODO
+		exp->temp = temp++;
+		printf("%%t%d = add ", exp->temp);
+		code_type(exp->type);
+		printf(" %d, 0\n", exp->u.intvalue);
 		break;
 	case EXP_KFLOAT:
 		// TODO
+		exp->temp = temp++;
+		printf("%%t%d = fadd ", exp->temp);
+		code_type(exp->type);
+		printf(" %f, 0.0\n", exp->u.floatvalue);
 		break;
 	case EXP_KSTR:
 		// TODO

@@ -367,6 +367,7 @@ exp_mul			: exp_mul '*' exp_unary
 					}
 				;
 
+// TODO: exp_unary : '-' exp_unary
 exp_unary		: '-' exp_simple
 					{
 						$$ = ast_exp_unary($1, '-', $2);
