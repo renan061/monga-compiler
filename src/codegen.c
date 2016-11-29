@@ -8,10 +8,10 @@ static int tablvl, temp;
 
 static void tabs();
 
-static void print_char(const char c);
-static void print_int(int i);
-static void print_float(double f);
-static void print_string(const char* str);
+// static void print_char(const char c);
+// static void print_int(int i);
+// static void print_float(double f);
+// static void print_string(const char* str);
 
 // Code generator
 static void code_def(DefNode* def);
@@ -41,13 +41,12 @@ void codegen(ProgramNode* program) {
 static void code_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
+		printf(";DefVar\n");
 		tabs();
-
 		def->temp = temp++;
 		printf("%%t%d = alloca ", def->temp);
 		code_type(def->u.var.type);
 		printf("\n");
-
 		break;
 	case DEF_FUNC:
 		printf("define ");
@@ -124,74 +123,25 @@ static void code_cmd(CmdNode* cmd) {
 		// TODO
 		break;
 	case CMD_PRINT:
-		switch (cmd->u.print->tag) {
-		case EXP_KSTR:
-			// TODO
-			if (cmd->u.print->type->indexed == NULL) {
-				print_char(cmd->u.print->u.strvalue[0]);
-			} else {
-				print_string(cmd->u.print->u.strvalue);
-			}
-			break;
-		case EXP_KINT:
-			print_int(cmd->u.print->u.intvalue);
-			break;
-		case EXP_KFLOAT:
-			print_float(cmd->u.print->u.floatvalue);
-			break;
-		case EXP_VAR:
-			tabs();
-			printf("%%t%d = load ", temp++);
-			code_type(cmd->u.print->type);
-			printf(", ");
-			code_type(cmd->u.print->type);
-			printf("* %%t%d\n", cmd->u.print->u.var->u.id->u.def->temp); // TODO: VarIndexed?
-			// tabs();
-			// printf("%%t5 = sext i8 %%t4 to i32\n");
-			tabs();
-			printf("call i32 @putchar(i32 %%t2)\n");
-			break;
-		case EXP_CALL:
-		case EXP_NEW:
-		case EXP_CAST:
-		case EXP_UNARY:
-		case EXP_BINARY:
-			// TODO
-			// Print address or "explode" if not set
-			break;
-		default:
-			MONGA_INTERNAL_ERR("todo");
-		}
+		code_exp(cmd->u.print);
+		printf(";CmdPrint\n");
+		tabs();
+		printf("call i32 @putchar(i32 %%t%d)\n", cmd->u.print->temp);
 		break;
 	case CMD_ASG:
 		// TODO
 		code_var(cmd->u.asg.var);
 		code_exp(cmd->u.asg.exp);
 
-		printf("store ");
-		code_type(cmd->u.asg.var->type);
-
-		switch (cmd->u.asg.exp->tag) {
-		case EXP_KSTR:
-			// TODO: store i8 99, i8* %c
-			break;
-		case EXP_KINT:
-			printf(" %d, ", cmd->u.asg.exp->u.intvalue);
-			break;
-		case EXP_KFLOAT:
-			printf(" %f, ", cmd->u.asg.exp->u.floatvalue);
-			break;
-		default:
-			break; // TODO
-		}
-
-		code_type(cmd->u.asg.var->type);
-		printf("* %%t%d\n", cmd->u.asg.var->u.id->u.def->temp); // TODO: VarIndexed ?
-
+		printf(";CmdAsg\n");
+		tabs();
+		// TODO: VarIndexed ?
+		printf("store i32 %%t%d, i32* %%t%d\n", cmd->u.asg.exp->temp,
+			cmd->u.asg.var->u.id->u.def->temp);
 		break;
 	case CMD_RETURN:
-		// TODO
-		printf("ret i32 0\n");
+		tabs();
+		printf("ret i32 0\n"); // TODO
 		break;
 	case CMD_CALL:
 		// TODO
@@ -208,10 +158,11 @@ static void code_cmd(CmdNode* cmd) {
 static void code_var(VarNode* var) {
 	switch (var->tag) {
 	case VAR_ID:
-		tabs();
-		// TODO
+		printf(";VarId\n");
+		var->temp = var->u.id->u.def->temp;
 		break;
 	case VAR_INDEXED:
+		printf(";VarIndexed\n");
 		// TODO
 		break;
 	default:
@@ -222,23 +173,23 @@ static void code_var(VarNode* var) {
 static void code_exp(ExpNode* exp) {
 	switch (exp->tag) {
 	case EXP_KINT:
-		// TODO
+		printf(";ExpKInt\n");
 		exp->temp = temp++;
-		printf("%%t%d = add ", exp->temp);
-		code_type(exp->type);
-		printf(" %d, 0\n", exp->u.intvalue);
+		tabs();
+		printf("%%t%d = add i32 %d, 0\n", exp->temp, exp->u.intvalue);
 		break;
 	case EXP_KFLOAT:
 		// TODO
-		exp->temp = temp++;
-		printf("%%t%d = fadd ", exp->temp);
-		code_type(exp->type);
-		printf(" %f, 0.0\n", exp->u.floatvalue);
 		break;
 	case EXP_KSTR:
 		// TODO
 		break;
 	case EXP_VAR:
+		code_var(exp->u.var);
+		printf(";ExpVar\n");
+		exp->temp = temp++;
+		tabs();
+		printf("%%t%d = load i32, i32* %%t%d\n", exp->temp, exp->u.var->temp);
 		// TODO
 		break;
 	case EXP_CALL:
@@ -279,32 +230,32 @@ static void tabs() {
 	}
 }
 
-static void print_char(const char c) {
-	tabs();
-	printf("call i32 @putchar(i32 %d)\n", c);
-}
+// static void print_char(const char c) {
+// 	tabs();
+// 	printf("call i32 @putchar(i32 %d)\n", c);
+// }
 
-static void print_uint(unsigned int i) {
-    if (i / 10 != 0) {
-        print_uint(i / 10);
-    }
-    print_char((i % 10) + '0');
-}
+// static void print_uint(unsigned int i) {
+//     if (i / 10 != 0) {
+//         print_uint(i / 10);
+//     }
+//     print_char((i % 10) + '0');
+// }
 
-static void print_int(int i) {
-    if (i < 0) {
-        print_char('-');
-        i = -i;
-    }
-    print_uint((unsigned int) i);
-}
+// static void print_int(int i) {
+//     if (i < 0) {
+//         print_char('-');
+//         i = -i;
+//     }
+//     print_uint((unsigned int) i);
+// }
 
-static void print_float(double f) {
-    print_int((int) f); // TODO
-}
+// static void print_float(double f) {
+//     print_int((int) f); // TODO
+// }
 
-static void print_string(const char* str) {
-	for (int i = 0; str[i] != '\0'; i++) {
-		print_char(str[i]);
-	}
-}
+// static void print_string(const char* str) {
+// 	for (int i = 0; str[i] != '\0'; i++) {
+// 		print_char(str[i]);
+// 	}
+// }

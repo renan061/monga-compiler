@@ -215,6 +215,7 @@ VarNode* ast_var(IdNode* id) {
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_ID;
 	n->line = id->line;
+	n->temp = 0;
 	n->type = NULL;
 	n->u.id = id;
 	return n;
@@ -225,6 +226,7 @@ VarNode* ast_var_indexed(int line, ExpNode* array, ExpNode* index) {
 	MONGA_MALLOC(n, VarNode);
 	n->tag = VAR_INDEXED;
 	n->line = line;
+	n->temp = 0;
 	n->type = NULL;
 	n->u.indexed.array = array;
 	n->u.indexed.index = index;

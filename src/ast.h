@@ -141,7 +141,7 @@ struct CmdNode {
 
 struct VarNode {
 	VarE tag;
-	int line;
+	int line, temp;
 	TypeNode* type;
 
 	union {
