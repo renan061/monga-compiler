@@ -11,10 +11,10 @@ OBJS := $(wildcard obj/*.o)
 EXES := $(wildcard bin/*)
 
 main: objs
-	@- $(CC) $(CFLAGS) -o bin/rmc	  										\
-	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o obj/codegen.o	\
+	@- $(CC) $(CFLAGS) -o bin/rmc	  								\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 		\
+	obj/llvm.o obj/codegen.o										\
 	src/main.c -ll
-	# TODO: LLVM link
 
 # 
 # Objs
@@ -40,6 +40,7 @@ sem: parser
 	@- $(CC) $(CFLAGS) -c src/sem.c -o obj/sem.o
 
 codegen: sem
+	@- $(CC) $(CFLAGS) -c src/llvm.c -o obj/llvm.o
 	@- $(CC) $(CFLAGS) -c src/codegen.c -o obj/codegen.o
 
 # 
@@ -47,29 +48,30 @@ codegen: sem
 # 
 
 lex_test: objs
-	@- $(CC) $(CFLAGS) -o bin/lextest 										\
-	obj/lex.o obj/parser.o obj/ast.o 										\
+	@- $(CC) $(CFLAGS) -o bin/lextest 							\
+	obj/lex.o obj/parser.o obj/ast.o 							\
 	src/lex_test.c -ll
 
 	@- sh tests/test.sh lex
 
 parser_test: objs
-	@- $(CC) $(CFLAGS) -o bin/parsertest 									\
-	obj/lex.o obj/parser.o obj/ast.o 										\
+	@- $(CC) $(CFLAGS) -o bin/parsertest 						\
+	obj/lex.o obj/parser.o obj/ast.o 							\
 	src/parser_test.c -ll
 
 	@- sh tests/test.sh parser
 
 ast_test: objs
-	@- $(CC) $(CFLAGS) -o bin/asttest 										\
-	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 				\
+	@- $(CC) $(CFLAGS) -o bin/asttest 							\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
 	src/ast_test.c -ll
 
 	@- sh tests/test.sh ast
 
 codegen_test: objs
-	@- $(CC) $(CFLAGS) -o bin/codegentest									\
-	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o obj/codegen.o	\
+	@- $(CC) $(CFLAGS) -o bin/codegentest						\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
+	obj/llvm.o obj/codegen.o									\
 	src/main.c -ll
 
 	@- echo ""

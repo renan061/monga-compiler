@@ -1,4 +1,4 @@
-int main() {
+int main(int p1, int p2) {
 	{
 		int i;
 		i = (65 + (-10) + 10 - 10 + 10)*2/2;
@@ -8,6 +8,9 @@ int main() {
 	{
 		char c;
 		char[] b;
+		b = "uma string";
+		@" \n";
+		@b;
 	}
 
 	return 0;

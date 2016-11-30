@@ -72,7 +72,7 @@ struct ProgramNode {
 
 struct DefNode {
 	DefE tag;
-	int temp;
+	unsigned int temp;
 	DefNode* next;
 	
 	union {
@@ -141,7 +141,8 @@ struct CmdNode {
 
 struct VarNode {
 	VarE tag;
-	int line, temp;
+	int line;
+	unsigned int temp;
 	TypeNode* type;
 
 	union {
@@ -156,7 +157,8 @@ struct VarNode {
 
 struct ExpNode {
 	ExpE tag;
-	int line, temp; // Line initialized as "-1" for ExpInt, ExpFloat and ExpStr
+	int line; // Initialized as "-1" for ExpInt, ExpFloat and ExpStr
+	unsigned int temp;
 	TypeNode* type;
 	ExpNode* next;
 	
