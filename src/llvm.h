@@ -14,7 +14,7 @@
 typedef unsigned int LLVMTemp;
 
 // Def
-extern LLVMTemp llvm_defvar(TypeNode* type);
+extern LLVMTemp llvm_alloca(TypeNode* type);
 extern void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params);
 extern void llvm_func_end();
 
@@ -30,6 +30,7 @@ extern void llvm_type(TypeNode* type); // TODO: Remove?
 extern LLVMTemp llvm_knum(TypeNode* type, double num);
 extern LLVMTemp llvm_kstr(const char* str);
 extern LLVMTemp llvm_load(TypeNode* type, LLVMTemp t);
+extern LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args);
 
 // Arithmetics
 extern LLVMTemp llvm_add(TypeNode* type, LLVMTemp t1, LLVMTemp t2);

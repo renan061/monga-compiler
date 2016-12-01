@@ -1,18 +1,36 @@
+
+int foo(int i, int j) {
+	return i + j;
+}
+
+int zero() {
+	return 0;
+}
+
 int main(int p1, int p2) {
 	int ret;
 
+	/*
 	{
 		int i;
 		i = (65 + (-10) + 10 - 10 + 10)*2/2;
 		@i;
+		@"\n";
 	}
 
 	{
 		char c;
 		char[] b;
 		b = "uma string";
-		@" \n";
+		@"\n";
 		@b;
+	}
+	*/
+
+	{
+		@foo(32, 33);
+		@10;
+		@zero()+65;
 	}
 	
 	ret = 0;

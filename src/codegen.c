@@ -11,7 +11,6 @@ static void code_def(DefNode* def);
 static void code_cmd(CmdNode* cmd);
 static void code_var(VarNode* cmd);
 static void code_exp(ExpNode* exp);
-static void code_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
 	// Setup
@@ -31,9 +30,7 @@ void codegen(ProgramNode* program) {
 static void code_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
-		// TODO: This does not work with global variables
-		// Call other func inside
-		def->temp = llvm_defvar(def->u.var.type);
+		// TODO: Global DefVar
 		break;
 	case DEF_FUNC:
 		llvm_func_start(def->u.func.type, def->u.func.id, def->u.func.params);
@@ -50,8 +47,8 @@ static void code_def(DefNode* def) {
 static void code_cmd(CmdNode* cmd) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
-		if (cmd->u.block.defs != NULL) {
-			code_def(cmd->u.block.defs);
+		for (DefNode* aux = cmd->u.block.defs; aux != NULL; aux = aux->next) {
+			aux->temp = llvm_alloca(aux->u.var.type);
 		}
 		if (cmd->u.block.cmds != NULL) {
 			code_cmd(cmd->u.block.cmds);
@@ -122,10 +119,15 @@ static void code_exp(ExpNode* exp) {
 		code_var(exp->u.var);
 		exp->temp = llvm_load(exp->type, exp->u.var->temp);
 		break;
-	case EXP_CALL:
-		// TODO
-		code_call(exp->u.call);
-		break;
+	case EXP_CALL: {
+		if (exp->u.call->args != NULL) {
+			code_exp(exp->u.call->args);
+		}
+
+		DefNode* def = exp->u.call->id->u.def;
+		exp->temp = llvm_call(def->u.func.type, def->u.func.id->u.str,
+			exp->u.call->args);
+	}	break;
 	case EXP_NEW:
 		// TODO
 		break;
@@ -181,8 +183,4 @@ static void code_exp(ExpNode* exp) {
 	if (exp->next != NULL) {
 		code_exp(exp->next);
 	}
-}
-
-static void code_call(CallNode* call) {
-	// TODO
 }

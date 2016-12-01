@@ -10,10 +10,9 @@
 //
 // ==================================================
 
-// TODO: Remove fixed size
-static unsigned int strscounter = 0;
-static const char* strs_val[100];
-static LLVMTemp strs_temp[100];
+// Length and accumulator for strs
+static unsigned int lenstrs = 0, accstrs = 0;
+static const char* strs[100]; // TODO: Remove fixed size
 
 static unsigned int tablvl = 0, temp = 0;
 
@@ -46,7 +45,7 @@ void llvm_type(TypeNode* type) {
 //
 // ==================================================
 
-LLVMTemp llvm_defvar(TypeNode* type) {
+LLVMTemp llvm_alloca(TypeNode* type) {
 	tabs();
 	llvm_temp(++temp);
 	printf(" = alloca ");
@@ -68,6 +67,7 @@ void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
 			llvm_type(aux->u.var.type);
 			printf(" ");
 			llvm_temp(++temp);
+			aux->temp = temp;
 			if (aux->next == NULL) {
 				break;
 			}
@@ -78,20 +78,29 @@ void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
 
 	printf(") {\n");
 	tablvl++;
+
+	// TODO: Really?
+	int t;
+	for (DefNode* aux = params; aux != NULL; aux = aux->next) {
+		t = llvm_alloca(aux->u.var.type);
+		llvm_asg(aux->u.var.type, aux->temp, t);
+		aux->temp = temp;
+	}
 }
 
 void llvm_func_end() {
 	tablvl--;
 	printf("}\n");
 
-	if (strscounter) {
-		printf("\n");
-		for (int i = 0; i < strscounter; i++) {
-			printf("@.str%d = private unnamed_addr constant ", strs_temp[i]);
-			printf("[%lu x i8] c\"%s\\00\"\n", strlen(strs_val[i]) + 1,
-				strs_val[i]);
+	if (lenstrs) {
+		for (int i = 0; i < lenstrs; i++) {
+			printf("@.str%d = private unnamed_addr constant ", i + accstrs);
+			printf("[%lu x i8] c\"%s\\00\"\n", strlen(strs[i]) + 1, strs[i]);
+			strs[i] = NULL;
 		}
-		strscounter = 0;
+		printf("\n");
+		accstrs += lenstrs;
+		lenstrs = 0;
 	}
 
 	temp = 0;
@@ -107,7 +116,8 @@ void llvm_print(ExpNode* exp) {
 		printf("call i32 @putchar(i32 %%t%d)\n", exp->temp); // TODO
 		break;
 	case TYPE_FLOAT:
-		break; // TODO
+		// TODO
+		break;
 	case TYPE_INDEXED:
 		switch (exp->type->indexed->tag) {
 		case TYPE_CHAR:
@@ -174,13 +184,9 @@ LLVMTemp llvm_kstr(const char* str) {
 	llvm_temp(temp);
 	printf(" = getelementptr inbounds ");
 	int len = strlen(str) + 1;
-	printf("[%d x i8], [%d x i8]* @.str%d , i32 0, i32 0\n", len, len, temp);
-
-	// TODO
-	strs_val[strscounter] = str;
-	strs_temp[strscounter] = temp;
-	strscounter++;
-
+	printf("[%d x i8], [%d x i8]* @.str%d , i32 0, i32 0\n", len, len,
+		lenstrs + accstrs);
+	strs[lenstrs++] = str;
 	return temp;
 }
 
@@ -192,6 +198,27 @@ LLVMTemp llvm_load(TypeNode* type, LLVMTemp t) {
 	printf(", ");
 	llvm_type(type);
 	printf("* %%t%d\n", t);
+	return temp;
+}
+
+LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
+	tabs();
+	llvm_temp(++temp);
+	printf(" = call ");
+	llvm_type(type);
+	printf(" @%s(", name);
+
+	for (ExpNode* aux = args; aux != NULL; aux = aux->next) {
+		llvm_type(aux->type);
+		printf(" ");
+		llvm_temp(aux->temp);
+		if (aux->next == NULL) { // FIXME: This is horrible.
+			break;
+		}
+		printf(", ");
+	}
+
+	printf(")\n");
 	return temp;
 }
 
