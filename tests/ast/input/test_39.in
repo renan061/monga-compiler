@@ -1,0 +1,25 @@
+void main() {
+	int i;
+	float f;
+	char[] str;
+
+	i = 1;
+
+	str = new char[10];
+
+	if (i) {
+		f = 2.5;
+	} else {
+		f = 3.5;
+	}
+
+	while (f < 0) {
+		i = i + 1;
+		f = f - 1;
+		str[i] = 10;
+	}
+
+	if (i || f) {
+		i = 1;
+	}
+}

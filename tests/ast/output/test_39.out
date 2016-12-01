@@ -1,0 +1,20 @@
+void main() {
+    int i;
+    float f;
+    char[] str;
+    i:int = (1:int);
+    str:char[] = (new char[(10:int)]:char[]);
+    (if((i:int)) {
+        f:float = (2.500000:float);
+    } else {
+        f:float = (3.500000:float);
+    })
+    (while(((f:float)<:int((0:int) as float))) {
+        i:int = ((i:int)+:int(1:int));
+        f:float = ((f:float)-:float((1:int) as float));
+        (str:char[])[(i:int)]:char = ((10:int) as char);
+    })
+    (if(((i:int)||:int(f:float))) {
+        i:int = (1:int);
+    })
+}
