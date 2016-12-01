@@ -79,9 +79,12 @@ static void code_cmd(CmdNode* cmd) {
 			cmd->u.asg.var->u.id->u.def->temp);
 		break;
 	case CMD_RETURN:
-		// TODO
-		printf("; TODO return\n");
-		printf("  ret i32 0\n");
+		if (cmd->u.ret != NULL) {
+			code_exp(cmd->u.ret);
+			llvm_ret_exp(cmd->u.ret->type, cmd->u.ret->temp);
+		} else {
+			llvm_ret_void();
+		}
 		break;
 	case CMD_CALL:
 		// TODO

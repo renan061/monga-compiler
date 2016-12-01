@@ -21,6 +21,8 @@ extern void llvm_func_end();
 // Cmd
 extern void llvm_print(ExpNode* exp);
 extern void llvm_asg(TypeNode* type, LLVMTemp texp, LLVMTemp tvar);
+extern void llvm_ret_exp(TypeNode* type, LLVMTemp t);
+extern void llvm_ret_void();
 
 extern void llvm_type(TypeNode* type); // TODO: Remove?
 

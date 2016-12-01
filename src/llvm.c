@@ -136,6 +136,20 @@ void llvm_asg(TypeNode* type, LLVMTemp texp, LLVMTemp tvar) {
 	printf("\n");
 }
 
+void llvm_ret_exp(TypeNode* type, LLVMTemp t) {
+	tabs();
+	printf("ret ");
+	llvm_type(type);
+	printf(" ");
+	llvm_temp(t);
+	printf("\n");
+}
+
+void llvm_ret_void() {
+	tabs();
+	printf("ret void\n");
+}
+
 LLVMTemp llvm_knum(TypeNode* type, double num) {
 	// TODO: This is horrible
 	temp++;
