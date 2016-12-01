@@ -186,8 +186,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		exp->type = type_float;
 		break;
 	case EXP_KSTR:
-		exp->type = (strlen(exp->u.strvalue) > 1) ?
-			ast_type_indexed(type_char) : type_char;
+		exp->type = ast_type_indexed(type_char);
 		break;
 	case EXP_VAR:
 		type_check_var(table, exp->u.var);
@@ -324,17 +323,18 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 		type_check_exp(table, call->args);
 		if (params != NULL) { // Call with arguments and function has parameters
 			DefNode* param = params;
-			for (ExpNode *arg = call->args, *previous = NULL; arg != NULL;
-				param = param->next, previous = arg, arg = arg->next) {
+			for (ExpNode **arg = &call->args, *previous = NULL;
+				arg != NULL && *arg != NULL;
+				param = param->next, previous = *arg, arg = &((*arg)->next)) {
 
 				if (param == NULL) {
 					err_id(call->id->line, "too many arguments",
 						def->u.func.id->u.str);
 				}
-				tp_check(call->id->line, "mismatching types of arguments", &arg,
+				tp_check(call->id->line, "mismatching types of arguments", arg,
 					param->u.var.type);
 				if (previous != NULL) {
-					previous->next = arg;
+					previous->next = *arg;
 				}
 			}
 			if (param != NULL) {

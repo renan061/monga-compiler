@@ -62,14 +62,14 @@ int main(char[] x, int[][] y, float[][][] z) {
     (while(((1:int)||:int(2:int))) {
         a:int = (1:int);
         b:float = ((2:int) as float);
-        c:char = ("3":char);
+        c:char = ((3:int) as char);
     })
     @((1:int)+:int(2:int));
     (indexed1:int[])[(1:int)]:int = ((2:int)||:int(3:int));
     return ((1:int)||:int(2:int));
     func0();
     func1((1:int));
-    func3((1:int), (2.000000:float), ("3":char));
+    func3((1:int), (2.000000:float), ((3:int) as char));
     (if((1:int)) {
       (if((2:int)) {
         a:int = (3:int);
@@ -98,7 +98,7 @@ int main(char[] x, int[][] y, float[][][] z) {
     b:float = ((a:int) as float);
     a:int = ((indexed1:int[])[(1:int)]:int);
     a:int = ((((indexed3:int[][][])[(1:int)]:int[][])[(2:int)]:int[])[(3:int)]:int);
-    a:int = ((((indexed3:int[][][])[((0:int)>=:int(5:int))]:int[][])[(fooreturn(("1":char), (func1(((0:int)&&:int(1:int))):int), (3.000000:float)):int)]:int[])[((1:int)+:int((indexed1:int[])[(3:int)]:int))]:int);
+    a:int = ((((indexed3:int[][][])[((0:int)>=:int(5:int))]:int[][])[(fooreturn(((1:int) as char), (func1(((0:int)&&:int(1:int))):int), (3.000000:float)):int)]:int[])[((1:int)+:int((indexed1:int[])[(3:int)]:int))]:int);
     a:int = (1:int);
     b:float = (1.100000:float);
     str:char[] = ("111":char[]);
@@ -106,7 +106,7 @@ int main(char[] x, int[][] y, float[][][] z) {
     a:int = (func0():int);
     a:int = (func1((1:int)):int);
     a:int = (func2((1:int), (2:int)):int);
-    a:int = (func3((1:int), ((2:int) as float), ("3":char)):int);
+    a:int = (func3((1:int), ((2:int) as float), ((3:int) as char)):int);
     indexed1:int[] = (new int[(2:int)]:int[]);
     a:int = (-(1:int):int);
     a:int = (!(1:int):int);
@@ -122,5 +122,5 @@ int main(char[] x, int[][] y, float[][][] z) {
     a:int = ((1:int)&&:int(2:int));
     a:int = ((1:int)||:int(2:int));
     a:int = ((-(1:int):int)||:int(((2:int)*:int(3:int))>=:int((4:int)+:int((5:int)/:int(6:int)))));
-    a:int = (((0:int)&&:int(1:int))+:int(((fooreturn(("2":char), (func1(((1:int)+:int((3:int)/:int(7:int)))):int), (3.000000:float)):int)/:int(a:int))*:int(3:int)));
+    a:int = (((0:int)&&:int(1:int))+:int(((fooreturn(((2:int) as char), (func1(((1:int)+:int((3:int)/:int(7:int)))):int), (3.000000:float)):int)/:int(a:int))*:int(3:int)));
 }

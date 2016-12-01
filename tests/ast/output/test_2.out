@@ -16,7 +16,7 @@ float main() {
     int[] intarray2;
     float[][][] floatarray1;
     float[][][] floatarray2;
-    c:char = ("c":char);
+    c:char = ((65:int) as char);
     i:int = (1:int);
     f:float = (1.000000:float);
     (intarray1:int[])[((c:char) as int)]:int = (1:int);
@@ -35,7 +35,7 @@ float main() {
     })
     (while((i:int)) {
     })
-    c:char = ("c":char);
+    c:char = ((65:int) as char);
     c:char = ((i:int) as char);
     i:int = ((c:char) as int);
     i:int = (1:int);
@@ -52,35 +52,34 @@ float main() {
     return (f:float);
     main();
     foo((c:char), ((c:char) as int), ((c:char) as float));
-    c:char = ("":char);
+    c:char = ((65:int) as char);
     str:char[] = ("str":char[]);
     intarray1:int[] = (new int[(1:int)]:int[]);
-    i:int = (-(("1":char) as int):int);
+    i:int = (-((c:char) as int):int);
     i:int = (!(1:int):int);
-    i:int = (!("1":char):int);
+    i:int = (!(c:char):int);
     i:int = ((intarray1:int[])==:int(intarray2:int[]));
     i:int = ((floatarray1:float[][][])==:int(floatarray2:float[][][]));
-    i:int = ((("a":char) as int)==:int(("b":char) as int));
-    i:int = ((("c":char) as int)==:int(1:int));
-    i:int = ((("c":char) as float)==:int(1.000000:float));
+    i:int = (((c:char) as int)==:int((c:char) as int));
+    i:int = (((c:char) as int)==:int(1:int));
+    i:int = (((c:char) as float)==:int(1.000000:float));
     i:int = (((1:int) as float)==:int(1.000000:float));
     i:int = ((1.000000:float)==:int(2.000000:float));
     i:int = ((1.000000:float)&&:int(2:int));
-    i:int = (("c":char)||:int(0.000000:float));
+    i:int = ((c:char)||:int(0.000000:float));
     i:int = ((intarray1:int[])&&:int(floatarray1:float[][][]));
     i:int = ((floatarray1:float[][][])||:int(intarray1:int[]));
-    i:int = ((("a":char) as int)+:int(("b":char) as int));
-    i:int = ((("c":char) as int)-:int(1:int));
+    i:int = (((c:char) as int)+:int((c:char) as int));
+    i:int = (((c:char) as int)-:int(1:int));
     i:int = ((1:int)*:int(2:int));
-    f:float = (((("a":char) as int)/:int(("b":char) as int)) as float);
-    f:float = (((("c":char) as int)+:int(1:int)) as float);
-    f:float = ((("c":char) as float)-:float(1.000000:float));
+    f:float = ((((c:char) as int)/:int((c:char) as int)) as float);
+    f:float = ((((c:char) as int)+:int(1:int)) as float);
+    f:float = (((c:char) as float)-:float(1.000000:float));
     f:float = (((1:int)*:int(2:int)) as float);
     f:float = (((1:int) as float)/:float(2.000000:float));
     f:float = ((1.000000:float)+:float(2.000000:float));
-    i:int = ((("c":char) as int)<=:int(1:int));
-    i:int = ((("c":char) as float)>=:int(1.000000:float));
+    i:int = (((c:char) as int)<=:int(1:int));
+    i:int = (((c:char) as float)>=:int(1.000000:float));
     i:int = ((1:int)<:int(2:int));
     i:int = (((1:int) as float)>:int(2.000000:float));
-    c:char = ("\":char);
 }

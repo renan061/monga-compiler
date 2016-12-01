@@ -32,6 +32,7 @@ static void code_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		// TODO: This does not work with global variables
+		// Call other func inside
 		def->temp = llvm_defvar(def->u.var.type);
 		break;
 	case DEF_FUNC:

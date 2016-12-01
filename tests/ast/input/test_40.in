@@ -1,3 +1,9 @@
-void main() {
+int foo(float a, float b, float c) {
+	return 1;
+}
 
+void main() {
+	int[] indexed1;
+	int a;
+	a = indexed1[foo(1, 2, 3)];
 }
