@@ -80,7 +80,7 @@ codegen_test: objs
 	@- clang tests/codegen/output/test_1.ll -o prog.o
 	@- echo "\n***"
 	@- ./prog.o
-	@- echo "\n***\n"
+	@- echo "***\n"
 	@- $(RM) prog.o
 
 test: lex_test parser_test ast_test codegen_test

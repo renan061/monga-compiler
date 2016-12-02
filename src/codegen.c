@@ -11,6 +11,7 @@ static void code_def(DefNode* def);
 static void code_cmd(CmdNode* cmd);
 static void code_var(VarNode* cmd);
 static void code_exp(ExpNode* exp);
+static LLVMTemp code_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
 	// Setup
@@ -84,7 +85,7 @@ static void code_cmd(CmdNode* cmd) {
 		}
 		break;
 	case CMD_CALL:
-		// TODO
+		code_call(cmd->u.call);
 		break;
 	}
 
@@ -119,15 +120,9 @@ static void code_exp(ExpNode* exp) {
 		code_var(exp->u.var);
 		exp->temp = llvm_load(exp->type, exp->u.var->temp);
 		break;
-	case EXP_CALL: {
-		if (exp->u.call->args != NULL) {
-			code_exp(exp->u.call->args);
-		}
-
-		DefNode* def = exp->u.call->id->u.def;
-		exp->temp = llvm_call(def->u.func.type, def->u.func.id->u.str,
-			exp->u.call->args);
-	}	break;
+	case EXP_CALL:
+		exp->temp = code_call(exp->u.call);
+		break;
 	case EXP_NEW:
 		// TODO
 		break;
@@ -183,4 +178,13 @@ static void code_exp(ExpNode* exp) {
 	if (exp->next != NULL) {
 		code_exp(exp->next);
 	}
+}
+
+static LLVMTemp code_call(CallNode* call) {
+	if (call->args != NULL) {
+		code_exp(call->args);
+	}
+
+	DefNode* def = call->id->u.def;
+	return llvm_call(def->u.func.type, def->u.func.id->u.str, call->args);
 }

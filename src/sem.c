@@ -123,6 +123,9 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 		break;
 	case CMD_PRINT:
 		type_check_exp(table, cmd->u.print);
+		if (cmd->u.print->type->tag == TYPE_VOID) {
+			err(cmd->line, "can't print void type");
+		}
 		break;
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);

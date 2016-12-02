@@ -61,28 +61,23 @@ void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
 	llvm_type(type);
 	printf(" @%s(", id->u.str); // TODO: Don't use id ?
 	
-	if (params != NULL) {
-		DefNode* aux = params;
-		while (1) { // It's ugly but necessary
-			llvm_type(aux->u.var.type);
-			printf(" ");
-			llvm_temp(++temp);
-			aux->temp = temp;
-			if (aux->next == NULL) {
-				break;
-			}
-			printf(", ");
-			aux = aux->next;
+	for (DefNode* aux = params; aux != NULL; aux = aux->next) {
+		llvm_type(aux->u.var.type);
+		printf(" ");
+		llvm_temp(++temp);
+		aux->temp = temp;
+		if (aux->next == NULL) { // FIXME: This is horrible.
+			break;
 		}
+		printf(", ");
 	}
 
 	printf(") {\n");
 	tablvl++;
 
 	// TODO: Really?
-	int t;
 	for (DefNode* aux = params; aux != NULL; aux = aux->next) {
-		t = llvm_alloca(aux->u.var.type);
+		int t = llvm_alloca(aux->u.var.type);
 		llvm_asg(aux->u.var.type, aux->temp, t);
 		aux->temp = temp;
 	}
@@ -124,7 +119,7 @@ void llvm_print(ExpNode* exp) {
 			printf("call i32 @puts(i8* %%t%d)\n", exp->temp);
 			break;
 		default:
-			// TODO
+			// TODO: Print address
 			break;
 		}
 		break;
@@ -203,8 +198,15 @@ LLVMTemp llvm_load(TypeNode* type, LLVMTemp t) {
 
 LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
 	tabs();
-	llvm_temp(++temp);
-	printf(" = call ");
+
+	int ret = -1;
+	if (type->tag != TYPE_VOID) {
+		ret = ++temp;
+		llvm_temp(ret);
+		printf(" = ");
+	}
+	
+	printf("call ");
 	llvm_type(type);
 	printf(" @%s(", name);
 
@@ -219,7 +221,7 @@ LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
 	}
 
 	printf(")\n");
-	return temp;
+	return ret;
 }
 
 // For llvm add, sub, mul and div

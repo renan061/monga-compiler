@@ -7,6 +7,11 @@ int zero() {
 	return 0;
 }
 
+void testprint() {
+	@"test print funcionando\n";
+	return;
+}
+
 int main(int p1, int p2) {
 	int ret;
 
@@ -31,6 +36,8 @@ int main(int p1, int p2) {
 		@foo(32, 33);
 		@10;
 		@zero()+65;
+		@"\n";
+		testprint();
 	}
 	
 	ret = 0;
