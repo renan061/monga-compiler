@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <strings.h>
 
+#include "macros.h"
 #include "llvm.h"
 #include "ast.h"
 
@@ -44,6 +45,15 @@ void llvm_type(TypeNode* type) {
 //	LLVM
 //
 // ==================================================
+
+void llvm_setup() {
+	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n"); // TODO: Remove
+	printf("declare i32 @putchar(i32)\n");
+	printf("declare i32 @printf(i8*, ...)\n");
+	printf("declare i32 @puts(i8*)\n\n"); // TODO: Always prints \n
+	printf("@.pint = private unnamed_addr constant [3 x i8] c\"%%d\\00\"\n");
+	printf("@.pfloat = private unnamed_addr constant [3 x i8] c\"%%f\\00\"\n\n");
+}
 
 LLVMTemp llvm_alloca(TypeNode* type) {
 	tabs();
@@ -105,18 +115,20 @@ void llvm_print(ExpNode* exp) {
 	tabs();
 	switch (exp->type->tag) {
 	case TYPE_CHAR:
-		printf("call i32 @putchar(i32 %%t%d)\n", exp->temp);
+		printf("call i32 @putchar(i32 ");
 		break;
 	case TYPE_INT:
-		printf("call i32 @putchar(i32 %%t%d)\n", exp->temp); // TODO
-		break;
 	case TYPE_FLOAT:
-		// TODO
+		printf("call i32 (i8*, ...) @printf(i8* getelementptr inbounds ");
+		printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ",
+			(exp->type->tag == TYPE_INT) ? "pint" : "pfloat");
+		llvm_type(exp->type);
+		printf(" ");
 		break;
 	case TYPE_INDEXED:
 		switch (exp->type->indexed->tag) {
 		case TYPE_CHAR:
-			printf("call i32 @puts(i8* %%t%d)\n", exp->temp);
+			printf("call i32 @puts(i8* ");
 			break;
 		default:
 			// TODO: Print address
@@ -124,8 +136,12 @@ void llvm_print(ExpNode* exp) {
 		}
 		break;
 	case TYPE_VOID:
-		break; // TODO: Error
+		MONGA_INTERNAL_ERR("llvm_print: void type");
+		break;
 	}
+
+	llvm_temp(exp->temp);
+	printf(")\n");
 }
 
 void llvm_asg(TypeNode* type, LLVMTemp texp, LLVMTemp tvar) {
@@ -165,7 +181,9 @@ LLVMTemp llvm_knum(TypeNode* type, double num) {
 	llvm_type(type);
 	printf(" ");
 	if (isfloat) {
-		printf("TODO");
+		long long p;
+		memcpy(&p, &num, sizeof(double));
+		printf("0x%llx, 0.0", p);
 	} else {
 		printf("%d, 0", (int)num);
 	}

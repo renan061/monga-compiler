@@ -13,6 +13,8 @@
 
 typedef unsigned int LLVMTemp;
 
+extern void llvm_setup();
+
 // Def
 extern LLVMTemp llvm_alloca(TypeNode* type);
 extern void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params);

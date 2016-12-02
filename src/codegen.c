@@ -14,11 +14,8 @@ static void code_exp(ExpNode* exp);
 static LLVMTemp code_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
-	// Setup
-	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n"); // TODO
-	printf("declare i32 @putchar(i32)\n");
-	printf("declare i32 @puts(i8*)\n\n");
-
+	// TODO: LLVM setup function
+	llvm_setup();
 	code_def(program->defs);
 }
 
