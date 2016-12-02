@@ -33,6 +33,7 @@ extern LLVMTemp llvm_knum(TypeNode* type, double num);
 extern LLVMTemp llvm_kstr(const char* str);
 extern LLVMTemp llvm_load(TypeNode* type, LLVMTemp t);
 extern LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args);
+extern LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to);
 
 // Arithmetics
 extern LLVMTemp llvm_add(TypeNode* type, LLVMTemp t1, LLVMTemp t2);

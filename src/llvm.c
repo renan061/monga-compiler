@@ -137,7 +137,6 @@ void llvm_print(ExpNode* exp) {
 		break;
 	case TYPE_VOID:
 		MONGA_INTERNAL_ERR("llvm_print: void type");
-		break;
 	}
 
 	llvm_temp(exp->temp);
@@ -241,6 +240,19 @@ LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
 	printf(")\n");
 	return ret;
 }
+
+LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to) {
+	tabs();
+	llvm_temp(++temp);
+	printf(" = sitofp "); // TODO
+	llvm_type(from);
+	printf(" ");
+	llvm_temp(t);
+	printf(" to ");
+	llvm_type(to);
+	printf("\n");
+	return temp;
+}		
 
 // For llvm add, sub, mul and div
 static LLVMTemp llvm_arith(const char* op, TypeNode* type, LLVMTemp t1,

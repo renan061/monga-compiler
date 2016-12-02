@@ -6,29 +6,27 @@
 #include "yacc.h"
 #include "llvm.h"
 
-// Code generator
-static void code_def(DefNode* def);
+static void code_global_def(DefNode* def);
 static void code_cmd(CmdNode* cmd);
 static void code_var(VarNode* cmd);
 static void code_exp(ExpNode* exp);
 static LLVMTemp code_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
-	// TODO: LLVM setup function
 	llvm_setup();
-	code_def(program->defs);
+	code_global_def(program->defs);
 }
 
-// ==================================================
-//
-//	Code generator
-//
-// ==================================================
-
-static void code_def(DefNode* def) {
+static void code_global_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
 		// TODO: Global DefVar
+		// @i = global i32 0
+		// @f = global float 0.0
+		// @c = global i8 0
+		// @str = global i8* null
+		// @indexed = global i32*** null
+		// %t1 = load i32, i32* @i, align 4
 		break;
 	case DEF_FUNC:
 		llvm_func_start(def->u.func.type, def->u.func.id, def->u.func.params);
@@ -38,13 +36,14 @@ static void code_def(DefNode* def) {
 	}
 
 	if (def->next != NULL) {
-		code_def(def->next);
+		code_global_def(def->next);
 	}
 }
 
 static void code_cmd(CmdNode* cmd) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
+		// LLVM `alloca` for local definitions
 		for (DefNode* aux = cmd->u.block.defs; aux != NULL; aux = aux->next) {
 			aux->temp = llvm_alloca(aux->u.var.type);
 		}
@@ -124,7 +123,9 @@ static void code_exp(ExpNode* exp) {
 		// TODO
 		break;
 	case EXP_CAST:
-		// TODO
+		// TODO: Remove int->char and char->int cast from sem.c
+		code_exp(exp->u.cast);
+		exp->temp = llvm_cast(exp->u.cast->type, exp->u.cast->temp, exp->type);
 		break;
 	case EXP_UNARY: {
 		code_exp(exp->u.unary.exp);

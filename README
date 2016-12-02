@@ -8,30 +8,13 @@
 
 TODO: Remove: clang -S -emit-llvm main.c
 
-Gerar binários:
-
-	make
-
-Testar tudo (lex, parser, AST e tipagem):
-
-	make test
-
-Testar somente lex:
-
-	make lex_test
-
-Testar somente parser:
-
-	make parser_test
-
-Testar somente AST / tipagem:
-
-	make ast_test
-
-Para limpar:
-
-	make clean
-
+Gerar binários:				make
+Testar:						make test
+Testar lex:					make lex_test
+Testar parser:				make parser_test
+Testar AST / tipagem:		make ast_test
+Testar geração de código:	make codegen_test
+Limpar:						make clean
 
 Obs.: Para executar um binário, fazer "binario < INPUT_FILE", onde INPUT_FILE
 é o arquivo de entrada.

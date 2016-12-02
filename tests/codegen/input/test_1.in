@@ -46,5 +46,12 @@ int main(int p1, int p2) {
 	}
 	*/
 
+	{
+		float f;
+		f = (2+3) * 0.5;
+		@f;
+		@"";
+	}
+
 	return 0;
 }
