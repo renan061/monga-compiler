@@ -68,8 +68,8 @@ static void code_cmd(CmdNode* cmd) {
 	case CMD_ASG:
 		code_var(cmd->u.asg.var);
 		code_exp(cmd->u.asg.exp);
-		llvm_store(cmd->u.asg.var->type, cmd->u.asg.var->temp,
-			cmd->u.asg.exp->temp);		
+		llvm_store(cmd->u.asg.var->type, cmd->u.asg.exp->temp,
+			cmd->u.asg.var->temp);		
 		break;
 	case CMD_RETURN:
 		if (cmd->u.ret != NULL) {

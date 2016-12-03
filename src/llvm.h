@@ -14,27 +14,25 @@
 typedef unsigned int LLVMTemp;
 
 // LLVM
+extern LLVMTemp llvm_alloca(TypeNode* type);
+extern void llvm_store(TypeNode* type, LLVMTemp from, LLVMTemp to);
+extern LLVMTemp llvm_load(TypeNode* type, LLVMTemp t);
 extern LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index);
 
 extern void llvm_setup();
 
 // Def
-extern LLVMTemp llvm_alloca(TypeNode* type);
 extern void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params);
 extern void llvm_func_end();
 
 // Cmd
 extern void llvm_print(ExpNode* exp);
-extern void llvm_store(TypeNode* type, LLVMTemp to, LLVMTemp from);
 extern void llvm_ret_exp(TypeNode* type, LLVMTemp t);
 extern void llvm_ret_void();
-
-extern void llvm_type(TypeNode* type); // TODO: Remove?
 
 // Exp
 extern LLVMTemp llvm_knum(TypeNode* type, double num);
 extern LLVMTemp llvm_kstr(const char* str);
-extern LLVMTemp llvm_load(TypeNode* type, LLVMTemp t);
 extern LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args);
 extern LLVMTemp llvm_new(TypeNode* type, ExpNode* size);
 extern LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to);

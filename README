@@ -9,7 +9,8 @@
 TODO: Remove: clang -S -emit-llvm main.c
 
 
-O que está faltando da geração de código?
+O que está faltando na geração de código?
+	- Print not-char-array as address
 	- Global DefVar
 	- CmdIfElse
 	- CmdWhile

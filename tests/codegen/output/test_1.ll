@@ -1,4 +1,3 @@
-target triple = "x86_64-apple-macosx10.11.0"
 declare i32 @putchar(i32)
 declare i32 @printf(i8*, ...)
 declare i32 @puts(i8*)
