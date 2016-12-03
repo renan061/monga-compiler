@@ -42,6 +42,30 @@ void llvm_type(TypeNode* type) {
 
 // ==================================================
 //
+//	TODO: Name
+//
+// ==================================================
+
+// %ret = getelementptr inbounds <type>, <type>* %t, <indextype> <indextemp>
+LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index) {
+	tabs();
+	llvm_temp(++temp);
+	printf(" = getelementptr inbounds ");
+	llvm_type(type);
+	printf(", ");
+	llvm_type(type);
+	printf("* ");
+	llvm_temp(t);
+	printf(", ");
+	llvm_type(index->type);
+	printf(" ");
+	llvm_temp(index->temp);
+	printf("\n");
+	return temp;
+}
+
+// ==================================================
+//
 //	LLVM
 //
 // ==================================================
@@ -50,9 +74,11 @@ void llvm_setup() {
 	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n"); // TODO: Remove
 	printf("declare i32 @putchar(i32)\n");
 	printf("declare i32 @printf(i8*, ...)\n");
-	printf("declare i32 @puts(i8*)\n\n"); // TODO: Always prints \n
+	printf("declare i32 @puts(i8*)\n"); // TODO: Always prints \n
+	printf("declare i8* @malloc(i64)\n");
 	printf("@.pint = private unnamed_addr constant [3 x i8] c\"%%d\\00\"\n");
-	printf("@.pfloat = private unnamed_addr constant [3 x i8] c\"%%f\\00\"\n\n");
+	printf("@.pfloat = private unnamed_addr constant [3 x i8] c\"%%f\\00\"\n");
+	printf("\n");
 }
 
 LLVMTemp llvm_alloca(TypeNode* type) {
@@ -88,7 +114,7 @@ void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
 	// TODO: Really?
 	for (DefNode* aux = params; aux != NULL; aux = aux->next) {
 		int t = llvm_alloca(aux->u.var.type);
-		llvm_asg(aux->u.var.type, aux->temp, t);
+		llvm_store(aux->u.var.type, t, aux->temp);
 		aux->temp = temp;
 	}
 }
@@ -143,16 +169,16 @@ void llvm_print(ExpNode* exp) {
 	printf(")\n");
 }
 
-void llvm_asg(TypeNode* type, LLVMTemp texp, LLVMTemp tvar) {
+void llvm_store(TypeNode* type, LLVMTemp to, LLVMTemp from) {
 	tabs();
 	printf("store ");
 	llvm_type(type);
 	printf(" ");
-	llvm_temp(texp);
+	llvm_temp(from);
 	printf(", ");
 	llvm_type(type);
 	printf("* ");
-	llvm_temp(tvar);
+	llvm_temp(to);
 	printf("\n");
 }
 
@@ -239,6 +265,56 @@ LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
 
 	printf(")\n");
 	return ret;
+}
+
+LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
+	printf(";ExpNew\n");
+
+	int type_size; // TODO: Necessary?
+	switch (type->tag) {
+		case TYPE_CHAR:		type_size = sizeof(char);	break;
+		case TYPE_INT:		type_size = sizeof(int);	break;
+		case TYPE_FLOAT:	type_size = sizeof(double);	break;
+		case TYPE_INDEXED:	type_size = sizeof(void*);	break;
+		case TYPE_VOID:		MONGA_INTERNAL_ERR("array type void");
+	}
+
+	// %t2 = sext <sizetype> <sizetemp> to i64
+	tabs();
+	llvm_temp(++temp);
+	printf(" = sext ");
+	llvm_type(size->type);
+	printf(" ");
+	llvm_temp(size->temp);
+	printf(" to i64\n");
+
+	// %t3 = mul i64 %t2, <type_size>
+	tabs();
+	llvm_temp(++temp);
+	printf(" = mul i64 ");
+	llvm_temp(temp - 1);
+	printf(", %d\n", type_size);
+
+	// %t4 = call i8* @malloc(i64 %t3)
+	tabs();
+	llvm_temp(++temp);
+	printf(" = call i8* @malloc(i64 ");
+	llvm_temp(temp - 1);
+	printf(")\n");
+
+	// %t5 = bitcast i8* %t4 to <type>*
+	if (type->tag != TYPE_CHAR) {
+		tabs();
+		llvm_temp(++temp);
+		printf(" = bitcast i8* ");
+		llvm_temp(temp - 1);
+		printf(" to ");
+		llvm_type(type);
+		printf("*\n");
+	}
+
+	printf(";\n");
+	return temp;
 }
 
 LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to) {

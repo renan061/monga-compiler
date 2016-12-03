@@ -130,6 +130,7 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
+		// TODO: foo()[10] = 20;
 		tp_check(cmd->line, "invalid assignment expression", &cmd->u.asg.exp,
 			cmd->u.asg.var->type);
 		break;

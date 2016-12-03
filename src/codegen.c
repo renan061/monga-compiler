@@ -43,7 +43,7 @@ static void code_global_def(DefNode* def) {
 static void code_cmd(CmdNode* cmd) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
-		// LLVM `alloca` for local definitions
+		// For local definitions
 		for (DefNode* aux = cmd->u.block.defs; aux != NULL; aux = aux->next) {
 			aux->temp = llvm_alloca(aux->u.var.type);
 		}
@@ -68,9 +68,8 @@ static void code_cmd(CmdNode* cmd) {
 	case CMD_ASG:
 		code_var(cmd->u.asg.var);
 		code_exp(cmd->u.asg.exp);
-		// TODO: VarIndexed ?
-		llvm_asg(cmd->u.asg.var->type, cmd->u.asg.exp->temp,
-			cmd->u.asg.var->u.id->u.def->temp);
+		llvm_store(cmd->u.asg.var->type, cmd->u.asg.var->temp,
+			cmd->u.asg.exp->temp);		
 		break;
 	case CMD_RETURN:
 		if (cmd->u.ret != NULL) {
@@ -96,7 +95,10 @@ static void code_var(VarNode* var) {
 		var->temp = var->u.id->u.def->temp;
 		break;
 	case VAR_INDEXED:
-		// TODO
+		code_exp(var->u.indexed.array);
+		code_exp(var->u.indexed.index);
+		var->temp = llvm_getelementptr(var->u.indexed.array->temp,
+			var->type, var->u.indexed.index);
 		break;
 	}
 }
@@ -120,7 +122,8 @@ static void code_exp(ExpNode* exp) {
 		exp->temp = code_call(exp->u.call);
 		break;
 	case EXP_NEW:
-		// TODO
+		code_exp(exp->u.new.size);
+		exp->temp = llvm_new(exp->u.new.type, exp->u.new.size);
 		break;
 	case EXP_CAST:
 		// TODO: Remove int->char and char->int cast from sem.c

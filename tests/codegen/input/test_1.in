@@ -1,4 +1,4 @@
-
+/*
 int foo(int i, int j) {
 	return i + j;
 }
@@ -11,6 +11,7 @@ void testprint() {
 	@"test print funcionando\n";
 	return;
 }
+*/
 
 int main(int p1, int p2) {
 	/*
@@ -44,12 +45,20 @@ int main(int p1, int p2) {
 		@1.5/3.0;
 		@"";
 	}
-	*/
 
 	{
 		float f;
 		f = (2+3) * 0.5;
 		@f;
+		@"";
+	}
+	*/
+
+	{
+		int[] array;
+		array = new int[10];
+		array[0] = 10;
+		@array[0];
 		@"";
 	}
 
