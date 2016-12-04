@@ -26,7 +26,20 @@ do
 	ANSWER_FILE="answers/test_"$i".asw"
 	OUTPUT_FILE="test_"$i".out"
 
+	# TODO: Remove >>
 	../../bin/"$1""test" < $INPUT_FILE >> $OUTPUT_FILE 2>&1
+
+	# Specific to codegen tests
+	if [ "$1" = "codegen" ]
+	then
+		LLVM_FILE="test_"$i".ll"
+		mv $OUTPUT_FILE $LLVM_FILE
+		clang $LLVM_FILE -o prog.o
+		./prog.o > $OUTPUT_FILE
+		rm prog.o
+		mv $LLVM_FILE "llvm/"$LLVM_FILE
+	fi
+
 	diff -W 200 -a --suppress-common-lines -y $ANSWER_FILE $OUTPUT_FILE > "diff.txt"
 	if [ -s "diff.txt" ]
 	then

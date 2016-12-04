@@ -11,10 +11,19 @@ OBJS := $(wildcard obj/*.o)
 EXES := $(wildcard bin/*)
 
 main: objs
-	@- $(CC) $(CFLAGS) -o bin/rmc	  								\
+	@- $(CC) $(CFLAGS) -o bin/mongacompiler 						\
 	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 		\
 	obj/llvm.o obj/codegen.o										\
 	src/main.c -ll
+
+	@- echo ""
+	@- bin/mongacompiler < exs/ex_1.c > exs/ex_1.ll
+	@- bin/mongacompiler < exs/ex_1.c
+	@- clang exs/ex_1.ll -o prog.o
+	@- echo "\n***"
+	@- ./prog.o
+	@- echo "***\n"
+	@- $(RM) prog.o
 
 # 
 # Objs
@@ -74,14 +83,7 @@ codegen_test: objs
 	obj/llvm.o obj/codegen.o									\
 	src/main.c -ll
 
-	@- echo ""
-	@- bin/codegentest < tests/codegen/input/test_1.in > tests/codegen/output/test_1.ll
-	@- bin/codegentest < tests/codegen/input/test_1.in
-	@- clang tests/codegen/output/test_1.ll -o prog.o
-	@- echo "\n***"
-	@- ./prog.o
-	@- echo "***\n"
-	@- $(RM) prog.o
+	@- sh tests/test.sh codegen
 
 test: lex_test parser_test ast_test codegen_test
 

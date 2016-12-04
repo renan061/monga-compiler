@@ -1,7 +1,4 @@
-codegen												   |	target triple = "x86_64-apple-macosx10.11.0"declare i32 @putchar(i32)
-												   >
-												   >	define i32 @main() {
-												   >	  %1 = call i32 @putchar(i32 97)
-												   >	  %2 = call i32 @putchar(i32 10)
-												   >	  ret i32 0
-												   >	}
+10												   <
+5.500000											   <
+string												   <
+2												   <

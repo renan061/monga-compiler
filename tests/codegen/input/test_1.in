@@ -1,19 +1,18 @@
-/*
-int foo(int i, int j) {
-	return i + j;
-}
+int main() {
 
-int zero() {
-	return 0;
-}
+	int a;
+	int b;
+	char[] str;
 
-void testprint() {
-	@"test print funcionando\n";
-	return;
-}
-*/
+	
+			str = new char[1]; str[0] = 65; @str[0]; @"";
+		/* ExpCall */
+		/* ExpNew */
+		/* ExpCast */
+		/* ExpUnary */
+		/* ExpBinary */
 
-int main(int p1, int p2) {
+		/* a = 2; b = 3; @a + b; @""; */
 	/*
 	{
 		int i;
@@ -52,7 +51,6 @@ int main(int p1, int p2) {
 		@f;
 		@"";
 	}
-	*/
 
 	{
 		int[] array;
@@ -61,6 +59,7 @@ int main(int p1, int p2) {
 		@array[0];
 		@"";
 	}
+	*/
 
 	return 0;
 }
