@@ -1,0 +1,8 @@
+int foo(float a, float b, float c) {
+    return (1:int);
+}
+void main() {
+    int[] indexed1;
+    int a;
+    a:int = ((indexed1:int[])[(foo(((1:int) as float), ((2:int) as float), ((3:int) as float)):int)]:int);
+}

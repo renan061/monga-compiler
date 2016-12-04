@@ -31,10 +31,8 @@ static void print_exp(ExpNode* exp);
 static void print_call(CallNode* call);
 
 int main() {
-	ProgramNode* program;
-
 	yyparse();
-	program = ast_get_program();
+	ProgramNode* program = ast_get_program();
 	sem_type_check_program(program);
 	print_program(program);
 
@@ -76,12 +74,11 @@ static void print_def(DefNode* def, int layer) {
 				print_type(aux->u.var.type);
 				printf(" ");
 				print_id(aux->u.var.id);
-				if (aux->next != NULL) {
-					printf(", ");
-					aux = aux->next;
-				} else {
+				if (aux->next == NULL) {
 					break;
 				}
+				printf(", ");
+				aux = aux->next;
 			}
 			printf(")");
 		}
@@ -184,6 +181,12 @@ static void print_cmd(CmdNode* cmd, int layer) {
 		print_cmd(cmd->u.ifwhile.cmd, layer + 1);
 		print_tabs(layer);
 		printf("})\n");
+		break;
+	case CMD_PRINT:
+		print_tabs(layer);
+		printf("@");
+		print_exp(cmd->u.print);
+		printf(";\n");
 		break;
 	case CMD_ASG:
 		print_var(cmd->u.asg.var, layer);

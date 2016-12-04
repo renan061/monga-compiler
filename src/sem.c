@@ -8,11 +8,9 @@
 #include "yacc.h"
 #include "lex.h"
 
-static void type_check_def(SymbolTable* table, DefNode* def);
-static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret);
-static void type_check_var(SymbolTable* table, VarNode* var);
-static void type_check_exp(SymbolTable* table, ExpNode* exp);
-static void type_check_call(SymbolTable* table, CallNode* call);
+// Decisions
+static int tp_equatable(TypeNode* type);
+static int tp_testable(TypeNode* type);
 
 // Auxiliary
 static int tp_equal(TypeNode* type1, TypeNode* type2);
@@ -30,6 +28,13 @@ static void err_binop(int line, int expnum, LexSymbol symbol);
 
 // Base types
 TypeNode *type_int, *type_float, *type_char, *type_void;
+
+// Type checking
+static void type_check_def(SymbolTable* table, DefNode* def);
+static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret);
+static void type_check_var(SymbolTable* table, VarNode* var);
+static void type_check_exp(SymbolTable* table, ExpNode* exp);
+static void type_check_call(SymbolTable* table, CallNode* call);
 
 void sem_type_check_program(ProgramNode* program) {
 	// Auxiliary
@@ -116,9 +121,16 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 		type_check_cmd(table, cmd->u.ifwhile.cmd, ret);
 		st_leave_scope(table);
 		break;
+	case CMD_PRINT:
+		type_check_exp(table, cmd->u.print);
+		if (cmd->u.print->type->tag == TYPE_VOID) {
+			err(cmd->line, "can't print void type");
+		}
+		break;
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
+		// TODO: foo()[10] = 20;
 		tp_check(cmd->line, "invalid assignment expression", &cmd->u.asg.exp,
 			cmd->u.asg.var->type);
 		break;
@@ -178,8 +190,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		exp->type = type_float;
 		break;
 	case EXP_KSTR:
-		exp->type = (strlen(exp->u.strvalue) > 1) ?
-			ast_type_indexed(type_char) : type_char;
+		exp->type = ast_type_indexed(type_char);
 		break;
 	case EXP_VAR:
 		type_check_var(table, exp->u.var);
@@ -195,7 +206,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 			type_int);
 		exp->type = ast_type_indexed(exp->u.new.type);
 		break;
-	case EXP_UNARY:
+	case EXP_UNARY: {
 		type_check_exp(table, exp->u.unary.exp);
 
 		TypeNode* type = exp->u.unary.exp->type;
@@ -211,15 +222,16 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 			}
 			break;
 		case '!':
-			tp_check(exp->line, "invalid type for unary not", &exp->u.unary.exp,
-				type_int);
+			if (!tp_testable(type)) {
+				err(exp->line, "invalid type for unary not");
+			}
 			exp->type = type_int;
 			break;
 		default:
 			MONGA_INTERNAL_ERR("type_check_exp unary: invalid symbol");
 		}
-		break;
-	case EXP_BINARY:
+	}	break;
+	case EXP_BINARY: {
 		type_check_exp(table, exp->u.binary.exp1);
 		type_check_exp(table, exp->u.binary.exp2);
 
@@ -227,29 +239,71 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 		TypeNode* type2 = exp->u.binary.exp2->type;
 		LexSymbol symbol = exp->u.binary.symbol;
 
-		if (!tp_num(type1)) {
-			err_binop(exp->line, 1, symbol);
-		}
-		if (!tp_num(type2)) {
-			err_binop(exp->line, 2, symbol);
-		}
+		switch (symbol) {
+		case TK_EQUAL:
+			if (!tp_equatable(type1)) {
+				err_binop(exp->line, 1, symbol);
+			}
+			if (!tp_equatable(type2)) {	
+				err_binop(exp->line, 2, symbol);
+			}
 
-		// char == int < float
-		exp->type = (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT) ?
-			type_float : type_int;
-		if (type1 != exp->type) {
-			tp_cast(&exp->u.binary.exp1, exp->type);
-		}
-		if (type2 != exp->type) {
-			tp_cast(&exp->u.binary.exp2, exp->type);
-		}
+			// For indexed types
+			if (type1->tag == TYPE_INDEXED || type2->tag == TYPE_INDEXED) {
+				if (!tp_equal(type1, type2)) {
+					err(exp->line, "invalid comparison with indexed type(s)");
+				}
+			} else { // For numeric types
+				exp->type = (type1->tag == TYPE_FLOAT ||
+					type2->tag == TYPE_FLOAT) ? type_float : type_int;
+				if (type1 != exp->type) {
+					tp_cast(&exp->u.binary.exp1, exp->type);
+				}
+				if (type2 != exp->type) {
+					tp_cast(&exp->u.binary.exp2, exp->type);
+				}
+			}
 
-		if (symbol == TK_EQUAL || symbol == TK_LEQUAL || symbol == TK_GEQUAL ||
-			symbol == '<' || symbol == '>' || symbol == TK_AND ||
-			symbol == TK_OR) {
 			exp->type = type_int;
+			break;
+		case TK_AND: case TK_OR:
+			if (!tp_testable(type1)) {
+				err_binop(exp->line, 1, symbol);
+			}
+			if (!tp_testable(type2)) {
+				err_binop(exp->line, 2, symbol);
+			}
+			exp->type = type_int;
+			break;
+		case '+': case '-': case '*': case '/':
+		case '>': case '<': case TK_GEQUAL: case TK_LEQUAL:
+			if (!tp_num(type1)) {
+				err_binop(exp->line, 1, symbol);
+			}
+			if (!tp_num(type2)) {
+				err_binop(exp->line, 2, symbol);
+			}
+
+			// TypeInt or TypeFloat for +, -, *, /
+			exp->type = (type1->tag == TYPE_FLOAT || type2->tag == TYPE_FLOAT) ?
+				type_float : type_int;
+			if (type1 != exp->type) {
+				tp_cast(&exp->u.binary.exp1, exp->type);
+			}
+			if (type2 != exp->type) {
+				tp_cast(&exp->u.binary.exp2, exp->type);
+			}
+
+			// Always TypeInt for >, <, >=, <=
+			if (symbol == '>' || symbol == '<' || symbol == TK_GEQUAL ||
+				symbol == TK_LEQUAL) {
+				exp->type = type_int;
+			}
+			break;
+		default:
+			MONGA_INTERNAL_ERR("type_check_exp: invalid binop symbol");
 		}
-		break;
+	}	break;
 	default:
 		MONGA_INTERNAL_ERR("type_check_exp: invalid tag");
 	}
@@ -273,20 +327,19 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 		type_check_exp(table, call->args);
 		if (params != NULL) { // Call with arguments and function has parameters
 			DefNode* param = params;
-			ExpNode *arg = call->args, *previous = NULL;
-			while (arg != NULL) {
+			for (ExpNode **arg = &call->args, *previous = NULL;
+				arg != NULL && *arg != NULL;
+				param = param->next, previous = *arg, arg = &((*arg)->next)) {
+
 				if (param == NULL) {
 					err_id(call->id->line, "too many arguments",
 						def->u.func.id->u.str);
 				}
-				tp_check(call->id->line, "mismatching types of arguments", &arg,
+				tp_check(call->id->line, "mismatching types of arguments", arg,
 					param->u.var.type);
 				if (previous != NULL) {
-					previous->next = arg;
+					previous->next = *arg;
 				}
-				param = param->next;
-				previous = arg;
-				arg = arg->next;
 			}
 			if (param != NULL) {
 				err_id(call->id->line, "too few arguments",
@@ -296,11 +349,26 @@ static void type_check_call(SymbolTable* table, CallNode* call) {
 			err_id(call->id->line, "invalid arguments - no parameters",
 				def->u.func.id->u.str);
 		}
-	} else { // Call with no arguments, but function has parameters
-		if (params != NULL) {
-			err_id(call->id->line, "too few arguments", def->u.func.id->u.str);
-		}
+	} else if (params != NULL) {
+		// Call with no arguments, but function has parameters
+		err_id(call->id->line, "too few arguments", def->u.func.id->u.str);
 	}
+}
+
+// ==================================================
+//
+//	Decisions
+//
+// ==================================================
+
+static int tp_equatable(TypeNode* type) {
+	return (type->tag == TYPE_CHAR || type->tag == TYPE_INT ||
+		type->tag == TYPE_FLOAT || type->tag == TYPE_INDEXED);
+}
+
+static int tp_testable(TypeNode* type) {
+	return (type->tag == TYPE_CHAR || type->tag == TYPE_INT ||
+		type->tag == TYPE_FLOAT || type->tag == TYPE_INDEXED);
 }
 
 // ==================================================
@@ -323,15 +391,19 @@ static void tp_cast(ExpNode** ptr, TypeNode* desirable) {
 	TypeNode* type;
 
 	switch (desirable->tag) {
-	case TYPE_INT:
-		// Can only cast "char" to "int"
+	case TYPE_CHAR: // Can only cast "int" to "char"
+		if (exp->type->tag != TYPE_INT) {
+			MONGA_INTERNAL_ERR("invalid cast to char");
+		}
+		type = type_char;
+		break;
+	case TYPE_INT: // Can only cast "char" to "int"
 		if (exp->type->tag != TYPE_CHAR) {
 			MONGA_INTERNAL_ERR("invalid cast to int");
 		}
 		type = type_int;
 		break;
-	case TYPE_FLOAT:
-		// Can only cast "char" or "int" to "float"
+	case TYPE_FLOAT: // Can only cast "char" or "int" to "float"
 		if (exp->type->tag != TYPE_CHAR && exp->type->tag != TYPE_INT) {
 			MONGA_INTERNAL_ERR("invalid cast to float");
 		}
@@ -352,8 +424,10 @@ static void tp_check(int line, const char* err, ExpNode** ptr,
 	ExpNode* exp = *ptr;
 	switch (desirable->tag) {
 		case TYPE_CHAR:
-			if (exp->type->tag != TYPE_CHAR) {
-				err_type(line, err, desirable, exp->type);
+			switch (exp->type->tag) {
+			case TYPE_INT:	tp_cast(ptr, type_char);
+			case TYPE_CHAR:	return;
+			default: err_type(line, err, desirable, exp->type);
 			}
 			break;
 		case TYPE_INT:
@@ -382,7 +456,8 @@ static void tp_check(int line, const char* err, ExpNode** ptr,
 
 // Checks if type is TypeChar, TypeInt or TypeFloat
 static int tp_num(TypeNode* type) {
-	return !(type->tag == TYPE_VOID || type->tag == TYPE_INDEXED);
+	return (type->tag == TYPE_CHAR || type->tag == TYPE_INT ||
+		type->tag == TYPE_FLOAT);
 }
 
 // ==================================================

@@ -48,7 +48,7 @@
 	TK_KEY_INT TK_KEY_FLOAT TK_KEY_CHAR TK_KEY_IF TK_KEY_ELSE TK_KEY_WHILE
 	TK_KEY_NEW TK_KEY_RETURN TK_KEY_VOID
 	'-' '!' '*' '/' '+' TK_EQUAL TK_LEQUAL TK_GEQUAL '<' '>' TK_AND TK_OR
-	'{' '[' '(' '=' ';'
+	'{' '[' '(' '=' ';' '@'
 %token <intvalue>
 	TK_INT
 %token <floatvalue>
@@ -241,7 +241,11 @@ command_amb		: TK_KEY_IF '(' exp ')' command_amb TK_KEY_ELSE command_amb
 					}
 				;
 
-command_basic	: var '=' exp ';'
+command_basic	: '@' exp ';'
+					{
+						$$ = ast_cmd_print($1, $2);
+					}
+				| var '=' exp ';'
 					{
 						$$ = ast_cmd_asg($2, $1, $3);
 					}
@@ -363,6 +367,7 @@ exp_mul			: exp_mul '*' exp_unary
 					}
 				;
 
+// TODO: exp_unary : '-' exp_unary
 exp_unary		: '-' exp_simple
 					{
 						$$ = ast_exp_unary($1, '-', $2);

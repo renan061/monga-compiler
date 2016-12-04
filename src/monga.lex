@@ -22,36 +22,7 @@
 		ERR_STR_MEM,
 	} ErrorType;
 
-	// Auxiliary error dealing function
-	static void lex_error(int err) {
-		char str[100];
-		sprintf(str, "lexical error line %d (", line_number);
-
-		switch (err) {
-		case ERR_ID_MEM:
-			strcat(str, "insufficient memory for identifier");
-		case ERR_COMMENT:
-			strcat(str, "open commentary");
-			break;
-		case ERR_STR_ESCAPE:
-			strcat(str, "invalid escape");
-			break;
-		case ERR_STR_OPEN:
-			strcat(str, "open string");
-			break;
-		case ERR_STR_LINE:
-			strcat(str, "multiline string");
-			break;
-		case ERR_STR_MEM:
-			strcat(str, "insufficient memory for string");
-			break;
-		default:
-			MONGA_INTERNAL_ERR("invalid lex error type");
-		}
-
-		strcat(str, ")\n");
-		MONGA_ERR("%s", str);
-	}
+	static void lex_error(int err);
 %}
 %%
 "\n"				{ line_number++; }
@@ -185,4 +156,35 @@ const char* lex_symbol(LexSymbol symbol) {
 	default:
 		MONGA_INTERNAL_ERR("lex_symbol: invalid symbol \'%c\'", symbol);
 	}
+}
+
+// Auxiliary error dealing function
+static void lex_error(int err) {
+	char str[100];
+	sprintf(str, "lexical error line %d (", line_number);
+
+	switch (err) {
+	case ERR_ID_MEM:
+		strcat(str, "insufficient memory for identifier");
+	case ERR_COMMENT:
+		strcat(str, "open commentary");
+		break;
+	case ERR_STR_ESCAPE:
+		strcat(str, "invalid escape");
+		break;
+	case ERR_STR_OPEN:
+		strcat(str, "open string");
+		break;
+	case ERR_STR_LINE:
+		strcat(str, "multiline string");
+		break;
+	case ERR_STR_MEM:
+		strcat(str, "insufficient memory for string");
+		break;
+	default:
+		MONGA_INTERNAL_ERR("invalid lex error type");
+	}
+
+	strcat(str, ")\n");
+	MONGA_ERR("%s", str);
 }

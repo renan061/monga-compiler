@@ -20,7 +20,7 @@ float main() {
 
 	/* Var */
 		/* VarId */
-		c = "c";
+		c = 65;
 		i = 1;
 		f = 1.0;
 		/* VarIndexed */
@@ -38,7 +38,8 @@ float main() {
 		while (c) {}
 		while (i) {}
 		/* CmdAsg */
-		c = "c";
+		c = 65;
+		c = i;
 		i = c;
 		i = 1;
 		f = c;
@@ -59,33 +60,41 @@ float main() {
 
 	/* Exp */
 		/* ExpKStr */
-		c = "";
+		c = 65;
 		str = "str";
 		/* ExpNew */
 		intarray1 = new int[1];
 		/* ExpUnary */
-		i = -"1";
+		i = -c;
 		i = !1;
-		i = !"1";
+		i = !c;
 		/* ExpBinary */
+			/* == */
+			i = intarray1 == intarray2;
+			i = floatarray1 == floatarray2;
+			i = c == c;
+			i = c == 1;
+			i = c == 1.0;
+			i = 1 == 1.0;
+			i = 1.0 == 2.0;
+			/* && and || */
+			i = 1.0 && 2;
+			i = c || 0.0;
+			i = intarray1 && floatarray1;
+			i = floatarray1 || intarray1;
 			/* Mul, Div, Add, Sub */
-			i = "a" + "b";
-			i = "c" - 1;
+			i = c + c;
+			i = c - 1;
 			i = 1 * 2;
-			f = "a" / "b";
-			f = "c" + 1;
-			f = "c" - 1.0;
+			f = c / c;
+			f = c + 1;
+			f = c - 1.0;
 			f = 1 * 2;
 			f = 1 / 2.0;
 			f = 1.0 + 2.0;
-			/* ==, <=, >=, <, >, &&, || */
-			i = "a" == "b";
-			i = "c" <= 1;
-			i = "c" >= 1.0;
+			/* <=, >=, <, > */
+			i = c <= 1;
+			i = c >= 1.0;
 			i = 1 < 2;
 			i = 1 > 2.0;
-			i = 1.0 && 2.0;
-			i = "c" || 0.0;
-	/* Special */
-	c = "\\";
 }

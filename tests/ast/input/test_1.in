@@ -75,8 +75,10 @@ int main(char[] x, int[][] y, float[][][] z) {
 			while(1 || 2) {
 				a = 1;
 				b = 2;
-				c = "3";
+				c = 3;
 			}
+		/* CmdPrint */
+			@ 1 + 2;
 		/* CmdAsg */
 			indexed1[1] = 2 || 3;
 		/* CmdReturn */
@@ -84,7 +86,7 @@ int main(char[] x, int[][] y, float[][][] z) {
 		/* CmdCall */
 			func0();
 			func1(1);
-			func3(1, 2.0, "3");
+			func3(1, 2.0, 3);
 		/* Crazy cmds */
 		if (1)
 			if (2)
@@ -109,7 +111,7 @@ int main(char[] x, int[][] y, float[][][] z) {
 		/* VarIndexed */
 		a = indexed1[1];
 		a = indexed3[1][2][3];
-		a = indexed3[0 >= 5][fooreturn("1", func1(0 && 1), 3.0)][1 + indexed1[3]];
+		a = indexed3[0 >= 5][fooreturn(1, func1(0 && 1), 3.0)][1 + indexed1[3]];
 
 	/* Exps */
 		/* ExpKInt */
@@ -124,7 +126,7 @@ int main(char[] x, int[][] y, float[][][] z) {
 		a = func0();
 		a = func1(1);
 		a = func2(1, 2);
-		a = func3(1, 2, "3");
+		a = func3(1, 2, 3);
 		/* ExpNew */
 		indexed1 = new int[2];
 		/* ExpUnary */
@@ -148,5 +150,5 @@ int main(char[] x, int[][] y, float[][][] z) {
 		a = 1 || 2;
 		/* Crazy Exps */
 		a = -1 || 2 * 3 >= 4 + 5 / 6;
-		a = (0 && 1) + fooreturn("2", func1(1 + 3 / 7), 3.0) / a * 3;
+		a = (0 && 1) + fooreturn(2, func1(1 + 3 / 7), 3.0) / a * 3;
 }

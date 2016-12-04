@@ -1,36 +1,33 @@
 /*
 	PUC-RJ - INF1715
-	Trabalho 4 - AST (tipagem)
+	Trabalho 5 - Geração de código (parte 1)
 	
 	Renan Almeida de Miranda Santos
 	Matrícula: 1211055
 */
 
 
-Gerar binários:
-
-	make
-
-Testar tudo (lex, parser, AST e tipagem):
-
-	make test
-
-Testar somente lex:
-
-	make lex_test
-
-Testar somente parser:
-
-	make parser_test
-
-Testar somente AST / tipagem:
-
-	make ast_test
-
-Para limpar:
-
-	make clean
+O que está faltando na geração de código?
+	- Print "not-char-array" as address
+	- Remove "casts" char->int / int->char
+	- Global DefVar
+	- CmdIfElse
+	- CmdWhile
+	- ExpUnary Not
+	- ExpBinary Equal, And, Or, Greater, Lesser, GreaterEqual, LesserEqual
 
 
-Obs.: Para executar um binário, fazer "binario < INPUT_FILE", onde INPUT_FILE
+Gerar binário do compilador monga:	make
+Testar:								make test
+Testar lex:							make lex_test
+Testar parser:						make parser_test
+Testar AST / tipagem:				make ast_test
+Testar geração de código:			make codegen_test
+Limpar:								make clean
+
+
+Obs1.: Para executar um binário, fazer "binario < INPUT_FILE", onde INPUT_FILE
 é o arquivo de entrada.
+
+Obs2.: O Makefile e o script de teste estão utilizando o clang para compilar o
+arquivo .ll gerado.

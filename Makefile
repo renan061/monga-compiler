@@ -5,12 +5,34 @@
 # Monga language compiler
 # 
 
+# TODO Remove: clang -S -emit-llvm main.c
+
+# TODO: For the examples
+# @- echo ""
+# @- bin/mongacompiler < exs/ex_1.c > exs/ex_1.ll
+# @- bin/mongacompiler < exs/ex_1.c
+# @- clang exs/ex_1.ll -o prog.o
+# @- echo "\n***"
+# @- ./prog.o
+# @- echo "***\n"
+# @- $(RM) prog.o
+
 CC := gcc -std=c99 -Wall
 
 OBJS := $(wildcard obj/*.o)
 EXES := $(wildcard bin/*)
 
-all: main
+main: objs
+	@- $(CC) $(CFLAGS) -o bin/mongacompiler 						\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 		\
+	obj/llvm.o obj/codegen.o										\
+	src/main.c -ll
+
+# 
+# Objs
+# 
+
+objs: lex parser sem codegen
 
 parser:
 	@- bison -v -d src/monga.y
@@ -20,36 +42,57 @@ parser:
 	@- $(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
 	@- $(RM) src/yacc.c
 
-sem: parser
-	@- $(CC) $(CFLAGS) -c src/symtable.c -o obj/symtable.o
-	@- $(CC) $(CFLAGS) -c src/sem.c -o obj/sem.o
-
 lex: parser
 	@- flex src/monga.lex
 	@- $(CC) $(CFLAGS) -c lex.yy.c -o obj/lex.o -Isrc/
 	@- $(RM) lex.yy.c
 
-main: lex sem parser
-	@- $(CC) $(CFLAGS) -o bin/lextest 								\
-		obj/lex.o obj/parser.o obj/ast.o 							\
-		src/lex_test.c -ll
-	@- $(CC) $(CFLAGS) -o bin/parsertest 							\
-		obj/lex.o obj/parser.o obj/ast.o 							\
-		src/parser_test.c -ll
-	@- $(CC) $(CFLAGS) -o bin/asttest 								\
-		obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
-		src/ast_test.c -ll
+sem: parser
+	@- $(CC) $(CFLAGS) -c src/symtable.c -o obj/symtable.o
+	@- $(CC) $(CFLAGS) -c src/sem.c -o obj/sem.o
 
-lex_test: main
+codegen: sem
+	@- $(CC) $(CFLAGS) -c src/llvm.c -o obj/llvm.o
+	@- $(CC) $(CFLAGS) -c src/codegen.c -o obj/codegen.o
+
+# 
+# Tests
+# 
+
+lex_test: objs
+	@- $(CC) $(CFLAGS) -o bin/lextest 							\
+	obj/lex.o obj/parser.o obj/ast.o 							\
+	src/lex_test.c -ll
+
 	@- sh tests/test.sh lex
 
-parser_test: main
+parser_test: objs
+	@- $(CC) $(CFLAGS) -o bin/parsertest 						\
+	obj/lex.o obj/parser.o obj/ast.o 							\
+	src/parser_test.c -ll
+
 	@- sh tests/test.sh parser
 
-ast_test: main
+ast_test: objs
+	@- $(CC) $(CFLAGS) -o bin/asttest 							\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
+	src/ast_test.c -ll
+
 	@- sh tests/test.sh ast
 
-test: lex_test parser_test ast_test
+codegen_test: objs
+	@- $(CC) $(CFLAGS) -o bin/codegentest						\
+	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
+	obj/llvm.o obj/codegen.o									\
+	src/main.c -ll
+
+	@- sh tests/test.sh codegen
+
+test: lex_test parser_test ast_test codegen_test
+
+# 
+# Clean
+# 
 
 clean:
 	@- $(RM) src/yacc.h
