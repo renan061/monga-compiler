@@ -166,9 +166,13 @@ void llvm_func_end() {
 }
 
 void llvm_print(ExpNode* exp) {
+	int t = exp->temp; // TODO: Remove this
+
 	tabs();
 	switch (exp->type->tag) {
 	case TYPE_CHAR:
+		t = llvm_cast(exp->type, t, ast_type(TYPE_INT)); // TODO: Remove this
+		tabs(); // TODO: Remove this
 		printf("call i32 @putchar(i32 ");
 		break;
 	case TYPE_INT:
@@ -193,7 +197,7 @@ void llvm_print(ExpNode* exp) {
 		MONGA_INTERNAL_ERR("llvm_print: void type");
 	}
 
-	llvm_temp(exp->temp);
+	llvm_temp(t); // TODO: Back to exp->temp
 	printf(")\n");
 }
 
@@ -272,8 +276,6 @@ LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
 }
 
 LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
-	printf(";ExpNew\n");
-
 	int type_size; // TODO: Necessary?
 	switch (type->tag) {
 		case TYPE_CHAR:		type_size = sizeof(char);	break;
@@ -317,14 +319,24 @@ LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
 		printf("*\n");
 	}
 
-	printf(";\n");
 	return temp;
 }
 
 LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to) {
+	char* cast;
+	if (from->tag == TYPE_INT && to->tag == TYPE_FLOAT) {
+		cast = "sitofp";
+	} else if (from->tag == TYPE_INT && to->tag == TYPE_CHAR) {
+		cast = "trunc";
+	} else if (from->tag == TYPE_CHAR && to->tag == TYPE_INT) {
+		cast = "sext";
+	} else {
+		MONGA_INTERNAL_ERR("llvm_cast: invalid cast");
+	}
+
 	tabs();
 	llvm_temp(++temp);
-	printf(" = sitofp "); // TODO: Other types of casts
+	printf(" = %s ", cast);
 	llvm_type(from);
 	printf(" ");
 	llvm_temp(t);

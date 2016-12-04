@@ -126,7 +126,7 @@ static void code_exp(ExpNode* exp) {
 		exp->temp = llvm_new(exp->u.new.type, exp->u.new.size);
 		break;
 	case EXP_CAST:
-		// TODO: Remove int->char and char->int cast from sem.c
+		// TODO: Remove int->char and char->int cast from sem.c and llvm.c
 		code_exp(exp->u.cast);
 		exp->temp = llvm_cast(exp->u.cast->type, exp->u.cast->temp, exp->type);
 		break;

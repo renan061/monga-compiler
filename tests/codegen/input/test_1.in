@@ -1,65 +1,50 @@
-int main() {
+float foo(float a, float b) {
+	return a / b;
+}
 
+int main() {
 	int a;
 	int b;
+	char c;
+	float f;
 	char[] str;
+	int[] values;
 
-	
-			str = new char[1]; str[0] = 65; @str[0]; @"";
-		/* ExpCall */
-		/* ExpNew */
-		/* ExpCast */
-		/* ExpUnary */
-		/* ExpBinary */
-
-		/* a = 2; b = 3; @a + b; @""; */
-	/*
-	{
-		int i;
-		i = (65 + (-10) + 10 - 10 + 10)*2/2;
-		@i;
-		@"\n";
-	}
-
-	{
-		char c;
-		char[] b;
-		b = "uma string";
-		@"\n";
-		@b;
-	}
-
-	{
-		@foo(32, 33);
-		@10;
-		@zero()+65;
-		@"\n";
-		testprint();
-	}
-	
-
-	{
-		@4/3;
-		@"";
-		@1.5/3.0;
-		@"";
-	}
-
-	{
-		float f;
-		f = (2+3) * 0.5;
-		@f;
-		@"";
-	}
-
-	{
-		int[] array;
-		array = new int[10];
-		array[0] = 10;
-		@array[0];
-		@"";
-	}
-	*/
+	/* ExpKInt */
+	@10; @"";
+	/* ExpKFloat */
+	@5.5; @"";
+	/* ExpKStr */
+	@"string";
+	/* ExpVar */
+		/* VarId */
+		a = 2; @a; @"";
+		/* VarIndexed */
+		str = new char[1]; str[0] = 65; @str[0]; @"";
+	/* ExpCall */
+	@foo(6.0, 3.0); @"";
+	/* ExpNew */
+	values = new int[3]; values[0] = 10; values[1] = 20; values[2] = 30;
+	@values[0]; @""; @values[1]; @""; @values[2]; @"";
+	/* ExpCast */
+		/* Int -> Float */
+		@foo(10, 2); @"";
+		/* Char -> Int */
+		a = str[0]; @a; @"";
+		/* Int -> Char */
+		c = 66; @c; @"";
+	/* ExpUnary */
+		/* Minus */
+		a = -10; @a; @"";
+	/* ExpBinary */
+		/* Add */
+		a = a + 10; @a; @"";
+		/* Sub */
+		f = 2.3 - 0.3 - a; @f; @"";
+		/* Mul */
+		a = 2 * -750; @a; @"";
+		/* Div */
+		f = foo(2, 2) / 3.0; @f; @"";
 
 	return 0;
 }

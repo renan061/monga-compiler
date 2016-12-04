@@ -6,27 +6,28 @@
 	Matrícula: 1211055
 */
 
-TODO: Remove: clang -S -emit-llvm main.c
-
 
 O que está faltando na geração de código?
-	- Print not-char-array as address
+	- Print "not-char-array" as address
+	- Remove "casts" char->int / int->char
 	- Global DefVar
 	- CmdIfElse
 	- CmdWhile
-	- "Cast" char->int / int->char (na verdade, remover o cast)
 	- ExpUnary Not
 	- ExpBinary Equal, And, Or, Greater, Lesser, GreaterEqual, LesserEqual
 
 
-Gerar binários:				make
-Testar:						make test
-Testar lex:					make lex_test
-Testar parser:				make parser_test
-Testar AST / tipagem:		make ast_test
-Testar geração de código:	make codegen_test
-Limpar:						make clean
+Gerar binário do compilador monga:	make
+Testar:								make test
+Testar lex:							make lex_test
+Testar parser:						make parser_test
+Testar AST / tipagem:				make ast_test
+Testar geração de código:			make codegen_test
+Limpar:								make clean
 
 
-Obs.: Para executar um binário, fazer "binario < INPUT_FILE", onde INPUT_FILE
+Obs1.: Para executar um binário, fazer "binario < INPUT_FILE", onde INPUT_FILE
 é o arquivo de entrada.
+
+Obs2.: O Makefile e o script de teste estão utilizando o clang para compilar o
+arquivo .ll gerado.
