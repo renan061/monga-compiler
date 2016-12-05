@@ -1,0 +1,23 @@
+void main() {
+	char c;
+	char[] str;
+	char[][] array_of_strings;
+
+	str = "string";
+
+	@str;
+	@str[0];
+	@"";
+
+	array_of_strings = new char[][2];
+	array_of_strings[0] = str;
+
+	array_of_strings[1] = new char[2];
+	array_of_strings[1][0] = 79;	/* O */
+	array_of_strings[1][1] = 105;	/* i */
+
+	@array_of_strings[0];
+	@array_of_strings[1];
+
+	return;
+}

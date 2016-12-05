@@ -53,7 +53,7 @@ define i32 @main() {
   %t25 = add i32 0, 0
   %t26 = getelementptr inbounds i8, i8* %t24, i32 %t25
   %t27 = load i8, i8* %t26
-    %t28 = sext i8 %t27 to i32
+  %t28 = sext i8 %t27 to i32
   call i32 @putchar(i32 %t28)
   %t29 = getelementptr inbounds [1 x i8], [1 x i8]* @.str4 , i32 0, i32 0
   call i32 @puts(i8* %t29)
@@ -127,7 +127,7 @@ define i32 @main() {
   %t80 = trunc i32 %t79 to i8
   store i8 %t80, i8* %t3
   %t81 = load i8, i8* %t3
-    %t82 = sext i8 %t81 to i32
+  %t82 = sext i8 %t81 to i32
   call i32 @putchar(i32 %t82)
   %t83 = getelementptr inbounds [1 x i8], [1 x i8]* @.str11 , i32 0, i32 0
   call i32 @puts(i8* %t83)

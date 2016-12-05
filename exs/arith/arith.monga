@@ -1,0 +1,15 @@
+void main() {
+	int i1;
+	int i2;
+	float f;
+
+	i1 = 20;
+	i2 = 30;
+
+	f = (i1 + i2) / 10.0;
+	f = f * -25 - 10;
+
+	@f;
+
+	return;
+}

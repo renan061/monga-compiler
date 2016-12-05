@@ -1,0 +1,33 @@
+/* Function with array and simples arithmetics */
+
+int[] arrayfy(int a, int b, int c) {
+	int[] array;
+	array = new int[3];
+	array[0] = a;
+	array[1] = b;
+	array[2] = c;
+	return array;
+}
+
+void main() {
+	int[] abc;
+	int a, b, c;
+	char separator;
+
+	separator = 45; /* - */
+
+	a = 2;
+	b = a + 1;
+	c = b / 3 + 3;
+
+	abc = arrayfy(a, b, c);
+
+	@abc[0];
+	@separator;
+	@abc[1];
+	@separator;
+	@abc[2];
+	@"";
+
+	return;
+}

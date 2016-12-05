@@ -1,0 +1,27 @@
+int[] arrayfy(int a, int b, int c) {
+    int[] array;
+    array:int[] = (new int[(3:int)]:int[]);
+    (array:int[])[(0:int)]:int = (a:int);
+    (array:int[])[(1:int)]:int = (b:int);
+    (array:int[])[(2:int)]:int = (c:int);
+    return (array:int[]);
+}
+void main() {
+    int[] abc;
+    int a;
+    int b;
+    int c;
+    char separator;
+    separator:char = ((45:int) as char);
+    a:int = (2:int);
+    b:int = ((a:int)+:int(1:int));
+    c:int = (((b:int)/:int(3:int))+:int(3:int));
+    abc:int[] = (arrayfy((a:int), (b:int), (c:int)):int[]);
+    @((abc:int[])[(0:int)]:int);
+    @(separator:char);
+    @((abc:int[])[(1:int)]:int);
+    @(separator:char);
+    @((abc:int[])[(2:int)]:int);
+    @("":char[]);
+    return ;
+}

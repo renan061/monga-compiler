@@ -168,7 +168,6 @@ void llvm_func_end() {
 void llvm_print(ExpNode* exp) {
 	int t = exp->temp; // TODO: Remove this
 
-	tabs();
 	switch (exp->type->tag) {
 	case TYPE_CHAR:
 		t = llvm_cast(exp->type, t, ast_type(TYPE_INT)); // TODO: Remove this
@@ -177,6 +176,7 @@ void llvm_print(ExpNode* exp) {
 		break;
 	case TYPE_INT:
 	case TYPE_FLOAT:
+		tabs();
 		printf("call i32 (i8*, ...) @printf(i8* getelementptr inbounds ");
 		printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ",
 			(exp->type->tag == TYPE_INT) ? "pint" : "pfloat");
@@ -184,6 +184,7 @@ void llvm_print(ExpNode* exp) {
 		printf(" ");
 		break;
 	case TYPE_INDEXED:
+		tabs();
 		switch (exp->type->indexed->tag) {
 		case TYPE_CHAR:
 			printf("call i32 @puts(i8* ");

@@ -90,6 +90,15 @@ codegen_test: objs
 
 test: lex_test parser_test ast_test codegen_test
 
+#
+# Exs
+#
+
+exs: main ast_test
+	@- sh exs/ex.sh arith arith
+	@- sh exs/ex.sh func-array-arith faa
+	@- sh exs/ex.sh strings-array sa
+
 # 
 # Clean
 # 
