@@ -293,7 +293,7 @@ exp				: exp_or
 					}
 				;
 
-exp_or			: exp_and TK_OR exp_comp
+exp_or			: exp_or TK_OR exp_and
 					{
 						$$ = ast_exp_binary($2, TK_OR, $1, $3);
 					}

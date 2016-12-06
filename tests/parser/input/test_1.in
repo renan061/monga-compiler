@@ -102,6 +102,7 @@
 		var = !a;
 		var = a && b;
 		var = a || b;
+		var = a || a || a;
 	}
 
 /* wild */
