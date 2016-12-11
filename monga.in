@@ -1,10 +1,9 @@
 int main() {
-
-	/*
-		TODO: Dando erro - devia fazer o cast
-		@1 == 4.5;
-	*/
-	@3.0 >= 4.5;
-	@"";
+	if (1) {
+		@"Yes";
+		return 0;
+	} else {
+		@"No";
+	}
 	return 0;
 }

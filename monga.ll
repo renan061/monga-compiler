@@ -7,23 +7,23 @@ declare i8* @malloc(i64)
 @.pfloat = private unnamed_addr constant [3 x i8] c"%f\00"
 
 define i32 @main() {
-  %t1 = fadd double 0x4008000000000000, 0.0
-  %t2 = fadd double 0x4012000000000000, 0.0
-  %t3 = fcmp oge double %t1, %t2
-  %t4 = zext i1 %t3 to i32
-  %t5 = icmp ne i32 %t4, 0
-  br i1 %t5, label %l1, label %l2
+  %t1 = add i32 1, 0
+  %t2 = icmp ne i32 %t1, 0
+  br i1 %t2, label %l1, label %l2
 l1:
+  %t3 = getelementptr inbounds [4 x i8], [4 x i8]* @.str0 , i32 0, i32 0
+  call i32 @puts(i8* %t3)
+  %t4 = add i32 0, 0
+  ret i32 %t4
   br label %l3
 l2:
+  %t5 = getelementptr inbounds [3 x i8], [3 x i8]* @.str1 , i32 0, i32 0
+  call i32 @puts(i8* %t5)
   br label %l3
 l3:
-  %t6 = phi i32 [1, %l1], [0, %l2]
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t6)
-  %t7 = getelementptr inbounds [1 x i8], [1 x i8]* @.str0 , i32 0, i32 0
-  call i32 @puts(i8* %t7)
-  %t8 = add i32 0, 0
-  ret i32 %t8
+  %t6 = add i32 0, 0
+  ret i32 %t6
 }
-@.str0 = private unnamed_addr constant [1 x i8] c"\00"
+@.str0 = private unnamed_addr constant [4 x i8] c"Yes\00"
+@.str1 = private unnamed_addr constant [3 x i8] c"No\00"
 
