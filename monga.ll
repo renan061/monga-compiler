@@ -14,20 +14,16 @@ define i32 @main() {
 ;if
   %t4 = add i32 1, 0
   %t5 = add i32 2, 0
-  %t6 = add i32 %t4, %t5
-  %t7 = icmp eq i32 %t6, 0
-  br i1 %t7, label %l2, label %l3
-l3:
-  %t8 = add i32 0, 0
-  %t9 = icmp eq i32 %t8, 0
-  br i1 %t9, label %l2, label %l1
+  %t6 = icmp sgt i32 %t4, %t5
+  %t7 = icmp ne i1 %t6, 0
+  br i1 %t7, label %l1, label %l2
 l1:
-  %t10 = load i8, i8* %t1
-  %t11 = sext i8 %t10 to i32
-  call i32 @putchar(i32 %t11)
+  %t8 = load i8, i8* %t1
+  %t9 = sext i8 %t8 to i32
+  call i32 @putchar(i32 %t9)
   br label %l2
 l2:
 ;endif
-  %t12 = add i32 0, 0
-  ret i32 %t12
+  %t10 = add i32 0, 0
+  ret i32 %t10
 }

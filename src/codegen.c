@@ -140,6 +140,7 @@ static void code_exp(ExpNode* exp) {
 		exp->temp = llvm_cast(exp->u.cast->type, exp->u.cast->temp, exp->type);
 		break;
 	case EXP_UNARY:
+		// TODO: When to code_exp
 		code_exp(exp->u.unary.exp);
 		switch (exp->u.unary.symbol) {
 		case '-':
@@ -152,6 +153,7 @@ static void code_exp(ExpNode* exp) {
 		}
 		break;
 	case EXP_BINARY: {
+		// TODO: When to code_exp
 		code_exp(exp->u.binary.exp1);
 		code_exp(exp->u.binary.exp2);
 		ExpNode* exp1 = exp->u.binary.exp1;
@@ -197,47 +199,71 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 	case EXP_UNARY:
 		switch (exp->u.unary.symbol) {
 		case '!':
-			// TODO
+			code_cond(exp->u.unary.exp, lf, lt);
 			break;
 		default:
 			goto DEFAULT_COND;
 		}
 		break;
-	case EXP_BINARY:
+	case EXP_BINARY: {
+		ExpNode* exp1 = exp->u.binary.exp1;
+		ExpNode* exp2 = exp->u.binary.exp2;
+
 		switch (exp->u.binary.symbol) {
-		case TK_EQUAL:
-			// TODO
+		case TK_EQUAL: {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_eq(exp->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->temp, lt, lf);
 			break;
+		}
 		case TK_AND: {
 			LLVMLabel l = llvm_label_temp();
-			code_cond(exp->u.binary.exp1, l, lf);
+			code_cond(exp1, l, lf);
 			llvm_label(l);
-			code_cond(exp->u.binary.exp2, lt, lf);
+			code_cond(exp2, lt, lf);
 			break;
 		}
 		case TK_OR: {
 			LLVMLabel l = llvm_label_temp();
-			code_cond(exp->u.binary.exp1, lt, l);
+			code_cond(exp1, lt, l);
 			llvm_label(l);
-			code_cond(exp->u.binary.exp2, lt, lf);
+			code_cond(exp2, lt, lf);
 			break;
 		}
-		case '>':
-			// TODO
+		case '>': {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_gt(exp->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->temp, lt, lf);
 			break;
-		case '<':
-			// TODO
+		}
+		case '<': {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_lt(exp->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->temp, lt, lf);
 			break;
-		case TK_GEQUAL:
-			// TODO
+		}
+		case TK_GEQUAL: {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_ge(exp->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->temp, lt, lf);
 			break;
-		case TK_LEQUAL:
-			// TODO
+		}
+		case TK_LEQUAL: {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_le(exp->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->temp, lt, lf);
 			break;
+		}
 		default:
 			goto DEFAULT_COND;
 		}
 		break;
+	}
 	default:
 	DEFAULT_COND:
 		code_exp(exp);

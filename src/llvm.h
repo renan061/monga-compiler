@@ -3,10 +3,7 @@
 
 #include "ast.h"
 
-#define LLVM_ADD "add"
-#define LLVM_SUB "sub"
-#define LLVM_MUL "mul"
-#define LLVM_DIV "div"
+#define LLVM_SUB "sub" // TODO
 
 #define NUM_OP_TEMP "numtemp"
 #define TEMP_OP_NUM "tempnum"
@@ -48,8 +45,14 @@ extern LLVMTemp llvm_add(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
 extern LLVMTemp llvm_sub(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
 extern LLVMTemp llvm_mul(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
 extern LLVMTemp llvm_div(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
-
 extern LLVMTemp llvm_karith(char* op, char* order, TypeNode* type, LLVMTemp t,
 	double num);
+
+// Compares
+extern LLVMTemp llvm_cmp_eq(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
+extern LLVMTemp llvm_cmp_gt(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
+extern LLVMTemp llvm_cmp_ge(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
+extern LLVMTemp llvm_cmp_lt(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
+extern LLVMTemp llvm_cmp_le(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
 
 #endif
