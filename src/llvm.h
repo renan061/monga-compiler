@@ -12,12 +12,18 @@
 #define TEMP_OP_NUM "tempnum"
 
 typedef unsigned int LLVMTemp;
+typedef unsigned int LLVMLabel;
 
 // LLVM
+extern void llvm_commentary(const char* str);
+extern void llvm_label(LLVMLabel l);
+extern LLVMLabel llvm_label_temp();
 extern LLVMTemp llvm_alloca(TypeNode* type);
 extern void llvm_store(TypeNode* type, LLVMTemp from, LLVMTemp to);
 extern LLVMTemp llvm_load(TypeNode* type, LLVMTemp t);
 extern LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index);
+extern void llvm_br1(LLVMLabel l);
+extern void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf);
 
 extern void llvm_setup();
 

@@ -10,6 +10,7 @@ static void code_global_def(DefNode* def);
 static void code_cmd(CmdNode* cmd);
 static void code_var(VarNode* cmd);
 static void code_exp(ExpNode* exp);
+static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf);
 static LLVMTemp code_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
@@ -52,9 +53,17 @@ static void code_cmd(CmdNode* cmd) {
 		}
 		// TODO: Always return
 		break;
-	case CMD_IF:
-		// TODO
+	case CMD_IF: {
+		llvm_commentary("if");
+		LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
+		code_cond(cmd->u.ifwhile.exp, lt, lf);
+		llvm_label(lt);
+		code_cmd(cmd->u.ifwhile.cmd);
+		llvm_br1(lf);
+		llvm_label(lf);
+		llvm_commentary("endif");
 		break;
+	}
 	case CMD_IF_ELSE:
 		// TODO
 		break;
@@ -130,7 +139,7 @@ static void code_exp(ExpNode* exp) {
 		code_exp(exp->u.cast);
 		exp->temp = llvm_cast(exp->u.cast->type, exp->u.cast->temp, exp->type);
 		break;
-	case EXP_UNARY: {
+	case EXP_UNARY:
 		code_exp(exp->u.unary.exp);
 		switch (exp->u.unary.symbol) {
 		case '-':
@@ -141,7 +150,7 @@ static void code_exp(ExpNode* exp) {
 			// TODO
 			break;
 		}
-	}	break;
+		break;
 	case EXP_BINARY: {
 		code_exp(exp->u.binary.exp1);
 		code_exp(exp->u.binary.exp2);
@@ -178,6 +187,62 @@ static void code_exp(ExpNode* exp) {
 
 	if (exp->next != NULL) {
 		code_exp(exp->next);
+	}
+}
+
+// CONTROVERSIAL: I know goto is ugly, but I think it's the most
+// legible solution for this case
+static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
+	switch (exp->tag) {
+	case EXP_UNARY:
+		switch (exp->u.unary.symbol) {
+		case '!':
+			// TODO
+			break;
+		default:
+			goto DEFAULT_COND;
+		}
+		break;
+	case EXP_BINARY:
+		switch (exp->u.binary.symbol) {
+		case TK_EQUAL:
+			// TODO
+			break;
+		case TK_AND: {
+			LLVMLabel l = llvm_label_temp();
+			code_cond(exp->u.binary.exp1, l, lf);
+			llvm_label(l);
+			code_cond(exp->u.binary.exp2, lt, lf);
+			break;
+		}
+		case TK_OR: {
+			LLVMLabel l = llvm_label_temp();
+			code_cond(exp->u.binary.exp1, lt, l);
+			llvm_label(l);
+			code_cond(exp->u.binary.exp2, lt, lf);
+			break;
+		}
+		case '>':
+			// TODO
+			break;
+		case '<':
+			// TODO
+			break;
+		case TK_GEQUAL:
+			// TODO
+			break;
+		case TK_LEQUAL:
+			// TODO
+			break;
+		default:
+			goto DEFAULT_COND;
+		}
+		break;
+	default:
+	DEFAULT_COND:
+		code_exp(exp);
+		llvm_br3(exp->temp, lt, lf);
+		break;
 	}
 }
 

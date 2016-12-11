@@ -7,16 +7,6 @@
 
 # TODO Remove: clang -S -emit-llvm main.c
 
-# TODO: For the examples
-# @- echo ""
-# @- bin/mongacompiler < exs/ex_1.c > exs/ex_1.ll
-# @- bin/mongacompiler < exs/ex_1.c
-# @- clang exs/ex_1.ll -o prog.o
-# @- echo "\n***"
-# @- ./prog.o
-# @- echo "***\n"
-# @- $(RM) prog.o
-
 CC := gcc -std=c99 -Wall
 
 OBJS := $(wildcard obj/*.o)
@@ -27,6 +17,15 @@ main: objs
 	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 		\
 	obj/llvm.o obj/codegen.o										\
 	src/main.c -ll
+
+quicktest: main
+	@- bin/mongacompiler < monga.in > monga.ll
+	@- bin/mongacompiler < monga.in
+	@- clang monga.ll
+	@- echo "\n***"
+	@- ./a.out
+	@- echo "***\n"
+	@- $(RM) a.out
 
 # 
 # Objs
