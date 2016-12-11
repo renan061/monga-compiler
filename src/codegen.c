@@ -32,6 +32,9 @@ static void code_global_def(DefNode* def) {
 	case DEF_FUNC:
 		llvm_func_start(def->u.func.type, def->u.func.id, def->u.func.params);
 		code_cmd(def->u.func.block);
+		if (def->u.func.type->tag == TYPE_VOID) {
+			llvm_ret_void(); // TODO: Ask Roberto
+		}
 		llvm_func_end();
 		break;
 	}
@@ -51,7 +54,6 @@ static void code_cmd(CmdNode* cmd) {
 		if (cmd->u.block.cmds != NULL) {
 			code_cmd(cmd->u.block.cmds);
 		}
-		// TODO: Always return
 		break;
 	case CMD_IF: {
 		LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
@@ -81,6 +83,7 @@ static void code_cmd(CmdNode* cmd) {
 		break;
 	}
 	case CMD_WHILE: {
+		// TODO: Ask Roberto: What about phi and preheaders?
 		LLVMLabel cond = llvm_label_temp();
 		LLVMLabel loop = llvm_label_temp(), end = llvm_label_temp();
 		llvm_br1(cond);
@@ -179,8 +182,7 @@ static void code_exp(ExpNode* exp) {
 		switch (exp->u.unary.symbol) {
 		case '-':
 			code_exp(exp->u.unary.exp);
-			exp->temp = llvm_karith(LLVM_SUB, NUM_OP_TEMP, exp->type,
-				exp->u.unary.exp->temp, 0);
+			exp->temp = llvm_minus(exp->type, exp->u.unary.exp->temp);
 			break;
 		case '!':
 			goto DEFAULT_EXP;
@@ -224,24 +226,21 @@ static void code_exp(ExpNode* exp) {
 		break;
 	}
 	default:
-	DEFAULT_EXP: // exp ? 1 : 0
-	// TODO: Essas chaves...
-		{
-			LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
-			LLVMLabel phi = llvm_label_temp();
-			LLVMValue v1, v2;
-			v1.i = 1;
-			v2.i = 0;
+	DEFAULT_EXP: { // exp ? 1 : 0
+		LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
+		LLVMLabel phi = llvm_label_temp();
+		LLVMValue v1, v2;
+		v1.i = 1;
+		v2.i = 0;
 
-			code_cond(exp, lt, lf);
-			llvm_label(lt);
-			llvm_br1(phi);
-			llvm_label(lf);
-			llvm_br1(phi);
-			llvm_label(phi);
-			exp->temp = llvm_phi2(exp->type, v1, lt, v2, lf);
-			break;
-		}
+		code_cond(exp, lt, lf);
+		llvm_label(lt);
+		llvm_br1(phi);
+		llvm_label(lf);
+		llvm_br1(phi);
+		llvm_label(phi);
+		exp->temp = llvm_phi2(exp->type, v1, lt, v2, lf);
+	}
 	}
 
 	if (exp->next != NULL) {

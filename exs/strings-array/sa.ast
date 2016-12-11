@@ -5,7 +5,8 @@ void main() {
     str:char[] = ("string":char[]);
     @(str:char[]);
     @((str:char[])[(0:int)]:char);
-    @("":char[]);
+    @("
+":char[]);
     array_of_strings:char[][] = (new char[][(2:int)]:char[][]);
     (array_of_strings:char[][])[(0:int)]:char[] = (str:char[]);
     (array_of_strings:char[][])[(1:int)]:char[] = (new char[(2:int)]:char[]);

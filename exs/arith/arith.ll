@@ -1,9 +1,12 @@
+target triple = "x86_64-apple-macosx10.11.0"
 declare i32 @putchar(i32)
 declare i32 @printf(i8*, ...)
-declare i32 @puts(i8*)
 declare i8* @malloc(i64)
+@.pchar = private unnamed_addr constant [3 x i8] c"%c\00"
 @.pint = private unnamed_addr constant [3 x i8] c"%d\00"
 @.pfloat = private unnamed_addr constant [3 x i8] c"%f\00"
+@.pstr = private unnamed_addr constant [3 x i8] c"%s\00"
+@.paddress = private unnamed_addr constant [3 x i8] c"%p\00"
 
 define void @main() {
   %t1 = alloca i32
@@ -17,7 +20,7 @@ define void @main() {
   %t7 = load i32, i32* %t2
   %t8 = add i32 %t6, %t7
   %t9 = sitofp i32 %t8 to double
-  %t10 = fadd double 0x4024000000000000, 0.0
+  %t10 = fadd double 0x4024000000000000, 0x0
   %t11 = fdiv double %t9, %t10
   store double %t11, double* %t3
   %t12 = load double, double* %t3
@@ -31,5 +34,6 @@ define void @main() {
   store double %t19, double* %t3
   %t20 = load double, double* %t3
   call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t20)
+  ret void
   ret void
 }

@@ -1,0 +1,48 @@
+int true_func() {
+	return 1;
+}
+
+int false_func() {
+	return 0;
+}
+
+int main() {
+	char nl; /* new line */
+
+	char[] yes, no;
+	char true_char, false_char;
+	int true_int, false_int;
+	
+	nl = 10; /* \n */
+
+	yes = "Yes\n";
+	no = "No\n";
+	true_char = 65;
+	false_char = 0;
+	true_int = 1;
+	false_int = 0;
+
+	/* Basic conds */
+		/* KInt */
+		if (1) { @yes; }
+		if (0) { @no; }
+		/* Var Char */
+		if (true_char) { @yes; }
+		if (false_char) { @no; }
+		/* Var Int */
+		if (true_int) { @yes; }
+		if (false_int) { @no; }
+		/* Call */
+		if (true_func()) { @yes; }
+		if (false_func()) { @no; }
+		/* Minus */
+		if (-true_int) { @yes; }
+		if (-false_int) { @no; }
+		/* Not */
+		if (!true_int) { @no; }
+		if (!false_int) { @yes; }
+	/* CmdIf */
+	/* CmdIfElse */
+	/* CmdWhile */
+	return 0;
+}

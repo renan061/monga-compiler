@@ -1,9 +1,12 @@
+target triple = "x86_64-apple-macosx10.11.0"
 declare i32 @putchar(i32)
 declare i32 @printf(i8*, ...)
-declare i32 @puts(i8*)
 declare i8* @malloc(i64)
+@.pchar = private unnamed_addr constant [3 x i8] c"%c\00"
 @.pint = private unnamed_addr constant [3 x i8] c"%d\00"
 @.pfloat = private unnamed_addr constant [3 x i8] c"%f\00"
+@.pstr = private unnamed_addr constant [3 x i8] c"%s\00"
+@.paddress = private unnamed_addr constant [3 x i8] c"%p\00"
 
 define void @main() {
   %t1 = alloca i8
@@ -12,15 +15,15 @@ define void @main() {
   %t4 = getelementptr inbounds [7 x i8], [7 x i8]* @.str0 , i32 0, i32 0
   store i8* %t4, i8** %t2
   %t5 = load i8*, i8** %t2
-  call i32 @puts(i8* %t5)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t5)
   %t6 = load i8*, i8** %t2
   %t7 = add i32 0, 0
   %t8 = getelementptr inbounds i8, i8* %t6, i32 %t7
   %t9 = load i8, i8* %t8
   %t10 = sext i8 %t9 to i32
-  call i32 @putchar(i32 %t10)
-  %t11 = getelementptr inbounds [1 x i8], [1 x i8]* @.str1 , i32 0, i32 0
-  call i32 @puts(i8* %t11)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t10)
+  %t11 = getelementptr inbounds [2 x i8], [2 x i8]* @.str1 , i32 0, i32 0
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t11)
   %t12 = add i32 2, 0
   %t13 = sext i32 %t12 to i64
   %t14 = mul i64 %t13, 8
@@ -62,14 +65,16 @@ define void @main() {
   %t45 = add i32 0, 0
   %t46 = getelementptr inbounds i8*, i8** %t44, i32 %t45
   %t47 = load i8*, i8** %t46
-  call i32 @puts(i8* %t47)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t47)
   %t48 = load i8**, i8*** %t3
   %t49 = add i32 1, 0
   %t50 = getelementptr inbounds i8*, i8** %t48, i32 %t49
   %t51 = load i8*, i8** %t50
-  call i32 @puts(i8* %t51)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t51)
+  ret void
   ret void
 }
 @.str0 = private unnamed_addr constant [7 x i8] c"string\00"
-@.str1 = private unnamed_addr constant [1 x i8] c"\00"
+@.str1 = private unnamed_addr constant [2 x i8] c"
+\00"
 

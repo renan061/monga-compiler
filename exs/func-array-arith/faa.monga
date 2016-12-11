@@ -27,7 +27,6 @@ void main() {
 	@abc[1];
 	@separator;
 	@abc[2];
-	@"";
 
 	return;
 }

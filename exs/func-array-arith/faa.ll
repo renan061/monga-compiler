@@ -1,9 +1,12 @@
+target triple = "x86_64-apple-macosx10.11.0"
 declare i32 @putchar(i32)
 declare i32 @printf(i8*, ...)
-declare i32 @puts(i8*)
 declare i8* @malloc(i64)
+@.pchar = private unnamed_addr constant [3 x i8] c"%c\00"
 @.pint = private unnamed_addr constant [3 x i8] c"%d\00"
 @.pfloat = private unnamed_addr constant [3 x i8] c"%f\00"
+@.pstr = private unnamed_addr constant [3 x i8] c"%s\00"
+@.paddress = private unnamed_addr constant [3 x i8] c"%p\00"
 
 define i32* @arrayfy(i32 %t1, i32 %t2, i32 %t3) {
   %t4 = alloca i32
@@ -70,7 +73,7 @@ define void @main() {
   call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t24)
   %t25 = load i8, i8* %t5
   %t26 = sext i8 %t25 to i32
-  call i32 @putchar(i32 %t26)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t26)
   %t27 = load i32*, i32** %t1
   %t28 = add i32 1, 0
   %t29 = getelementptr inbounds i32, i32* %t27, i32 %t28
@@ -78,15 +81,12 @@ define void @main() {
   call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t30)
   %t31 = load i8, i8* %t5
   %t32 = sext i8 %t31 to i32
-  call i32 @putchar(i32 %t32)
+  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t32)
   %t33 = load i32*, i32** %t1
   %t34 = add i32 2, 0
   %t35 = getelementptr inbounds i32, i32* %t33, i32 %t34
   %t36 = load i32, i32* %t35
   call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t36)
-  %t37 = getelementptr inbounds [1 x i8], [1 x i8]* @.str0 , i32 0, i32 0
-  call i32 @puts(i8* %t37)
+  ret void
   ret void
 }
-@.str0 = private unnamed_addr constant [1 x i8] c"\00"
-

@@ -1,50 +1,58 @@
+void noreturn() {
+	@"noreturn\n";
+}
+
 float foo(float a, float b) {
 	return a / b;
 }
 
 int main() {
+	char nl; /* new line */
 	int a;
 	int b;
 	char c;
 	float f;
 	char[] str;
 	int[] values;
+	nl = 10; /* \n */
 
 	/* ExpKInt */
-	@10; @"";
+	@10; @nl;
 	/* ExpKFloat */
-	@5.5; @"";
+	@5.5; @nl;
 	/* ExpKStr */
-	@"string";
+	@"string\n";
 	/* ExpVar */
 		/* VarId */
-		a = 2; @a; @"";
+		a = 2; @a; @nl;
 		/* VarIndexed */
-		str = new char[1]; str[0] = 65; @str[0]; @"";
+		str = new char[1]; str[0] = 65; @str[0]; @nl;
 	/* ExpCall */
-	@foo(6.0, 3.0); @"";
+	@foo(6.0, 3.0); @nl;
+	noreturn();
 	/* ExpNew */
 	values = new int[3]; values[0] = 10; values[1] = 20; values[2] = 30;
-	@values[0]; @""; @values[1]; @""; @values[2]; @"";
+	@values[0]; @nl; @values[1]; @nl; @values[2]; @nl;
 	/* ExpCast */
 		/* Int -> Float */
-		@foo(10, 2); @"";
+		@foo(10, 2); @nl;
 		/* Char -> Int */
-		a = str[0]; @a; @"";
+		a = str[0]; @a; @nl;
 		/* Int -> Char */
-		c = 66; @c; @"";
+		c = 66; @c; @nl;
 	/* ExpUnary */
 		/* Minus */
-		a = -10; @a; @"";
+		a = -10; @a; @nl;
+		f = -10.99; @f; @nl;
 	/* ExpBinary */
 		/* Add */
-		a = a + 10; @a; @"";
+		a = a + 10; @a; @nl;
 		/* Sub */
-		f = 2.3 - 0.3 - a; @f; @"";
+		f = 2.3 - 0.3 - a; @f; @nl;
 		/* Mul */
-		a = 2 * -750; @a; @"";
+		a = 2 * -750; @a; @nl;
 		/* Div */
-		f = foo(2, 2) / 3.0; @f; @"";
+		f = foo(2, 2) / 3.0; @f; @nl;
 
 	return 0;
 }

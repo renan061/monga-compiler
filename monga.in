@@ -1,6 +1,5 @@
 int main() {
-	float f;
-	f = 0.0;
-	@"nugget\n";
+	@1.0 < 2.5;
+	@"\n";
 	return 0;
 }

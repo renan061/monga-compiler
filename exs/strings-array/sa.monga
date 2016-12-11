@@ -7,7 +7,7 @@ void main() {
 
 	@str;
 	@str[0];
-	@"";
+	@"\n";
 
 	array_of_strings = new char[][2];
 	array_of_strings[0] = str;
