@@ -11,8 +11,9 @@
 typedef unsigned int LLVMTemp;
 typedef unsigned int LLVMLabel;
 typedef union LLVMValue {
-	int i;
-	double d;
+	int i;				// Int
+	double f;			// Float
+	const char* str;	// String 
 } LLVMValue;
 
 // LLVM
@@ -40,8 +41,7 @@ extern void llvm_ret_exp(TypeNode* type, LLVMTemp t);
 extern void llvm_ret_void();
 
 // Exp
-extern LLVMTemp llvm_knum(TypeNode* type, double num);
-extern LLVMTemp llvm_kstr(const char* str);
+extern LLVMTemp llvm_kval(TypeNode* type, LLVMValue val);
 extern LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args);
 extern LLVMTemp llvm_new(TypeNode* type, ExpNode* size);
 extern LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to);

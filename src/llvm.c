@@ -5,15 +5,37 @@
 #include "llvm.h"
 #include "ast.h"
 
-#define LLVM_EQ "eq" // eq(int), oeq(float)
-#define LLVM_ADD "add"
-// #define LLVM_SUB "sub" // TODO
-#define LLVM_MUL "mul"
-#define LLVM_DIV "div"
-#define LLVM_GT "gt" // sgt(int), ogt(double)
-#define LLVM_GE "ge" // sge(int), oge(double)
-#define LLVM_LT "lt" // slt(int), olt(double)
-#define LLVM_LE "le" // sle(int), ole(double)
+#define LLVM_EQ 	"eq"
+
+#define LLVM_ADD 	"add"
+#define LLVM_FADD	"fadd"
+
+// TODO
+// #define LLVM_SUB "sub"
+#define LLVM_MUL 	"mul"
+#define LLVM_DIV 	"div"
+#define LLVM_GT 	"gt"
+#define LLVM_GE 	"ge"
+#define LLVM_LT 	"lt"
+#define LLVM_LE 	"le"
+
+// printf
+#define PRINTF_ID_CHAR		"pchar"
+#define PRINTF_ID_INT		"pint"
+#define PRINTF_ID_FLOAT		"pfloat"
+#define PRINTF_ID_STR		"pstr"
+#define PRINTF_ID_ADDRESS	"paddress"
+
+// ==================================================
+//
+//	Macros
+//
+// ==================================================
+
+//  = <add> <type> <num>, <zero>
+#define LLVM_KNUM_AUX(add, type_func, num_func, num, zero)	\
+	printf(" = %s ", add); type_func(); printf(" ");		\
+	num_func(num); printf(", " zero);						\
 
 // ==================================================
 //
@@ -46,12 +68,17 @@ static void write_label_temp(LLVMLabel l) {
 	printf("%%l%d", l);
 }
 
+static void write_type_int()	{ printf("i32");	}
+static void write_type_float()	{ printf("double");	}
+static void write_type_char()	{ printf("i8"); 	}
+static void write_type_void()	{ printf("void"); 	}
+
 static void write_type(TypeNode* type) {
 	switch (type->tag) {
-	case TYPE_INT:		printf("i32");		break;
-	case TYPE_FLOAT:	printf("double");	break;
-	case TYPE_CHAR:		printf("i8");		break;
-	case TYPE_VOID:		printf("void");		break;
+	case TYPE_INT:		write_type_int();	break;
+	case TYPE_FLOAT:	write_type_float();	break;
+	case TYPE_CHAR:		write_type_char();	break;
+	case TYPE_VOID:		write_type_void();	break;
 	case TYPE_INDEXED:
 		write_type(type->indexed);
 		printf("*");
@@ -59,7 +86,7 @@ static void write_type(TypeNode* type) {
 	}
 }
 
-static void write_double(double d) {
+static void write_float(double d) {
 	long long p;
 	memcpy(&p, &d, sizeof(double));
 	printf("0x%llx", p);
@@ -192,11 +219,11 @@ LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1, LLVMValue v2,
 			write_label_temp(l2);
 			break;
 		case TYPE_FLOAT:
-			write_double(v1.d);
+			write_float(v1.f);
 			printf(", ");
 			write_label_temp(l1);
 			printf("], [");
-			write_int(v2.d);
+			write_int(v2.f);
 			printf(", ");
 			write_label_temp(l2);
 			break;
@@ -213,14 +240,21 @@ LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1, LLVMValue v2,
 //
 // ==================================================
 
+// Only used inside llvm_setup
+#define DECLARE_PRINTF_FORMAT(str, percent)					\
+	printf("@." str " = private unnamed_addr constant ");	\
+	printf("[3 x i8] c\"%%" percent "\\00\"\n");			\
+
 void llvm_setup() {
 	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n");
 	printf("declare i32 @putchar(i32)\n");
 	printf("declare i32 @printf(i8*, ...)\n");
-	printf("declare i32 @puts(i8*)\n"); // TODO: Always prints \n
 	printf("declare i8* @malloc(i64)\n");
-	printf("@.pint = private unnamed_addr constant [3 x i8] c\"%%d\\00\"\n");
-	printf("@.pfloat = private unnamed_addr constant [3 x i8] c\"%%f\\00\"\n");
+	DECLARE_PRINTF_FORMAT(PRINTF_ID_CHAR, "c");
+	DECLARE_PRINTF_FORMAT(PRINTF_ID_INT, "d");
+	DECLARE_PRINTF_FORMAT(PRINTF_ID_FLOAT, "f");
+	DECLARE_PRINTF_FORMAT(PRINTF_ID_STR, "s");
+	DECLARE_PRINTF_FORMAT(PRINTF_ID_ADDRESS, "p");
 	printf("\n");
 }
 
@@ -271,29 +305,36 @@ void llvm_func_end() {
 	temp = 0;
 }
 
-void llvm_print(ExpNode* exp) {
-	int t = exp->temp; // TODO: Remove this
+// TODO: Rework look llvm_print
+static void llvm_printf(const char* id, TypeNode* type, LLVMTemp t) {
+	write_tabs();
+	printf("call i32 (i8*, ...) @printf(i8* getelementptr inbounds ");
+	printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ", id);
+	write_type(type);
+	printf(" ");
+	write_temp(t);
+	printf(")\n");
+}
 
+void llvm_print(ExpNode* exp) {
+	// TODO: Rewrite this when cast is done
 	switch (exp->type->tag) {
 	case TYPE_CHAR:
-		t = llvm_cast(exp->type, t, ast_type(TYPE_INT)); // TODO: Remove this
-		write_tabs(); // TODO: Remove this
-		printf("call i32 @putchar(i32 ");
+		// TODO: Remove cast
+		llvm_printf(PRINTF_ID_CHAR, ast_type(TYPE_INT), 
+			llvm_cast(exp->type, exp->temp, ast_type(TYPE_INT)));
 		break;
 	case TYPE_INT:
+		llvm_printf(PRINTF_ID_INT, exp->type, exp->temp);
+		break;
 	case TYPE_FLOAT:
-		write_tabs();
-		printf("call i32 (i8*, ...) @printf(i8* getelementptr inbounds ");
-		printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ",
-			(exp->type->tag == TYPE_INT) ? "pint" : "pfloat");
-		write_type(exp->type);
-		printf(" ");
+		llvm_printf(PRINTF_ID_FLOAT, exp->type, exp->temp);
 		break;
 	case TYPE_INDEXED:
 		write_tabs();
 		switch (exp->type->indexed->tag) {
 		case TYPE_CHAR:
-			printf("call i32 @puts(i8* ");
+			llvm_printf(PRINTF_ID_STR, exp->type, exp->temp);
 			break;
 		default:
 			// TODO: Print address
@@ -303,9 +344,6 @@ void llvm_print(ExpNode* exp) {
 	case TYPE_VOID:
 		MONGA_INTERNAL_ERR("llvm_print: void type");
 	}
-
-	write_temp(t); // TODO: Back to exp->temp
-	printf(")\n");
 }
 
 void llvm_ret_exp(TypeNode* type, LLVMTemp t) {
@@ -322,37 +360,29 @@ void llvm_ret_void() {
 	printf("ret void\n");
 }
 
-LLVMTemp llvm_knum(TypeNode* type, double num) {
-	// TODO: This is horrible
-	temp++;
+LLVMTemp llvm_kval(TypeNode* type, LLVMValue val) {
 	write_tabs();
-	// TODO: Switch
-	int isfloat = (type->tag == TYPE_FLOAT);
-	write_temp(temp);
-	printf(" = %s ", (isfloat) ? "f" LLVM_ADD : LLVM_ADD);
-	write_type(type);
-	printf(" ");
-	// TODO: Switch
-	if (isfloat) {
-		write_double(num);
-		printf(", 0.0");
-	} else {
-		write_int((int)num); // TODO: LLVMValue
-		printf(", 0");
+	write_temp(++temp);
+	switch (type->tag) {
+	case TYPE_INT:
+		LLVM_KNUM_AUX(LLVM_ADD, write_type_int, write_int, val.i, "0");
+		break;
+	case TYPE_FLOAT:
+		LLVM_KNUM_AUX(LLVM_FADD, write_type_float, write_float, val.f, "0.0");
+		break;
+	case TYPE_INDEXED:
+		if (type->indexed->tag == TYPE_CHAR) {
+			int len = strlen(val.str) + 1;
+			printf(" = getelementptr inbounds [%d x i8], [%d x i8]*", len, len);
+			printf(" @.str%d , i32 0, i32 0", lenstrs + accstrs);
+			strs[lenstrs++] = val.str;
+			break;
+		}
+		// Fallthrough
+	default:
+		MONGA_INTERNAL_ERR("llvm_kval: invalid type")
 	}
 	printf("\n");
-	return temp;
-}
-
-LLVMTemp llvm_kstr(const char* str) {
-	write_tabs();
-	temp++;
-	write_temp(temp);
-	printf(" = getelementptr inbounds ");
-	int len = strlen(str) + 1;
-	printf("[%d x i8], [%d x i8]* @.str%d , i32 0, i32 0\n", len, len,
-		lenstrs + accstrs);
-	strs[lenstrs++] = str;
 	return temp;
 }
 

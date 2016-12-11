@@ -44,7 +44,7 @@ static void code_global_def(DefNode* def) {
 static void code_cmd(CmdNode* cmd) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
-		// For local definitions
+		// For local variable definitions
 		for (DefNode* aux = cmd->u.block.defs; aux != NULL; aux = aux->next) {
 			aux->temp = llvm_alloca(aux->u.var.type);
 		}
@@ -141,15 +141,24 @@ static void code_var(VarNode* var) {
 // legible solution for this case
 static void code_exp(ExpNode* exp) {
 	switch (exp->tag) {
-	case EXP_KINT:
-		exp->temp = llvm_knum(exp->type, exp->u.intvalue);
+	case EXP_KINT: {
+		LLVMValue val;
+		val.i = exp->u.intvalue;
+		exp->temp = llvm_kval(exp->type, val);
 		break;
-	case EXP_KFLOAT:
-		exp->temp = llvm_knum(exp->type, exp->u.floatvalue);
+	}
+	case EXP_KFLOAT: {
+		LLVMValue val;
+		val.f = exp->u.floatvalue;
+		exp->temp = llvm_kval(exp->type, val);
 		break;
-	case EXP_KSTR:
-		exp->temp = llvm_kstr(exp->u.strvalue);
+	}
+	case EXP_KSTR: {
+		LLVMValue val;
+		val.str = exp->u.strvalue;
+		exp->temp = llvm_kval(exp->type, val);
 		break;
+	}
 	case EXP_VAR:
 		code_var(exp->u.var);
 		exp->temp = llvm_load(exp->type, exp->u.var->temp);
