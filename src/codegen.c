@@ -76,13 +76,25 @@ static void code_cmd(CmdNode* cmd) {
 		llvm_label(lf);
 		code_cmd(cmd->u.ifelse.elsecmd);
 		llvm_br1(end);
-		// Next
+		// End
 		llvm_label(end);
 		break;
 	}
-	case CMD_WHILE:
-		// TODO
+	case CMD_WHILE: {
+		LLVMLabel cond = llvm_label_temp();
+		LLVMLabel loop = llvm_label_temp(), end = llvm_label_temp();
+		llvm_br1(cond);
+		// Cond
+		llvm_label(cond);
+		code_cond(cmd->u.ifwhile.exp, loop, end);
+		// Loop
+		llvm_label(loop);
+		code_cmd(cmd->u.ifwhile.cmd);
+		llvm_br1(cond);
+		// End
+		llvm_label(end);
 		break;
+	}
 	case CMD_PRINT:
 		code_exp(cmd->u.print);
 		llvm_print(cmd->u.print);
