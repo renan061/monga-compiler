@@ -10,6 +10,10 @@
 
 typedef unsigned int LLVMTemp;
 typedef unsigned int LLVMLabel;
+typedef union LLVMValue {
+	int i;
+	double d;
+} LLVMValue;
 
 // LLVM
 extern void llvm_commentary(const char* str);
@@ -21,6 +25,8 @@ extern LLVMTemp llvm_load(TypeNode* type, LLVMTemp t);
 extern LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index);
 extern void llvm_br1(LLVMLabel l);
 extern void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf);
+extern LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1,
+	LLVMValue v2, LLVMLabel l2);
 
 extern void llvm_setup();
 

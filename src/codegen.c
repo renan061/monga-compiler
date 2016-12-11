@@ -54,14 +54,12 @@ static void code_cmd(CmdNode* cmd) {
 		// TODO: Always return
 		break;
 	case CMD_IF: {
-		llvm_commentary("if");
 		LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
 		code_cond(cmd->u.ifwhile.exp, lt, lf);
 		llvm_label(lt);
 		code_cmd(cmd->u.ifwhile.cmd);
 		llvm_br1(lf);
 		llvm_label(lf);
-		llvm_commentary("endif");
 		break;
 	}
 	case CMD_IF_ELSE:
@@ -112,6 +110,8 @@ static void code_var(VarNode* var) {
 	}
 }
 
+// CONTROVERSIAL: I know goto is ugly, but I think it's the most
+// legible solution for this case
 static void code_exp(ExpNode* exp) {
 	switch (exp->tag) {
 	case EXP_KINT:
@@ -140,22 +140,17 @@ static void code_exp(ExpNode* exp) {
 		exp->temp = llvm_cast(exp->u.cast->type, exp->u.cast->temp, exp->type);
 		break;
 	case EXP_UNARY:
-		// TODO: When to code_exp
-		code_exp(exp->u.unary.exp);
 		switch (exp->u.unary.symbol) {
 		case '-':
+			code_exp(exp->u.unary.exp);
 			exp->temp = llvm_karith(LLVM_SUB, NUM_OP_TEMP, exp->type,
 				exp->u.unary.exp->temp, 0);
 			break;
 		case '!':
-			// TODO
-			break;
+			goto DEFAULT_EXP;
 		}
 		break;
 	case EXP_BINARY: {
-		// TODO: When to code_exp
-		code_exp(exp->u.binary.exp1);
-		code_exp(exp->u.binary.exp2);
 		ExpNode* exp1 = exp->u.binary.exp1;
 		ExpNode* exp2 = exp->u.binary.exp2;
 
@@ -163,28 +158,54 @@ static void code_exp(ExpNode* exp) {
 		case TK_EQUAL:
 		case TK_AND:
 		case TK_OR:
-			// TODO
-			break;
+			goto DEFAULT_EXP;
 		case '+':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_add(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '-':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_sub(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '*':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_mul(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '/':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_div(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '>':
 		case '<':
 		case TK_GEQUAL:
 		case TK_LEQUAL:
-			// TODO
+			goto DEFAULT_EXP;
+		}
+		break;
+	}
+	default:
+	DEFAULT_EXP: // exp ? 1 : 0
+	// TODO: Essas chaves...
+		{
+			LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
+			LLVMLabel phi = llvm_label_temp();
+			LLVMValue v1, v2;
+			v1.i = 1;
+			v2.i = 0;
+
+			code_cond(exp, lt, lf);
+			llvm_label(lt);
+			llvm_br1(phi);
+			llvm_label(lf);
+			llvm_br1(phi);
+			llvm_label(phi);
+			exp->temp = llvm_phi2(exp->type, v1, lt, v2, lf);
 			break;
 		}
-	}	break;
 	}
 
 	if (exp->next != NULL) {
@@ -192,8 +213,7 @@ static void code_exp(ExpNode* exp) {
 	}
 }
 
-// CONTROVERSIAL: I know goto is ugly, but I think it's the most
-// legible solution for this case
+// CONTROVERSIAL: Same as code_exp for "goto"
 static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 	switch (exp->tag) {
 	case EXP_UNARY:
@@ -213,7 +233,7 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 		case TK_EQUAL: {
 			code_exp(exp1);
 			code_exp(exp2);
-			exp->temp = llvm_cmp_eq(exp->type, exp1->temp, exp2->temp);
+			exp->temp = llvm_cmp_eq(exp1->type, exp1->temp, exp2->temp);
 			llvm_br3(exp->temp, lt, lf);
 			break;
 		}
@@ -234,28 +254,28 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 		case '>': {
 			code_exp(exp1);
 			code_exp(exp2);
-			exp->temp = llvm_cmp_gt(exp->type, exp1->temp, exp2->temp);
+			exp->temp = llvm_cmp_gt(exp1->type, exp1->temp, exp2->temp);
 			llvm_br3(exp->temp, lt, lf);
 			break;
 		}
 		case '<': {
 			code_exp(exp1);
 			code_exp(exp2);
-			exp->temp = llvm_cmp_lt(exp->type, exp1->temp, exp2->temp);
+			exp->temp = llvm_cmp_lt(exp1->type, exp1->temp, exp2->temp);
 			llvm_br3(exp->temp, lt, lf);
 			break;
 		}
 		case TK_GEQUAL: {
 			code_exp(exp1);
 			code_exp(exp2);
-			exp->temp = llvm_cmp_ge(exp->type, exp1->temp, exp2->temp);
+			exp->temp = llvm_cmp_ge(exp1->type, exp1->temp, exp2->temp);
 			llvm_br3(exp->temp, lt, lf);
 			break;
 		}
 		case TK_LEQUAL: {
 			code_exp(exp1);
 			code_exp(exp2);
-			exp->temp = llvm_cmp_le(exp->type, exp1->temp, exp2->temp);
+			exp->temp = llvm_cmp_le(exp1->type, exp1->temp, exp2->temp);
 			llvm_br3(exp->temp, lt, lf);
 			break;
 		}

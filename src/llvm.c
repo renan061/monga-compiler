@@ -28,7 +28,7 @@ static const char* strs[1000]; // TODO: Error when out of bounds
 // TODO: Reset label at end of function
 static unsigned int tablvl = 0, temp = 0, label = 0;
 
-static void tabs() {
+static void write_tabs() {
 	for (int i = 0; i < tablvl; i++) {
 		printf("  ");
 	}
@@ -59,6 +59,16 @@ static void write_type(TypeNode* type) {
 	}
 }
 
+static void write_double(double d) {
+	long long p;
+	memcpy(&p, &d, sizeof(double));
+	printf("0x%llx", p);
+}
+
+static void write_int(int i) {
+	printf("%d", i);
+}
+
 // ==================================================
 //
 //	LLVM
@@ -82,7 +92,7 @@ LLVMLabel llvm_label_temp() {
 
 // %ret = alloca <type>
 LLVMTemp llvm_alloca(TypeNode* type) {
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = alloca ");
 	write_type(type);
@@ -92,7 +102,7 @@ LLVMTemp llvm_alloca(TypeNode* type) {
 
 // store <type> %from, <type>* %to
 void llvm_store(TypeNode* type, LLVMTemp from, LLVMTemp to) {
-	tabs();
+	write_tabs();
 	printf("store ");
 	write_type(type);
 	printf(" ");
@@ -106,7 +116,7 @@ void llvm_store(TypeNode* type, LLVMTemp from, LLVMTemp to) {
 
 // %ret = load <type>, <type>* %t
 LLVMTemp llvm_load(TypeNode* type, LLVMTemp t) {
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = load ");
 	write_type(type);
@@ -120,7 +130,7 @@ LLVMTemp llvm_load(TypeNode* type, LLVMTemp t) {
 
 // %ret = getelementptr inbounds <type>, <type>* %t, <indextype> <indextemp>
 LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index) {
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = getelementptr inbounds ");
 	write_type(type);
@@ -138,22 +148,22 @@ LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index) {
 
 // br label %l
 void llvm_br1(LLVMLabel l) {
-	tabs();
+	write_tabs();
 	printf("br label ");
 	write_label_temp(l);
 	printf("\n");
 }
 
-// %b = icmp ne i1 %t, 0
+// %b = icmp ne i32 %t, 0
 // br i1 %b label %lt, label %lf
 void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
-	tabs();
+	write_tabs();
 	write_temp(++temp);
-	printf(" = icmp ne i1 ");
+	printf(" = icmp ne i32 ");
 	write_temp(t);
 	printf(", 0\n");
 
-	tabs();
+	write_tabs();
 	printf("br i1 ");
 	write_temp(temp);
 	printf(", label ");
@@ -161,6 +171,40 @@ void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
 	printf(", label ");
 	write_label_temp(lf);
 	printf("\n");
+}
+
+LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1, LLVMValue v2,
+	LLVMLabel l2) {
+
+	write_tabs();
+	write_temp(++temp);
+	printf(" = phi ");
+	write_type(type);
+	printf(" [");
+	switch (type->tag) {
+		case TYPE_INT:
+			write_int(v1.i);
+			printf(", ");
+			write_label_temp(l1);
+			printf("], [");
+			write_int(v2.i);
+			printf(", ");
+			write_label_temp(l2);
+			break;
+		case TYPE_FLOAT:
+			write_double(v1.d);
+			printf(", ");
+			write_label_temp(l1);
+			printf("], [");
+			write_int(v2.d);
+			printf(", ");
+			write_label_temp(l2);
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_phi2: invalid type");
+	}
+	printf("]\n");
+	return temp;
 }
 
 // ==================================================
@@ -181,7 +225,7 @@ void llvm_setup() {
 }
 
 void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
-	tabs();
+	write_tabs();
 
 	printf("define ");
 	write_type(type);
@@ -233,12 +277,12 @@ void llvm_print(ExpNode* exp) {
 	switch (exp->type->tag) {
 	case TYPE_CHAR:
 		t = llvm_cast(exp->type, t, ast_type(TYPE_INT)); // TODO: Remove this
-		tabs(); // TODO: Remove this
+		write_tabs(); // TODO: Remove this
 		printf("call i32 @putchar(i32 ");
 		break;
 	case TYPE_INT:
 	case TYPE_FLOAT:
-		tabs();
+		write_tabs();
 		printf("call i32 (i8*, ...) @printf(i8* getelementptr inbounds ");
 		printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ",
 			(exp->type->tag == TYPE_INT) ? "pint" : "pfloat");
@@ -246,7 +290,7 @@ void llvm_print(ExpNode* exp) {
 		printf(" ");
 		break;
 	case TYPE_INDEXED:
-		tabs();
+		write_tabs();
 		switch (exp->type->indexed->tag) {
 		case TYPE_CHAR:
 			printf("call i32 @puts(i8* ");
@@ -265,7 +309,7 @@ void llvm_print(ExpNode* exp) {
 }
 
 void llvm_ret_exp(TypeNode* type, LLVMTemp t) {
-	tabs();
+	write_tabs();
 	printf("ret ");
 	write_type(type);
 	printf(" ");
@@ -274,32 +318,34 @@ void llvm_ret_exp(TypeNode* type, LLVMTemp t) {
 }
 
 void llvm_ret_void() {
-	tabs();
+	write_tabs();
 	printf("ret void\n");
 }
 
 LLVMTemp llvm_knum(TypeNode* type, double num) {
 	// TODO: This is horrible
 	temp++;
-	tabs();
+	write_tabs();
+	// TODO: Switch
 	int isfloat = (type->tag == TYPE_FLOAT);
 	write_temp(temp);
 	printf(" = %s ", (isfloat) ? "f" LLVM_ADD : LLVM_ADD);
 	write_type(type);
 	printf(" ");
+	// TODO: Switch
 	if (isfloat) {
-		long long p;
-		memcpy(&p, &num, sizeof(double));
-		printf("0x%llx, 0.0", p);
+		write_double(num);
+		printf(", 0.0");
 	} else {
-		printf("%d, 0", (int)num);
+		write_int((int)num); // TODO: LLVMValue
+		printf(", 0");
 	}
 	printf("\n");
 	return temp;
 }
 
 LLVMTemp llvm_kstr(const char* str) {
-	tabs();
+	write_tabs();
 	temp++;
 	write_temp(temp);
 	printf(" = getelementptr inbounds ");
@@ -311,7 +357,7 @@ LLVMTemp llvm_kstr(const char* str) {
 }
 
 LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
-	tabs();
+	write_tabs();
 
 	int ret = -1;
 	if (type->tag != TYPE_VOID) {
@@ -349,7 +395,7 @@ LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
 	}
 
 	// %t2 = sext <sizetype> <sizetemp> to i64
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = sext ");
 	write_type(size->type);
@@ -358,14 +404,14 @@ LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
 	printf(" to i64\n");
 
 	// %t3 = mul i64 %t2, <type_size>
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = mul i64 ");
 	write_temp(temp - 1);
 	printf(", %d\n", type_size);
 
 	// %t4 = call i8* @malloc(i64 %t3)
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = call i8* @malloc(i64 ");
 	write_temp(temp - 1);
@@ -373,7 +419,7 @@ LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
 
 	// %t5 = bitcast i8* %t4 to <type>*
 	if (type->tag != TYPE_CHAR) {
-		tabs();
+		write_tabs();
 		write_temp(++temp);
 		printf(" = bitcast i8* ");
 		write_temp(temp - 1);
@@ -397,7 +443,7 @@ LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to) {
 		MONGA_INTERNAL_ERR("llvm_cast: invalid cast");
 	}
 
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = %s ", cast);
 	write_type(from);
@@ -413,7 +459,7 @@ LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to) {
 static LLVMTemp llvm_arith(const char* op, TypeNode* type, LLVMTemp t1,
 	LLVMTemp t2) {
 
-	tabs();
+	write_tabs();
 	temp++;
 	int isfloat = (type->tag == TYPE_FLOAT);
 	write_temp(temp);
@@ -447,7 +493,7 @@ LLVMTemp llvm_div(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
 LLVMTemp llvm_karith(char* op, char* order, TypeNode* type, LLVMTemp t,
 	double num) {
 
-	tabs();
+	write_tabs();
 	temp++;
 	int isfloat = (type->tag == TYPE_FLOAT);
 	write_temp(temp);
@@ -457,7 +503,7 @@ LLVMTemp llvm_karith(char* op, char* order, TypeNode* type, LLVMTemp t,
 	printf(" ");
 
 	if (order == NUM_OP_TEMP) {
-		printf("%d", (int)num);
+		printf("%d", (int)num); // TODO: Float?
 		printf(", ");
 		write_temp(t);
 	} else if (order == TEMP_OP_NUM) {
@@ -470,11 +516,12 @@ LLVMTemp llvm_karith(char* op, char* order, TypeNode* type, LLVMTemp t,
 	return temp;
 }
 
-// TODO: For eq, gt, ge, lt, le
+// %b = <type>cmp <op> <type> %t1, %t2
+// %ret = zext i1 %b to i32
 static LLVMTemp llvm_cmp(const char* op, TypeNode* type, LLVMTemp t1,
 	LLVMTemp t2) {
 
-	tabs();
+	write_tabs();
 	write_temp(++temp);
 	printf(" = ");
 	switch (type->tag) {
@@ -489,6 +536,13 @@ static LLVMTemp llvm_cmp(const char* op, TypeNode* type, LLVMTemp t1,
 	printf(", ");
 	write_temp(t2);
 	printf("\n");
+
+	write_tabs();
+	write_temp(++temp);
+	printf(" = zext i1 ");
+	write_temp(temp - 1);
+	printf(" to i32\n");
+	
 	return temp;
 }
 
