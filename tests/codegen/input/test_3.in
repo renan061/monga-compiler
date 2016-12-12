@@ -12,10 +12,8 @@ int main() {
 	@"\n";
 
 	a = 6;
-
 	foo();
 	@a;
-	@"\n";
-		
+
 	return 0;
 }

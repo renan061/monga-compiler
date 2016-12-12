@@ -4,7 +4,7 @@
 
 #include "macros.h"
 #include "ast.h"
-#include "symtable.h"							\
+#include "symtable.h"
 
 // ==================================================
 //

@@ -58,6 +58,7 @@ DefNode* ast_def_var(TypeNode* type, IdNode* id) {
 	n->next = NULL;
 	n->u.var.type = type;
 	n->u.var.id = id;
+	// OBS: n->u.var.global undefined
 	return n;
 }
 

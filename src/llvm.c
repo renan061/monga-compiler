@@ -200,11 +200,11 @@ LLVMTemp llvm_load(TypeNode* type, LLVMTemp t) {
 	return temp;
 }
 
-// %ret = getelementptr inbounds <type>, <type>* %t, <indextype> <indextemp>
+// %ret = getelementptr <type>, <type>* %t, <indextype> <indextemp>
 LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index) {
 	write_tabs();
 	write_temp(++temp);
-	printf(" = getelementptr inbounds ");
+	printf(" = getelementptr ");
 	write_type(type);
 	printf(", ");
 	write_type(type);
@@ -245,6 +245,7 @@ void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
 	printf("\n");
 }
 
+// %ret = phi <type> [<v1>, %l1][<v2>, %l2]
 LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1, LLVMValue v2,
 	LLVMLabel l2) {
 
@@ -265,6 +266,50 @@ LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1, LLVMValue v2,
 	}
 	printf("]\n");
 	return temp;
+}
+
+// %ret = getelementptr <type>* @<id>, i32 0
+LLVMTemp llvm_global_address(TypeNode* type, IdNode* id) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = getelementptr ");
+	write_type(type);
+	printf(", ");
+	write_type(type);
+	printf("* @%s, i32 0\n", id->u.str);
+	return temp;
+}
+
+// @<id> = global <type> <zerovalue>
+void llvm_def_global(TypeNode* type, IdNode* id) {
+	printf("@");
+	printf("%s", id->u.str);
+	printf(" = global ");
+	switch (type->tag) {
+	case TYPE_CHAR:
+		write_type_char();
+		printf(" ");
+		write_int(0);
+		break;
+	case TYPE_INT:
+		write_type_int();
+		printf(" ");
+		write_int(0);
+		break;
+	case TYPE_FLOAT:
+		write_type_float();
+		printf(" ");
+		write_float(0);
+		break;
+	case TYPE_INDEXED:
+		write_type(type); // FIXME: write_type_indexed
+		printf(" null");
+		break;
+	default:
+		MONGA_INTERNAL_ERR("llvm_var_global: invalid type");
+	}
+
+	printf("\n");
 }
 
 void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
@@ -315,7 +360,7 @@ void llvm_func_end() {
 // TODO: Rework look llvm_print
 static void llvm_printf(const char* id, TypeNode* type, LLVMTemp t) {
 	write_tabs();
-	printf("call i32 (i8*, ...) @printf(i8* getelementptr inbounds ");
+	printf("call i32 (i8*, ...) @printf(i8* getelementptr ");
 	printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ", id);
 	write_type(type);
 	printf(" ");
@@ -381,7 +426,7 @@ LLVMTemp llvm_kval(TypeNode* type, LLVMValue val) {
 	case TYPE_INDEXED:
 		if (type->indexed->tag == TYPE_CHAR) {
 			int len = strlen(val.str) + 1;
-			printf(" = getelementptr inbounds [%d x i8], [%d x i8]*", len, len);
+			printf(" = getelementptr [%d x i8], [%d x i8]*", len, len);
 			printf(" @.str%d , i32 0, i32 0", lenstrs + accstrs);
 			strs[lenstrs++] = val.str;
 			break;

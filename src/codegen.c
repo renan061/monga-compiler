@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <strings.h>
+#include <stdbool.h>
 
 #include "macros.h"
 #include "ast.h"
@@ -21,20 +22,17 @@ void codegen(ProgramNode* program) {
 static void code_global_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
-		// TODO: Global DefVar
-		// @i = global i32 0
-		// @f = global float 0.0
-		// @c = global i8 0
-		// @str = global i8* null
-		// @indexed = global i32*** null
-		// %t1 = load i32, i32* @i, align 4
+		def->u.var.global = true;
+		llvm_def_global(def->u.var.type, def->u.var.id);
 		break;
 	case DEF_FUNC:
+		for (DefNode* aux = def->u.func.params; aux != NULL; aux = aux->next) {
+			aux->u.var.global = false;
+		}
 		llvm_func_start(def->u.func.type, def->u.func.id, def->u.func.params);
 		code_cmd(def->u.func.block);
-		if (def->u.func.type->tag == TYPE_VOID) {
-			llvm_ret_void(); // TODO: Ask Roberto
-		}
+		// TODO: Return zero value
+		// llvm_ret_zero(def->u.func.type);
 		llvm_func_end();
 		break;
 	}
@@ -49,6 +47,7 @@ static void code_cmd(CmdNode* cmd) {
 	case CMD_BLOCK:
 		// For local variable definitions
 		for (DefNode* aux = cmd->u.block.defs; aux != NULL; aux = aux->next) {
+			aux->u.var.global = false;
 			aux->temp = llvm_alloca(aux->u.var.type);
 		}
 		if (cmd->u.block.cmds != NULL) {
@@ -129,7 +128,9 @@ static void code_cmd(CmdNode* cmd) {
 static void code_var(VarNode* var) {
 	switch (var->tag) {
 	case VAR_ID:
-		var->temp = var->u.id->u.def->temp;
+		var->temp = (var->u.id->u.def->u.var.global)
+			? llvm_global_address(var->type, var->u.id->u.def->u.var.id)
+			: var->u.id->u.def->temp;
 		break;
 	case VAR_INDEXED:
 		code_exp(var->u.indexed.array);

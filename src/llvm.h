@@ -24,8 +24,10 @@ extern void llvm_br1(LLVMLabel l);
 extern void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf);
 extern LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1,
 	LLVMValue v2, LLVMLabel l2);
+extern LLVMTemp llvm_global_address(TypeNode* type, IdNode* id);
 
 // Def
+extern void llvm_def_global(TypeNode* type, IdNode* id);
 extern void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params);
 extern void llvm_func_end();
 
