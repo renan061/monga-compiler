@@ -54,6 +54,10 @@ void test_basic_while() {
 	} else {
 		@"Error While\n";
 	}
+
+	while (0) {
+		@"Error While";
+	}
 }
 
 /*****************************************
@@ -180,6 +184,57 @@ void test_short_circuit() {
 
 /*****************************************
 **
+**	Wild
+**
+*****************************************/
+
+int factorial(int n) {
+	if (n == 0) {
+		return 1;
+	}
+	return n * factorial(n - 1);
+}
+
+int[][] new_matrix(int size) {
+	int i, j;
+	int[][] m;
+	
+	m = new int[][size];
+	i = 0;
+
+	while (i < size) {
+		j = 0;
+		m[i] = new int[size];
+		while (j < size) {
+			m[i][j] = i >= j;
+			j = j + 1;
+		}
+		i = i + 1;
+	}
+
+	return m;
+
+}
+
+void print_matrix(int[][] m, int size) {
+	int i, j;
+	i = 0;
+
+	while (i < size) {
+		j = 0;
+		while (j < size) {
+			@"[";
+			@m[i][j];
+			@"] ";
+			j = j + 1;
+		}
+		@nl;
+		i = i + 1;
+	}
+}
+
+/*****************************************
+**
 **	Runs all tests
 **
 *****************************************/
@@ -196,6 +251,19 @@ int main() {
 	test_basic_conds();
 	@nl;
 	test_short_circuit();
+	@nl;
+
+	/* Wild */
+	@"Factorial\n";
+	@factorial(10);
+	@nl; @nl;
+
+	{
+		int size;
+		size = 5;
+		@"Print matrix a(ij) = (i >= j) \n";
+		print_matrix(new_matrix(size), size);
+	}
 
 	return 0;
 }

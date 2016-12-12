@@ -37,3 +37,13 @@ Ok LessEqual
 
 Ok And short-circuit
 Ok Or short-circuit
+
+Factorial
+3628800
+
+Print matrix a(ij) = (i >= j) 
+[1] [0] [0] [0] [0] 
+[1] [1] [0] [0] [0] 
+[1] [1] [1] [0] [0] 
+[1] [1] [1] [1] [0] 
+[1] [1] [1] [1] [1] 

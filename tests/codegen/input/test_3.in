@@ -1,3 +1,5 @@
+/* Global variable */
+
 int a;
 
 void foo() {

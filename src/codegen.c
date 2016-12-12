@@ -263,6 +263,7 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 		ExpNode* exp1 = exp->u.binary.exp1;
 		ExpNode* exp2 = exp->u.binary.exp2;
 
+		// TODO: Ask Roberto: code_exp or code_cont in ==, <, >, <=, >= ?
 		switch (exp->u.binary.symbol) {
 		case TK_EQUAL: {
 			code_exp(exp1);
