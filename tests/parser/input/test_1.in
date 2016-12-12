@@ -90,6 +90,9 @@
 		var = foo(a, b, c);
 		var = new int[1];
 		var = -1;
+		var = !a;
+		var = !!a;
+		var = a;
 		var = a + b;
 		var = a - b;
 		var = a * b;
@@ -99,7 +102,6 @@
 		var = a >= b;
 		var = a < b;
 		var = a > b;
-		var = !a;
 		var = a && b;
 		var = a || b;
 		var = a || a || a;

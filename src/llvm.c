@@ -26,7 +26,7 @@
 //
 //	Macros
 //
-//	TODO: Find a way to get rid of these horrible
+//	FIXME: Find a way to get rid of these horrible
 //	macros (maybe write_value function)
 //
 // ==================================================

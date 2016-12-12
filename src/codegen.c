@@ -81,7 +81,6 @@ static void code_cmd(CmdNode* cmd) {
 		break;
 	}
 	case CMD_WHILE: {
-		// TODO: Ask Roberto: What about phi and preheaders?
 		LLVMLabel cond = llvm_label_temp();
 		LLVMLabel loop = llvm_label_temp(), end = llvm_label_temp();
 		llvm_br1(cond);
@@ -174,7 +173,7 @@ static void code_exp(ExpNode* exp) {
 		exp->temp = llvm_new(exp->u.new.type, exp->u.new.size);
 		break;
 	case EXP_CAST:
-		// TODO: Remove int->char and char->int cast from sem.c and llvm.c
+		// FIXME: Remove int->char and char->int cast from sem.c and llvm.c
 		code_exp(exp->u.cast);
 		exp->temp = llvm_cast(exp->u.cast->type, exp->u.cast->temp, exp->type);
 		break;
