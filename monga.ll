@@ -33,8 +33,7 @@ define i32 @main() {
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t9)
   %t10 = getelementptr [2 x i8], [2 x i8]* @.str1 , i32 0, i32 0
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t10)
-  %t11 = add i32 0, 0
-  ret i32 %t11
+  ret i32 0
 }
 @.str0 = private unnamed_addr constant [2 x i8] c"
 \00"

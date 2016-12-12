@@ -11,10 +11,12 @@ declare i8* @malloc(i64)
 define i32 @true_func() {
   %t1 = add i32 1, 0
   ret i32 %t1
+  ret i32 0
 }
 define i32 @false_func() {
   %t1 = add i32 0, 0
   ret i32 %t1
+  ret i32 0
 }
 define i32 @main() {
   %t1 = alloca i8
@@ -143,6 +145,7 @@ l23:
 l24:
   %t58 = add i32 0, 0
   ret i32 %t58
+  ret i32 0
 }
 @.str0 = private unnamed_addr constant [5 x i8] c"Yes
 \00"

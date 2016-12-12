@@ -1,4 +1,4 @@
-void noreturn() {
+int noreturn() {
 	@"noreturn\n";
 }
 

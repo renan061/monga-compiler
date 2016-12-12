@@ -2,7 +2,6 @@ int a;
 
 void foo() {
 	a = 10;
-	return;
 }
 
 int main() {
@@ -16,6 +15,4 @@ int main() {
 	foo();
 	@a;
 	@"\n";
-		
-	return 0;
 }

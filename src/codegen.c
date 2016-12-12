@@ -31,8 +31,7 @@ static void code_global_def(DefNode* def) {
 		}
 		llvm_func_start(def->u.func.type, def->u.func.id, def->u.func.params);
 		code_cmd(def->u.func.block);
-		// TODO: Return zero value
-		// llvm_ret_zero(def->u.func.type);
+		llvm_ret_zero(def->u.func.type); // Always returns a zero value
 		llvm_func_end();
 		break;
 	}

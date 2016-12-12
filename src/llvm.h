@@ -35,6 +35,7 @@ extern void llvm_func_end();
 extern void llvm_print(ExpNode* exp);
 extern void llvm_ret_exp(TypeNode* type, LLVMTemp t);
 extern void llvm_ret_void();
+extern void llvm_ret_zero(TypeNode* type);
 
 // Exp
 extern LLVMTemp llvm_kval(TypeNode* type, LLVMValue val);

@@ -14,6 +14,7 @@ define void @foo() {
   %t2 = add i32 10, 0
   store i32 %t2, i32* %t1
   ret void
+  ret void
 }
 define i32 @main() {
   %t1 = getelementptr i32, i32* @a, i32 0
@@ -33,6 +34,7 @@ define i32 @main() {
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t9)
   %t10 = add i32 0, 0
   ret i32 %t10
+  ret i32 0
 }
 @.str0 = private unnamed_addr constant [2 x i8] c"
 \00"

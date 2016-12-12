@@ -413,6 +413,32 @@ void llvm_ret_void() {
 	printf("\n");
 }
 
+void llvm_ret_zero(TypeNode* type) {
+	write_tabs();
+	printf("ret ");
+	switch (type->tag) {
+	case TYPE_CHAR: // Fallthrough
+	case TYPE_INT:
+		write_type_int();
+		printf(" ");
+		write_int(0);
+		break;
+	case TYPE_FLOAT:
+		write_type_float();
+		printf(" ");
+		write_float(0);
+		break;
+	case TYPE_VOID:
+		write_type_void();
+		break;
+	case TYPE_INDEXED:
+		write_type(type);
+		printf(" null");
+		break;
+	}
+	printf("\n");
+}
+
 LLVMTemp llvm_kval(TypeNode* type, LLVMValue val) {
 	write_tabs();
 	write_temp(++temp);
