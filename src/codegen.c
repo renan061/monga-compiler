@@ -225,21 +225,21 @@ static void code_exp(ExpNode* exp) {
 		break;
 	}
 	default:
-	DEFAULT_EXP: { // exp ? 1 : 0
-		LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
-		LLVMLabel phi = llvm_label_temp();
-		LLVMValue v1, v2;
-		v1.i = 1;
-		v2.i = 0;
+		DEFAULT_EXP: { // exp ? 1 : 0
+			LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
+			LLVMLabel phi = llvm_label_temp();
+			LLVMValue v1, v2;
+			v1.i = 1;
+			v2.i = 0;
 
-		code_cond(exp, lt, lf);
-		llvm_label(lt);
-		llvm_br1(phi);
-		llvm_label(lf);
-		llvm_br1(phi);
-		llvm_label(phi);
-		exp->temp = llvm_phi2(exp->type, v1, lt, v2, lf);
-	}
+			code_cond(exp, lt, lf);
+			llvm_label(lt);
+			llvm_br1(phi);
+			llvm_label(lf);
+			llvm_br1(phi);
+			llvm_label(phi);
+			exp->temp = llvm_phi2(exp->type, v1, lt, v2, lf);
+		}
 	}
 
 	if (exp->next != NULL) {

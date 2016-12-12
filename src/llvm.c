@@ -357,7 +357,7 @@ void llvm_func_end() {
 	temp = label = 0;
 }
 
-// TODO: Rework look llvm_print
+// FIXME: Rework look llvm_print
 static void llvm_printf(const char* id, TypeNode* type, LLVMTemp t) {
 	write_tabs();
 	printf("call i32 (i8*, ...) @printf(i8* getelementptr ");
@@ -369,10 +369,10 @@ static void llvm_printf(const char* id, TypeNode* type, LLVMTemp t) {
 }
 
 void llvm_print(ExpNode* exp) {
-	// TODO: Rewrite this when cast is done
+	// FIXME: Rewrite this when char<->int cast is removed
 	switch (exp->type->tag) {
 	case TYPE_CHAR:
-		// TODO: Remove cast
+		// FIXME: Remove cast
 		llvm_printf(PRINTF_ID_CHAR, ast_type(TYPE_INT), 
 			llvm_cast(exp->type, exp->temp, ast_type(TYPE_INT)));
 		break;
@@ -388,8 +388,8 @@ void llvm_print(ExpNode* exp) {
 			llvm_printf(PRINTF_ID_STR, exp->type, exp->temp);
 			break;
 		default:
-			// TODO: Print address
-			break;
+			// FIXME: Print address
+			MONGA_INTERNAL_ERR("llvm_print: not printing address currently");
 		}
 		break;
 	case TYPE_VOID:

@@ -1,3 +1,67 @@
+char nl;	/* new line */
+
+/*****************************************
+**
+**	Basic If, IfElse && While
+**
+*****************************************/
+
+void test_basic_if() {
+	/* True */
+	@"Ok Pre-If\n";
+	if (1) {
+		@"Ok Inside-If\n";
+	}
+	@"Ok After-If\n";
+
+	/* False */
+	@"Ok Pre-If\n";
+	if (0) {
+		@"Error False-If";
+	}
+	@"Ok After-If\n";
+}
+
+void test_basic_ifelse() {
+	/* True */
+	@"Ok Pre-IfElse\n";
+	if (1) {
+		@"Ok Inside-IfElse\n";
+	} else {
+		@"Error True-Inside-IfElse\n";
+	}
+	@"Ok After-IfElse\n";
+
+	/* False */
+	@"Ok Pre-IfElse\n";
+	if (0) {
+		@"Error False-Inside-IfElse\n";
+	} else {
+		@"Ok Inside-IfElse\n";
+	}
+	@"Ok After-IfElse\n";
+}
+
+void test_basic_while() {
+	int i;
+	i = 10;
+	while (i < 10) {
+		i = i + 1;
+	}
+
+	if (i == 10) {
+		@"Ok While\n";
+	} else {
+		@"Error While\n";
+	}
+}
+
+/*****************************************
+**
+**	Basic conditions
+**
+*****************************************/
+
 int true_func() {
 	return 1;
 }
@@ -6,43 +70,132 @@ int false_func() {
 	return 0;
 }
 
-int main() {
-	char nl; /* new line */
-
-	char[] yes, no;
+void test_basic_conds() {
 	char true_char, false_char;
 	int true_int, false_int;
-	
-	nl = 10; /* \n */
-
-	yes = "Yes\n";
-	no = "No\n";
-	true_char = 65;
+	true_char = 1;
 	false_char = 0;
-	true_int = 1;
-	false_int = 0;
+	true_int = true_char;
+	false_int = false_char;
 
-	/* Basic conds */
-		/* KInt */
-		if (1) { @yes; }
-		if (0) { @no; }
-		/* Var Char */
-		if (true_char) { @yes; }
-		if (false_char) { @no; }
-		/* Var Int */
-		if (true_int) { @yes; }
-		if (false_int) { @no; }
-		/* Call */
-		if (true_func()) { @yes; }
-		if (false_func()) { @no; }
-		/* Minus */
-		if (-true_int) { @yes; }
-		if (-false_int) { @no; }
-		/* Not */
-		if (!true_int) { @no; }
-		if (!false_int) { @yes; }
-	/* CmdIf */
-	/* CmdIfElse */
-	/* CmdWhile */
+	/* KInt */
+	if (1) { @"Ok KInt\n"; }
+	if (0) { @"Error KInt\n"; }
+	/* VarChar */
+	if (true_char) { @"Ok VarChar\n"; }
+	if (false_char) { @"Error VarChar\n"; }
+	/* VarInt */
+	if (true_int) { @"Ok VarInt\n"; }
+	if (false_int) { @"Error VarInt\n"; }
+	/* Call */
+	if (true_func()) { @"Ok Call\n"; }
+	if (false_func()) { @"Error Call\n"; }
+	/* Minus */
+	if (-true_int) { @"Ok Minus\n"; }
+	if (-false_int) { @"Error Minus\n"; }
+	/* Not */
+	if (!true_int) { @"Error Not\n"; }
+	if (!false_int) { @"Ok Not\n"; }
+	/* Equal */
+	if (0 == 0) { @"Ok Equal\n"; }
+	if (0 == 1) { @"Error Equal\n"; }
+	/* And */
+	if (0 && 0) { @"Error And\n"; }
+	if (0 && 1) { @"Error And\n"; }
+	if (1 && 0) { @"Error And\n"; }
+	if (1 && 1) { @"Ok And\n"; }
+	/* Or */
+	if (0 || 0) { @"Error Or\n"; }
+	if (0 || 1) { @"Ok Or\n"; }
+	if (1 || 0) { @"Ok Or\n"; }
+	if (1 || 1) { @"Ok Or\n"; }
+	/* Add */
+	if (1 + -1) { @"Error Add\n"; }
+	if (1 + 1) { @"Ok Add\n"; }
+	/* Sub */
+	if (1 - 1) { @"Error Sub\n"; }
+	if (1 - 2) { @"Ok Sub\n"; }
+	/* Mul */
+	if (1 * 0) { @"Error Mul\n"; }
+	if (1 * 1) { @"Ok Mul\n"; }
+	/* Div */
+	if (1 / 1) { @"Ok Div\n"; }
+	/* GreaterThan */
+	if (0 > 0) { @"Error GreaterThan\n"; }
+	if (0 > 1) { @"Error GreaterThan\n"; }
+	if (1 > 0) { @"Ok GreaterThan\n"; }
+	/* LessThan */
+	if (0 < 0) { @"Error LessThan\n"; }
+	if (1 < 0) { @"Error LessThan\n"; }
+	if (0 < 1) { @"Ok LessThan\n"; }
+	/* GreaterEqual */
+	if (0 >= 1) { @"Error GreaterEqual\n"; }
+	if (0 >= 0) { @"Ok GreaterEqual\n"; }
+	if (1 >= 0) { @"Ok GreaterEqual\n"; }
+	/* LessEqual */
+	if (1 <= 0) { @"Error LessEqual\n"; }
+	if (0 <= 0) { @"Ok LessEqual\n"; }
+	if (0 <= 1) { @"Ok LessEqual\n"; }
+}
+
+/*****************************************
+**
+**	Short-circuit evaluation
+**
+*****************************************/
+
+int short_circuit_var;
+
+int increment_and_return_true() {
+	short_circuit_var = short_circuit_var + 1;
+	return 1;
+}
+
+int increment_and_return_false() {
+	short_circuit_var = short_circuit_var + 1;
+	return 0;
+}
+	
+void test_short_circuit() {
+	/* And */
+	short_circuit_var = 0;
+	if (increment_and_return_false() && increment_and_return_false()) {}
+	if (short_circuit_var == 1) {
+		@"Ok And short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error And short-circuit\n";
+	}
+
+	/* Or */
+	short_circuit_var = 0;
+	if (increment_and_return_true() || increment_and_return_true()) {}
+	if (short_circuit_var == 1) {
+		@"Ok Or short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error Or short-circuit\n";
+	}
+}
+
+/*****************************************
+**
+**	Runs all tests
+**
+*****************************************/
+
+int main() {
+	nl = 10; /* \n */
+	
+	test_basic_if();
+	@nl;
+	test_basic_ifelse();
+	@nl;
+	test_basic_while();
+	@nl;
+	test_basic_conds();
+	@nl;
+	test_short_circuit();
+
 	return 0;
 }

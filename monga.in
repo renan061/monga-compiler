@@ -6,13 +6,4 @@ void foo() {
 
 int main() {
 	a = 5;
-
-	@a;
-	@"\n";
-
-	a = 6;
-
-	foo();
-	@a;
-	@"\n";
 }
