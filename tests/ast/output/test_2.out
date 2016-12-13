@@ -21,17 +21,17 @@ float main() {
     f:float = (1.000000:float);
     (intarray1:int[])[((c:char) as int)]:int = (1:int);
     (intarray1:int[])[(0:int)]:int = (1:int);
-    (if(((c:char) as int)) {
+    (if((c:char)) {
     })
     (if((i:int)) {
     })
-    (if(((c:char) as int)) {
+    (if((c:char)) {
     } else {
     })
     (if((i:int)) {
     } else {
     })
-    (while(((c:char) as int)) {
+    (while((c:char)) {
     })
     (while((i:int)) {
     })
@@ -67,8 +67,6 @@ float main() {
     i:int = ((1.000000:float)==:int(2.000000:float));
     i:int = ((1.000000:float)&&:int(2:int));
     i:int = ((c:char)||:int(0.000000:float));
-    i:int = ((intarray1:int[])&&:int(floatarray1:float[][][]));
-    i:int = ((floatarray1:float[][][])||:int(intarray1:int[]));
     i:int = (((c:char) as int)+:int((c:char) as int));
     i:int = (((c:char) as int)-:int(1:int));
     i:int = ((1:int)*:int(2:int));

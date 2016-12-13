@@ -1,1 +1,4 @@
-semantical error line 2 (invalid "while" expression - cannot use "float" as "int")
+void main() {
+    (while((1.000000:float)) {
+    })
+}

@@ -1,1 +1,1 @@
-semantical error line 3 (invalid "if else" expression - cannot use "int[]" as "int")
+semantical error line 3 (invalid type for "if else" expression)

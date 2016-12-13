@@ -293,7 +293,7 @@ exp				: exp_or
 					}
 				;
 
-exp_or			: exp_and TK_OR exp_comp
+exp_or			: exp_or TK_OR exp_and
 					{
 						$$ = ast_exp_binary($2, TK_OR, $1, $3);
 					}
@@ -367,12 +367,11 @@ exp_mul			: exp_mul '*' exp_unary
 					}
 				;
 
-// TODO: exp_unary : '-' exp_unary
 exp_unary		: '-' exp_simple
 					{
 						$$ = ast_exp_unary($1, '-', $2);
 					}
-				| '!' exp_simple
+				| '!' exp_unary
 					{
 						$$ = ast_exp_unary($1, '!', $2);
 					}

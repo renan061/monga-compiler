@@ -5,101 +5,146 @@
 #include "llvm.h"
 #include "ast.h"
 
+#define MAX_STRS 1000
+
+#define LLVM_EQ 	"eq"
+#define LLVM_ADD 	"add"
+#define LLVM_FADD	"fadd"
+#define LLVM_SUB 	"sub"
+#define LLVM_MUL 	"mul"
+#define LLVM_DIV 	"div"
+#define LLVM_GT 	"gt"
+#define LLVM_GE 	"ge"
+#define LLVM_LT 	"lt"
+#define LLVM_LE 	"le"
+
+#define PRINTF_ID_CHAR		"pchar"
+#define PRINTF_ID_INT		"pint"
+#define PRINTF_ID_FLOAT		"pfloat"
+#define PRINTF_ID_STR		"pstr"
+#define PRINTF_ID_ADDRESS	"paddress"
+
 // ==================================================
 //
-//	Auxiliary
+//	Macros
+//
+//	FIXME: Find a way to get rid of these horrible
+//	macros (maybe write_value function)
 //
 // ==================================================
+
+// @.<str> = private unnamed_addr constant [3 x i8] c"%<percent>\00"
+#define LLVM_SETUP_AUX(str, percent)						\
+	printf("@." str " = private unnamed_addr constant ");	\
+	printf("[3 x i8] c\"%%" percent "\\00\"\n");			\
+
+// <n1>, %l1][<n2>, %l2
+#define LLVM_PHI2_AUX(num_func, n1, n2)					\
+	num_func(n1); printf(", "); write_label_temp(l1);	\
+	printf("], [");										\
+	num_func(n2); printf(", "); write_label_temp(l2);	\
+
+//  = <add> <type> <num>, 0
+#define LLVM_KNUM_AUX(add, type_func, num_func, num)	\
+	printf(" = %s ", add); type_func(); printf(" ");	\
+	num_func(num); printf(", "); num_func(0);			\
+
+// <sub> <type> 0
+#define LLVM_MINUS_AUX(sub, type_func, zero_func)	\
+	printf("%s ", sub); type_func();				\
+	printf(" "); zero_func(0);						\
+
+// Calls llvm_cmp with the right op
+#define LLVM_CMP_AUX(op1, op2, type, t1, t2)				\
+	switch (type->tag) {									\
+		case TYPE_INT:										\
+			return llvm_cmp(op1, type, t1, t2);				\
+		case TYPE_FLOAT:									\
+			return llvm_cmp(op2, type, t1, t2);				\
+		default:											\
+			MONGA_INTERNAL_ERR("llvm_cmp: invalid type");	\
+	}														\
+
+// ==================================================
+//
+//	Private
+//
+// ==================================================
+
+static unsigned int tablvl = 0, temp = 0, label = 0;
 
 // Length and accumulator for strs
 static unsigned int lenstrs = 0, accstrs = 0;
-static const char* strs[100]; // TODO: Remove fixed size
+static const char* strs[MAX_STRS];
 
-static unsigned int tablvl = 0, temp = 0;
+// Used by llvm_new
+static int sizeof_char = sizeof(char);
+static int sizeof_int = sizeof(int);
+static int sizeof_double = sizeof(double);
+static int sizeof_indexed = sizeof(void*);
 
-static void tabs() {
+static void write_tabs() {
 	for (int i = 0; i < tablvl; i++) {
 		printf("  ");
 	}
 }
 
-static void llvm_temp(LLVMTemp t) {
+static void write_temp(LLVMTemp t) {
 	printf("%%t%d", t);
 }
 
-static void llvm_type(TypeNode* type) {
+static void write_label(LLVMLabel l) {
+	printf("l%d:\n", l);
+}
+
+static void write_label_temp(LLVMLabel l) {
+	printf("%%l%d", l);
+}
+
+static void write_type_int()	{ printf("i32");	}
+static void write_type_float()	{ printf("double");	}
+static void write_type_char()	{ printf("i8"); 	}
+static void write_type_void()	{ printf("void"); 	}
+
+static void write_type(TypeNode* type) {
 	switch (type->tag) {
-	case TYPE_INT:		printf("i32");		break;
-	case TYPE_FLOAT:	printf("double");	break;
-	case TYPE_CHAR:		printf("i8");		break;
-	case TYPE_VOID:		printf("void");		break;
+	case TYPE_INT:		write_type_int();	break;
+	case TYPE_FLOAT:	write_type_float();	break;
+	case TYPE_CHAR:		write_type_char();	break;
+	case TYPE_VOID:		write_type_void();	break;
 	case TYPE_INDEXED:
-		llvm_type(type->indexed);
+		write_type(type->indexed);
 		printf("*");
 		break;
 	}
 }
 
-// ==================================================
-//
-//	TODO: Name
-//
-// ==================================================
-
-// %ret = alloca <type>
-LLVMTemp llvm_alloca(TypeNode* type) {
-	tabs();
-	llvm_temp(++temp);
-	printf(" = alloca ");
-	llvm_type(type);
-	printf("\n");
-	return temp;
+static void write_float(double d) {
+	long long p;
+	memcpy(&p, &d, sizeof(double));
+	printf("0x%llx", p);
 }
 
-// store <type> %from, <type>* %to
-void llvm_store(TypeNode* type, LLVMTemp from, LLVMTemp to) {
-	tabs();
-	printf("store ");
-	llvm_type(type);
-	printf(" ");
-	llvm_temp(from);
-	printf(", ");
-	llvm_type(type);
-	printf("* ");
-	llvm_temp(to);
-	printf("\n");
+static void write_int(int i) {
+	printf("%d", i);
 }
 
-// %ret = load <type>, <type>* %t
-LLVMTemp llvm_load(TypeNode* type, LLVMTemp t) {
-	tabs();
-	llvm_temp(++temp);
-	printf(" = load ");
-	llvm_type(type);
-	printf(", ");
-	llvm_type(type);
-	printf("* ");
-	llvm_temp(t);
-	printf("\n");
-	return temp;
-}
-
-// %ret = getelementptr inbounds <type>, <type>* %t, <indextype> <indextemp>
-LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index) {
-	tabs();
-	llvm_temp(++temp);
-	printf(" = getelementptr inbounds ");
-	llvm_type(type);
-	printf(", ");
-	llvm_type(type);
-	printf("* ");
-	llvm_temp(t);
-	printf(", ");
-	llvm_type(index->type);
-	printf(" ");
-	llvm_temp(index->temp);
-	printf("\n");
-	return temp;
+static void write_zero(TypeNode* type) {
+	switch (type->tag) {
+	case TYPE_CHAR:
+		// Fallthrough
+	case TYPE_INT:
+		write_int(0);
+		break;
+	case TYPE_FLOAT:
+		write_float(0);
+		break;
+	case TYPE_INDEXED:
+		printf("null");
+		break;
+	default:
+		MONGA_INTERNAL_ERR("write_zero: invalid type")
+	}
 }
 
 // ==================================================
@@ -108,28 +153,201 @@ LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index) {
 //
 // ==================================================
 
+// Required headers
 void llvm_setup() {
 	printf("declare i32 @putchar(i32)\n");
 	printf("declare i32 @printf(i8*, ...)\n");
-	printf("declare i32 @puts(i8*)\n"); // TODO: Always prints \n
 	printf("declare i8* @malloc(i64)\n");
-	printf("@.pint = private unnamed_addr constant [3 x i8] c\"%%d\\00\"\n");
-	printf("@.pfloat = private unnamed_addr constant [3 x i8] c\"%%f\\00\"\n");
+	LLVM_SETUP_AUX(PRINTF_ID_CHAR, "c");
+	LLVM_SETUP_AUX(PRINTF_ID_INT, "d");
+	LLVM_SETUP_AUX(PRINTF_ID_FLOAT, "f");
+	LLVM_SETUP_AUX(PRINTF_ID_STR, "s");
+	LLVM_SETUP_AUX(PRINTF_ID_ADDRESS, "p");
+	printf("\n");
+}
+
+// ;str
+void llvm_commentary(const char* str) {
+	printf(";%s\n", str);
+}
+
+// l%t:
+void llvm_label(LLVMLabel l) {
+	write_label(l);
+}
+
+// LLVMLabel label
+LLVMLabel llvm_label_temp() {
+	return ++label;
+}
+
+// %ret = alloca <type>
+LLVMTemp llvm_alloca(TypeNode* type) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = alloca ");
+	write_type(type);
+	printf("\n");
+	return temp;
+}
+
+// store <type> %from, <type>* %to
+void llvm_store(TypeNode* type, LLVMTemp from, LLVMTemp to) {
+	write_tabs();
+	printf("store ");
+	write_type(type);
+	printf(" ");
+	write_temp(from);
+	printf(", ");
+	write_type(type);
+	printf("* ");
+	write_temp(to);
+	printf("\n");
+}
+
+// %ret = load <type>, <type>* %t
+LLVMTemp llvm_load(TypeNode* type, LLVMTemp t) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = load ");
+	write_type(type);
+	printf(", ");
+	write_type(type);
+	printf("* ");
+	write_temp(t);
+	printf("\n");
+	return temp;
+}
+
+// %ret = getelementptr <type>, <type>* %t, <indextype> <indextemp>
+LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = getelementptr ");
+	write_type(type);
+	printf(", ");
+	write_type(type);
+	printf("* ");
+	write_temp(t);
+	printf(", ");
+	write_type(index->type);
+	printf(" ");
+	write_temp(index->temp);
+	printf("\n");
+	return temp;
+}
+
+// br label %l
+void llvm_br1(LLVMLabel l) {
+	write_tabs();
+	printf("br label ");
+	write_label_temp(l);
+	printf("\n");
+}
+
+// %b = <type>cmp <type>ne <type> %t, <zerovalue>
+// br i1 %b label %lt, label %lf
+void llvm_br3(TypeNode* type, LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = ");
+	switch (type->tag) {
+		case TYPE_CHAR: // Fallthrough
+		case TYPE_INT:
+			printf("i");
+			break;
+		case TYPE_FLOAT:
+			printf("f");
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_br3: invalid type");
+	}
+	printf("cmp ");
+	switch (type->tag) {
+		case TYPE_CHAR: // Fallthrough
+		case TYPE_INT:
+			break;
+		case TYPE_FLOAT:
+			printf("o");
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_br3: invalid type");
+	}
+	printf("ne ");
+	write_type(type);
+	printf(" ");
+	write_temp(t);
+	printf(", ");
+	write_zero(type);
+	printf("\n");
+
+	write_tabs();
+	printf("br i1 ");
+	write_temp(temp);
+	printf(", label ");
+	write_label_temp(lt);
+	printf(", label ");
+	write_label_temp(lf);
+	printf("\n");
+}
+
+// %ret = phi <type> [<v1>, %l1][<v2>, %l2]
+LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1, LLVMValue v2,
+	LLVMLabel l2) {
+
+	write_tabs();
+	write_temp(++temp);
+	printf(" = phi ");
+	write_type(type);
+	printf(" [");
+	switch (type->tag) {
+		case TYPE_INT:
+			LLVM_PHI2_AUX(write_int, v1.i, v2.i);
+			break;
+		case TYPE_FLOAT:
+			LLVM_PHI2_AUX(write_float, v1.f, v2.f);
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_phi2: invalid type");
+	}
+	printf("]\n");
+	return temp;
+}
+
+// %ret = getelementptr <type>* @<id>, i32 0
+LLVMTemp llvm_global_address(TypeNode* type, IdNode* id) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = getelementptr ");
+	write_type(type);
+	printf(", ");
+	write_type(type);
+	printf("* @%s, i32 0\n", id->u.str);
+	return temp;
+}
+
+// @<id> = global <type> <zerovalue>
+void llvm_def_global(TypeNode* type, IdNode* id) {
+	printf("@");
+	printf("%s", id->u.str);
+	printf(" = global ");
+	write_type(type);	
+	printf(" ");
+	write_zero(type);
 	printf("\n");
 }
 
 void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
-	tabs();
-
+	write_tabs();
 	printf("define ");
-	llvm_type(type);
-	printf(" @%s(", id->u.str); // TODO: Don't use id ?
+	write_type(type);
+	printf(" @%s(", id->u.str);
 	
 	for (DefNode* aux = params; aux != NULL; aux = aux->next) {
-		llvm_type(aux->u.var.type);
+		write_type(aux->u.var.type);
 		printf(" ");
-		llvm_temp(++temp);
-		aux->temp = temp;
+		write_temp(++temp);
+		aux->u.var.temp = temp;
 		if (aux->next == NULL) { // FIXME: This is horrible.
 			break;
 		}
@@ -139,11 +357,10 @@ void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
 	printf(") {\n");
 	tablvl++;
 
-	// TODO: Really?
 	for (DefNode* aux = params; aux != NULL; aux = aux->next) {
 		int t = llvm_alloca(aux->u.var.type);
-		llvm_store(aux->u.var.type, aux->temp, t);
-		aux->temp = temp;
+		llvm_store(aux->u.var.type, aux->u.var.temp, t);
+		aux->u.var.temp = temp;
 	}
 }
 
@@ -162,109 +379,133 @@ void llvm_func_end() {
 		lenstrs = 0;
 	}
 
-	temp = 0;
+	temp = label = 0;
 }
 
 void llvm_print(ExpNode* exp) {
-	int t = exp->temp; // TODO: Remove this
+	write_tabs();
+	printf("call i32 (i8*, ...) @printf(i8* getelementptr ");
+	printf("([3 x i8], [3 x i8]* @.");
 
-	tabs();
 	switch (exp->type->tag) {
-	case TYPE_CHAR:
-		t = llvm_cast(exp->type, t, ast_type(TYPE_INT)); // TODO: Remove this
-		tabs(); // TODO: Remove this
-		printf("call i32 @putchar(i32 ");
+	case TYPE_CHAR:		
+		printf(PRINTF_ID_CHAR);
 		break;
 	case TYPE_INT:
+		printf(PRINTF_ID_INT);
+		break;
 	case TYPE_FLOAT:
-		printf("call i32 (i8*, ...) @printf(i8* getelementptr inbounds ");
-		printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ",
-			(exp->type->tag == TYPE_INT) ? "pint" : "pfloat");
-		llvm_type(exp->type);
-		printf(" ");
+		printf(PRINTF_ID_FLOAT);
 		break;
 	case TYPE_INDEXED:
 		switch (exp->type->indexed->tag) {
 		case TYPE_CHAR:
-			printf("call i32 @puts(i8* ");
+			printf(PRINTF_ID_STR);
 			break;
 		default:
-			// TODO: Print address
-			break;
+			printf(PRINTF_ID_INT);
 		}
 		break;
 	case TYPE_VOID:
 		MONGA_INTERNAL_ERR("llvm_print: void type");
 	}
 
-	llvm_temp(t); // TODO: Back to exp->temp
+	printf(", i32 0, i32 0), ");
+	write_type(exp->type);
+	printf(" ");
+	write_temp(exp->temp);
 	printf(")\n");
 }
 
 void llvm_ret_exp(TypeNode* type, LLVMTemp t) {
-	tabs();
+	write_tabs();
 	printf("ret ");
-	llvm_type(type);
+	write_type(type);
 	printf(" ");
-	llvm_temp(t);
+	write_temp(t);
 	printf("\n");
 }
 
 void llvm_ret_void() {
-	tabs();
-	printf("ret void\n");
+	write_tabs();
+	printf("ret ");
+	write_type_void();
+	printf("\n");
 }
 
-LLVMTemp llvm_knum(TypeNode* type, double num) {
-	// TODO: This is horrible
-	temp++;
-	tabs();
-	int isfloat = (type->tag == TYPE_FLOAT);
-	llvm_temp(temp);
-	printf(" = %s ", (isfloat) ? "f" LLVM_ADD : LLVM_ADD);
-	llvm_type(type);
-	printf(" ");
-	if (isfloat) {
-		long long p;
-		memcpy(&p, &num, sizeof(double));
-		printf("0x%llx, 0.0", p);
-	} else {
-		printf("%d, 0", (int)num);
+void llvm_ret_zero(TypeNode* type) {
+	write_tabs();
+	printf("ret ");
+	switch (type->tag) {
+	case TYPE_CHAR: // Fallthrough
+	case TYPE_INT:
+		write_type_int();
+		printf(" ");
+		write_int(0);
+		break;
+	case TYPE_FLOAT:
+		write_type_float();
+		printf(" ");
+		write_float(0);
+		break;
+	case TYPE_VOID:
+		write_type_void();
+		break;
+	case TYPE_INDEXED:
+		write_type(type);
+		printf(" null");
+		break;
+	}
+	printf("\n");
+}
+
+LLVMTemp llvm_kval(TypeNode* type, LLVMValue val) {
+	write_tabs();
+	write_temp(++temp);
+	switch (type->tag) {
+	case TYPE_INT:
+		LLVM_KNUM_AUX(LLVM_ADD, write_type_int, write_int, val.i);
+		break;
+	case TYPE_FLOAT:
+		LLVM_KNUM_AUX(LLVM_FADD, write_type_float, write_float, val.f);
+		break;
+	case TYPE_INDEXED:
+		if (type->indexed->tag == TYPE_CHAR) {
+			int len = strlen(val.str) + 1;
+			printf(" = getelementptr [%d x i8], [%d x i8]*", len, len);
+			printf(" @.str%d , i32 0, i32 0", lenstrs + accstrs);
+			if (lenstrs >= MAX_STRS) {
+				MONGA_ERR("error: too many strings\n");
+			}
+			strs[lenstrs++] = val.str;
+			break;
+		}
+		// Fallthrough
+	default:
+		MONGA_INTERNAL_ERR("llvm_kval: invalid type")
 	}
 	printf("\n");
 	return temp;
 }
 
-LLVMTemp llvm_kstr(const char* str) {
-	tabs();
-	temp++;
-	llvm_temp(temp);
-	printf(" = getelementptr inbounds ");
-	int len = strlen(str) + 1;
-	printf("[%d x i8], [%d x i8]* @.str%d , i32 0, i32 0\n", len, len,
-		lenstrs + accstrs);
-	strs[lenstrs++] = str;
-	return temp;
-}
-
-LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
-	tabs();
+LLVMTemp llvm_call(TypeNode* type, const char* id, ExpNode* args) {
+	write_tabs();
 
 	int ret = -1;
 	if (type->tag != TYPE_VOID) {
 		ret = ++temp;
-		llvm_temp(ret);
+		write_temp(ret);
 		printf(" = ");
 	}
 	
 	printf("call ");
-	llvm_type(type);
-	printf(" @%s(", name);
+	write_type(type);
+	printf(" @%s(", id);
 
 	for (ExpNode* aux = args; aux != NULL; aux = aux->next) {
-		llvm_type(aux->type);
+		write_type(aux->type);
 		printf(" ");
-		llvm_temp(aux->temp);
+		write_temp(aux->temp);
 		if (aux->next == NULL) { // FIXME: This is horrible.
 			break;
 		}
@@ -276,46 +517,46 @@ LLVMTemp llvm_call(TypeNode* type, const char* name, ExpNode* args) {
 }
 
 LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
-	int type_size; // TODO: Necessary?
+	int type_size;
 	switch (type->tag) {
-		case TYPE_CHAR:		type_size = sizeof(char);	break;
-		case TYPE_INT:		type_size = sizeof(int);	break;
-		case TYPE_FLOAT:	type_size = sizeof(double);	break;
-		case TYPE_INDEXED:	type_size = sizeof(void*);	break;
-		case TYPE_VOID:		MONGA_INTERNAL_ERR("array type void");
+		case TYPE_CHAR:		type_size = sizeof_char;	break;
+		case TYPE_INT:		type_size = sizeof_int;		break;
+		case TYPE_FLOAT:	type_size = sizeof_double;	break;
+		case TYPE_INDEXED:	type_size = sizeof_indexed;	break;
+		case TYPE_VOID:		MONGA_INTERNAL_ERR("llvm_new: invalid type");
 	}
 
 	// %t2 = sext <sizetype> <sizetemp> to i64
-	tabs();
-	llvm_temp(++temp);
+	write_tabs();
+	write_temp(++temp);
 	printf(" = sext ");
-	llvm_type(size->type);
+	write_type(size->type);
 	printf(" ");
-	llvm_temp(size->temp);
+	write_temp(size->temp);
 	printf(" to i64\n");
 
 	// %t3 = mul i64 %t2, <type_size>
-	tabs();
-	llvm_temp(++temp);
+	write_tabs();
+	write_temp(++temp);
 	printf(" = mul i64 ");
-	llvm_temp(temp - 1);
+	write_temp(temp - 1);
 	printf(", %d\n", type_size);
 
 	// %t4 = call i8* @malloc(i64 %t3)
-	tabs();
-	llvm_temp(++temp);
+	write_tabs();
+	write_temp(++temp);
 	printf(" = call i8* @malloc(i64 ");
-	llvm_temp(temp - 1);
+	write_temp(temp - 1);
 	printf(")\n");
 
 	// %t5 = bitcast i8* %t4 to <type>*
 	if (type->tag != TYPE_CHAR) {
-		tabs();
-		llvm_temp(++temp);
+		write_tabs();
+		write_temp(++temp);
 		printf(" = bitcast i8* ");
-		llvm_temp(temp - 1);
+		write_temp(temp - 1);
 		printf(" to ");
-		llvm_type(type);
+		write_type(type);
 		printf("*\n");
 	}
 
@@ -323,7 +564,7 @@ LLVMTemp llvm_new(TypeNode* type, ExpNode* size) {
 }
 
 LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to) {
-	char* cast;
+	const char* cast;
 	if (from->tag == TYPE_INT && to->tag == TYPE_FLOAT) {
 		cast = "sitofp";
 	} else if (from->tag == TYPE_INT && to->tag == TYPE_CHAR) {
@@ -334,33 +575,64 @@ LLVMTemp llvm_cast(TypeNode* from, LLVMTemp t, TypeNode* to) {
 		MONGA_INTERNAL_ERR("llvm_cast: invalid cast");
 	}
 
-	tabs();
-	llvm_temp(++temp);
+	write_tabs();
+	write_temp(++temp);
 	printf(" = %s ", cast);
-	llvm_type(from);
+	write_type(from);
 	printf(" ");
-	llvm_temp(t);
+	write_temp(t);
 	printf(" to ");
-	llvm_type(to);
+	write_type(to);
 	printf("\n");
 	return temp;
 }		
 
-// For llvm add, sub, mul and div
-static LLVMTemp llvm_arith(const char* op, TypeNode* type, LLVMTemp t1,
-	LLVMTemp t2) {
-
-	tabs();
-	temp++;
-	int isfloat = (type->tag == TYPE_FLOAT);
-	llvm_temp(temp);
-	printf(" = %s%s ", (isfloat) ? "f" :
-		(!strcmp(op, LLVM_DIV)) ? "s" : "", op);
-	llvm_type(type);
-	printf(" ");
-	llvm_temp(t1);
+LLVMTemp llvm_minus(TypeNode* type, LLVMTemp t) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = ");
+	switch (type->tag) {
+	case TYPE_INT:
+		LLVM_MINUS_AUX(LLVM_SUB, write_type_int, write_int);
+		break;
+	case TYPE_FLOAT:
+		LLVM_MINUS_AUX("f" LLVM_SUB, write_type_float, write_float);
+		break;
+	default:
+		MONGA_INTERNAL_ERR("llvm_minus: invalid type");
+	}
 	printf(", ");
-	llvm_temp(t2);
+	write_temp(t);
+	printf("\n");
+	return temp;
+}
+
+// %ret = <op> <type> %t1, %t2
+static LLVMTemp llvm_arith(const char* op, TypeNode* type,
+	LLVMTemp t1, LLVMTemp t2) {
+
+	write_tabs();
+	write_temp(++temp);
+	printf(" = ");
+	switch (type->tag) {
+	case TYPE_INT:
+		if (op == LLVM_DIV) { // OBS: Comparing pointers
+			printf("s");
+		}
+		break;
+	case TYPE_FLOAT:
+		printf("f");
+		break;
+	default:
+		MONGA_INTERNAL_ERR("llvm_arith: invalid type");
+	}
+	printf("%s", op);
+	printf(" ");
+	write_type(type);
+	printf(" ");
+	write_temp(t1);
+	printf(", ");
+	write_temp(t2);
 	printf("\n");
 	return temp;
 }
@@ -381,28 +653,48 @@ LLVMTemp llvm_div(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
 	return llvm_arith(LLVM_DIV, type, t1, t2);
 }
 
-LLVMTemp llvm_karith(char* op, char* order, TypeNode* type, LLVMTemp t,
-	double num) {
+// %b = <type>cmp <op> <type> %t1, %t2
+// %ret = zext i1 %b to i32
+static LLVMTemp llvm_cmp(const char* op, TypeNode* type, LLVMTemp t1,
+	LLVMTemp t2) {
 
-	tabs();
-	temp++;
-	int isfloat = (type->tag == TYPE_FLOAT);
-	llvm_temp(temp);
-	printf(" = %s%s ", (isfloat) ? "f" :
-		(!strcmp(op, LLVM_DIV)) ? "s" : "", op);
-	llvm_type(type);
+	write_tabs();
+	write_temp(++temp);
+	// About \n: Invalid type internal error treated already, just a safeguard
+	printf(" = %ccmp %s ", (type->tag == TYPE_INT) ? 'i' :
+		(type->tag == TYPE_FLOAT) ? 'f' : '\n', op);
+	write_type(type);
 	printf(" ");
-
-	if (order == NUM_OP_TEMP) {
-		printf("%d", (int)num);
-		printf(", ");
-		llvm_temp(t);
-	} else if (order == TEMP_OP_NUM) {
-		llvm_temp(t);
-		printf(", ");
-		printf("%d", (int)num);
-	}
-
+	write_temp(t1);
+	printf(", ");
+	write_temp(t2);
 	printf("\n");
+
+	write_tabs();
+	write_temp(++temp);
+	printf(" = zext i1 ");
+	write_temp(temp - 1);
+	printf(" to i32\n");
+	
 	return temp;
+}
+
+LLVMTemp llvm_cmp_eq(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
+	LLVM_CMP_AUX(LLVM_EQ, "o" LLVM_EQ, type, t1, t2);
+}
+
+LLVMTemp llvm_cmp_gt(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
+	LLVM_CMP_AUX("s" LLVM_GT, "o" LLVM_GT, type, t1, t2);
+}
+
+LLVMTemp llvm_cmp_ge(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
+	LLVM_CMP_AUX("s" LLVM_GE, "o" LLVM_GE, type, t1, t2);
+}
+
+LLVMTemp llvm_cmp_lt(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
+	LLVM_CMP_AUX("s" LLVM_LT, "o" LLVM_LT, type, t1, t2);
+}
+
+LLVMTemp llvm_cmp_le(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
+	LLVM_CMP_AUX("s" LLVM_LE, "o" LLVM_LE, type, t1, t2);
 }

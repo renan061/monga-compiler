@@ -1,0 +1,21 @@
+/* Global variable */
+
+int a;
+
+void foo() {
+	a = 10;
+	return;
+}
+
+int main() {
+	a = 5;
+
+	@a;
+	@"\n";
+
+	a = 6;
+	foo();
+	@a;
+
+	return 0;
+}

@@ -96,16 +96,18 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 		break;
 	case CMD_IF:
 		type_check_exp(table, cmd->u.ifwhile.exp);
-		tp_check(cmd->line, "invalid \"if\" expression", &cmd->u.ifwhile.exp,
-			type_int);
+		if (!tp_testable(cmd->u.ifwhile.exp->type)) {
+			err(cmd->line, "invalid type for \"if\" expression");
+		}
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd, ret);
 		st_leave_scope(table);
 		break;
 	case CMD_IF_ELSE:
 		type_check_exp(table, cmd->u.ifelse.exp);
-		tp_check(cmd->line, "invalid \"if else\" expression",
-			&cmd->u.ifwhile.exp, type_int);
+		if (!tp_testable(cmd->u.ifelse.exp->type)) {
+			err(cmd->line, "invalid type for \"if else\" expression");
+		}
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifelse.ifcmd, ret);
 		st_leave_scope(table);
@@ -115,8 +117,9 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 		break;
 	case CMD_WHILE:
 		type_check_exp(table, cmd->u.ifwhile.exp);
-		tp_check(cmd->line, "invalid \"while\" expression", &cmd->u.ifwhile.exp,
-			type_int);
+		if (!tp_testable(cmd->u.ifwhile.exp->type)) {
+			err(cmd->line, "invalid type for \"while\" expression");
+		}
 		st_enter_scope(table);
 		type_check_cmd(table, cmd->u.ifwhile.cmd, ret);
 		st_leave_scope(table);
@@ -130,7 +133,6 @@ static void type_check_cmd(SymbolTable* table, CmdNode* cmd, TypeNode* ret) {
 	case CMD_ASG:
 		type_check_var(table, cmd->u.asg.var);
 		type_check_exp(table, cmd->u.asg.exp);
-		// TODO: foo()[10] = 20;
 		tp_check(cmd->line, "invalid assignment expression", &cmd->u.asg.exp,
 			cmd->u.asg.var->type);
 		break;
@@ -368,7 +370,7 @@ static int tp_equatable(TypeNode* type) {
 
 static int tp_testable(TypeNode* type) {
 	return (type->tag == TYPE_CHAR || type->tag == TYPE_INT ||
-		type->tag == TYPE_FLOAT || type->tag == TYPE_INDEXED);
+		type->tag == TYPE_FLOAT);
 }
 
 // ==================================================

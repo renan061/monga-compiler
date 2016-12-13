@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <strings.h>
+#include <stdbool.h>
 
 #include "macros.h"
 #include "ast.h"
@@ -10,6 +11,7 @@ static void code_global_def(DefNode* def);
 static void code_cmd(CmdNode* cmd);
 static void code_var(VarNode* cmd);
 static void code_exp(ExpNode* exp);
+static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf);
 static LLVMTemp code_call(CallNode* call);
 
 void codegen(ProgramNode* program) {
@@ -20,17 +22,16 @@ void codegen(ProgramNode* program) {
 static void code_global_def(DefNode* def) {
 	switch (def->tag) {
 	case DEF_VAR:
-		// TODO: Global DefVar
-		// @i = global i32 0
-		// @f = global float 0.0
-		// @c = global i8 0
-		// @str = global i8* null
-		// @indexed = global i32*** null
-		// %t1 = load i32, i32* @i, align 4
+		def->u.var.global = true;
+		llvm_def_global(def->u.var.type, def->u.var.id);
 		break;
 	case DEF_FUNC:
+		for (DefNode* aux = def->u.func.params; aux != NULL; aux = aux->next) {
+			aux->u.var.global = false;
+		}
 		llvm_func_start(def->u.func.type, def->u.func.id, def->u.func.params);
 		code_cmd(def->u.func.block);
+		llvm_ret_zero(def->u.func.type); // Always returns a zero value
 		llvm_func_end();
 		break;
 	}
@@ -43,24 +44,57 @@ static void code_global_def(DefNode* def) {
 static void code_cmd(CmdNode* cmd) {
 	switch (cmd->tag) {
 	case CMD_BLOCK:
-		// For local definitions
+		// For local variable definitions
 		for (DefNode* aux = cmd->u.block.defs; aux != NULL; aux = aux->next) {
-			aux->temp = llvm_alloca(aux->u.var.type);
+			aux->u.var.global = false;
+			aux->u.var.temp = llvm_alloca(aux->u.var.type);
 		}
 		if (cmd->u.block.cmds != NULL) {
 			code_cmd(cmd->u.block.cmds);
 		}
-		// TODO: Always return
 		break;
-	case CMD_IF:
-		// TODO
+	case CMD_IF: {
+		LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
+		code_cond(cmd->u.ifwhile.exp, lt, lf);
+		// If
+		llvm_label(lt);
+		code_cmd(cmd->u.ifwhile.cmd);
+		llvm_br1(lf);
+		// Next
+		llvm_label(lf);
 		break;
-	case CMD_IF_ELSE:
-		// TODO
+	}
+	case CMD_IF_ELSE: {
+		LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
+		LLVMLabel end = llvm_label_temp();
+		code_cond(cmd->u.ifelse.exp, lt, lf);
+		// If
+		llvm_label(lt);
+		code_cmd(cmd->u.ifelse.ifcmd);
+		llvm_br1(end);
+		// Else
+		llvm_label(lf);
+		code_cmd(cmd->u.ifelse.elsecmd);
+		llvm_br1(end);
+		// End
+		llvm_label(end);
 		break;
-	case CMD_WHILE:
-		// TODO
+	}
+	case CMD_WHILE: {
+		LLVMLabel cond = llvm_label_temp();
+		LLVMLabel loop = llvm_label_temp(), end = llvm_label_temp();
+		llvm_br1(cond);
+		// Cond
+		llvm_label(cond);
+		code_cond(cmd->u.ifwhile.exp, loop, end);
+		// Loop
+		llvm_label(loop);
+		code_cmd(cmd->u.ifwhile.cmd);
+		llvm_br1(cond);
+		// End
+		llvm_label(end);
 		break;
+	}
 	case CMD_PRINT:
 		code_exp(cmd->u.print);
 		llvm_print(cmd->u.print);
@@ -92,7 +126,9 @@ static void code_cmd(CmdNode* cmd) {
 static void code_var(VarNode* var) {
 	switch (var->tag) {
 	case VAR_ID:
-		var->temp = var->u.id->u.def->temp;
+		var->temp = (var->u.id->u.def->u.var.global)
+			? llvm_global_address(var->type, var->u.id->u.def->u.var.id)
+			: var->u.id->u.def->u.var.temp;
 		break;
 	case VAR_INDEXED:
 		code_exp(var->u.indexed.array);
@@ -103,17 +139,28 @@ static void code_var(VarNode* var) {
 	}
 }
 
+// CONTROVERSIAL: I know goto is ugly, but I think it's the most
+// legible solution for this case
 static void code_exp(ExpNode* exp) {
 	switch (exp->tag) {
-	case EXP_KINT:
-		exp->temp = llvm_knum(exp->type, exp->u.intvalue);
+	case EXP_KINT: {
+		LLVMValue val;
+		val.i = exp->u.intvalue;
+		exp->temp = llvm_kval(exp->type, val);
 		break;
-	case EXP_KFLOAT:
-		exp->temp = llvm_knum(exp->type, exp->u.floatvalue);
+	}
+	case EXP_KFLOAT: {
+		LLVMValue val;
+		val.f = exp->u.floatvalue;
+		exp->temp = llvm_kval(exp->type, val);
 		break;
-	case EXP_KSTR:
-		exp->temp = llvm_kstr(exp->u.strvalue);
+	}
+	case EXP_KSTR: {
+		LLVMValue val;
+		val.str = exp->u.strvalue;
+		exp->temp = llvm_kval(exp->type, val);
 		break;
+	}
 	case EXP_VAR:
 		code_var(exp->u.var);
 		exp->temp = llvm_load(exp->type, exp->u.var->temp);
@@ -126,25 +173,21 @@ static void code_exp(ExpNode* exp) {
 		exp->temp = llvm_new(exp->u.new.type, exp->u.new.size);
 		break;
 	case EXP_CAST:
-		// TODO: Remove int->char and char->int cast from sem.c and llvm.c
+		// FIXME: Remove int->char and char->int cast from sem.c and llvm.c
 		code_exp(exp->u.cast);
 		exp->temp = llvm_cast(exp->u.cast->type, exp->u.cast->temp, exp->type);
 		break;
-	case EXP_UNARY: {
-		code_exp(exp->u.unary.exp);
+	case EXP_UNARY:
 		switch (exp->u.unary.symbol) {
 		case '-':
-			exp->temp = llvm_karith(LLVM_SUB, NUM_OP_TEMP, exp->type,
-				exp->u.unary.exp->temp, 0);
+			code_exp(exp->u.unary.exp);
+			exp->temp = llvm_minus(exp->type, exp->u.unary.exp->temp);
 			break;
 		case '!':
-			// TODO
-			break;
+			goto DEFAULT_EXP;
 		}
-	}	break;
+		break;
 	case EXP_BINARY: {
-		code_exp(exp->u.binary.exp1);
-		code_exp(exp->u.binary.exp2);
 		ExpNode* exp1 = exp->u.binary.exp1;
 		ExpNode* exp2 = exp->u.binary.exp2;
 
@@ -152,32 +195,134 @@ static void code_exp(ExpNode* exp) {
 		case TK_EQUAL:
 		case TK_AND:
 		case TK_OR:
-			// TODO
-			break;
+			goto DEFAULT_EXP;
 		case '+':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_add(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '-':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_sub(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '*':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_mul(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '/':
+			code_exp(exp->u.binary.exp1);
+			code_exp(exp->u.binary.exp2);
 			exp->temp = llvm_div(exp->type, exp1->temp, exp2->temp);
 			break;
 		case '>':
 		case '<':
 		case TK_GEQUAL:
 		case TK_LEQUAL:
-			// TODO
-			break;
+			goto DEFAULT_EXP;
 		}
-	}	break;
+		break;
+	}
+	default:
+		DEFAULT_EXP: { // exp ? 1 : 0
+			LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
+			LLVMLabel phi = llvm_label_temp();
+			LLVMValue v1, v2;
+			v1.i = 1;
+			v2.i = 0;
+
+			code_cond(exp, lt, lf);
+			llvm_label(lt);
+			llvm_br1(phi);
+			llvm_label(lf);
+			llvm_br1(phi);
+			llvm_label(phi);
+			exp->temp = llvm_phi2(exp->type, v1, lt, v2, lf);
+		}
 	}
 
 	if (exp->next != NULL) {
 		code_exp(exp->next);
+	}
+}
+
+// CONTROVERSIAL: Same as code_exp for "goto"
+static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
+	switch (exp->tag) {
+	case EXP_UNARY:
+		switch (exp->u.unary.symbol) {
+		case '!':
+			code_cond(exp->u.unary.exp, lf, lt);
+			break;
+		default:
+			goto DEFAULT_COND;
+		}
+		break;
+	case EXP_BINARY: {
+		ExpNode* exp1 = exp->u.binary.exp1;
+		ExpNode* exp2 = exp->u.binary.exp2;
+
+		switch (exp->u.binary.symbol) {
+		case TK_EQUAL: {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_eq(exp1->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->type, exp->temp, lt, lf);
+			break;
+		}
+		case TK_AND: {
+			LLVMLabel l = llvm_label_temp();
+			code_cond(exp1, l, lf);
+			llvm_label(l);
+			code_cond(exp2, lt, lf);
+			break;
+		}
+		case TK_OR: {
+			LLVMLabel l = llvm_label_temp();
+			code_cond(exp1, lt, l);
+			llvm_label(l);
+			code_cond(exp2, lt, lf);
+			break;
+		}
+		case '>': {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_gt(exp1->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->type, exp->temp, lt, lf);
+			break;
+		}
+		case '<': {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_lt(exp1->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->type, exp->temp, lt, lf);
+			break;
+		}
+		case TK_GEQUAL: {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_ge(exp1->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->type, exp->temp, lt, lf);
+			break;
+		}
+		case TK_LEQUAL: {
+			code_exp(exp1);
+			code_exp(exp2);
+			exp->temp = llvm_cmp_le(exp1->type, exp1->temp, exp2->temp);
+			llvm_br3(exp->type, exp->temp, lt, lf);
+			break;
+		}
+		default:
+			goto DEFAULT_COND;
+		}
+		break;
+	}
+	default:
+	DEFAULT_COND:
+		code_exp(exp);
+		llvm_br3(exp->type, exp->temp, lt, lf);
+		break;
 	}
 }
 

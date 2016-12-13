@@ -1,0 +1,69 @@
+Ok Pre-If
+Ok Inside-If
+Ok After-If
+Ok Pre-If
+Ok After-If
+
+Ok Pre-IfElse
+Ok Inside-IfElse
+Ok After-IfElse
+Ok Pre-IfElse
+Ok Inside-IfElse
+Ok After-IfElse
+
+Ok While
+
+Ok KInt
+Ok VarChar
+Ok VarInt
+Ok Call
+Ok Minus
+Ok Not
+Ok Equal
+Ok And
+Ok Or
+Ok Or
+Ok Or
+Ok Add
+Ok Sub
+Ok Mul
+Ok Div
+Ok GreaterThan
+Ok LessThan
+Ok GreaterEqual
+Ok GreaterEqual
+Ok LessEqual
+Ok LessEqual
+
+Condition types
+10
+A
+0.100000
+
+Ok And F X F short-circuit
+Ok And T X T short-circuit
+Ok And T X F short-circuit
+Ok And F X T short-circuit
+Ok Or T X T short-circuit
+Ok Or F X F short-circuit
+Ok Or T X F short-circuit
+Ok Or F X T short-circuit
+
+Nested conditions
+1.000000
+1.000000
+0.125000
+
+Factorial
+3628800
+
+Print matrix a(ij) = (i >= j) 
+[1] [0] [0] [0] [0] 
+[1] [1] [0] [0] [0] 
+[1] [1] [1] [0] [0] 
+[1] [1] [1] [1] [0] 
+[1] [1] [1] [1] [1] 
+
+A
+125
+25.900000

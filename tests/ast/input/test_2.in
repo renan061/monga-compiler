@@ -80,8 +80,6 @@ float main() {
 			/* && and || */
 			i = 1.0 && 2;
 			i = c || 0.0;
-			i = intarray1 && floatarray1;
-			i = floatarray1 || intarray1;
 			/* Mul, Div, Add, Sub */
 			i = c + c;
 			i = c - 1;

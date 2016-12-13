@@ -1,0 +1,11 @@
+void main() {
+    int i1;
+    int i2;
+    float f;
+    i1:int = (20:int);
+    i2:int = (30:int);
+    f:float = ((((i1:int)+:int(i2:int)) as float)/:float(10.000000:float));
+    f:float = (((f:float)*:float((-(25:int):int) as float))-:float((10:int) as float));
+    @(f:float);
+    return ;
+}

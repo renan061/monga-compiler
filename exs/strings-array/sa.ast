@@ -1,0 +1,22 @@
+void main() {
+    char c;
+    char[] str;
+    char[][] array_of_strings;
+    str:char[] = ("string":char[]);
+    @(str:char[]);
+    @("
+":char[]);
+    @((str:char[])[(0:int)]:char);
+    @("
+":char[]);
+    array_of_strings:char[][] = (new char[][(2:int)]:char[][]);
+    (array_of_strings:char[][])[(0:int)]:char[] = (str:char[]);
+    (array_of_strings:char[][])[(1:int)]:char[] = (new char[(2:int)]:char[]);
+    ((array_of_strings:char[][])[(1:int)]:char[])[(0:int)]:char = ((79:int) as char);
+    ((array_of_strings:char[][])[(1:int)]:char[])[(1:int)]:char = ((105:int) as char);
+    @((array_of_strings:char[][])[(0:int)]:char[]);
+    @("
+":char[]);
+    @((array_of_strings:char[][])[(1:int)]:char[]);
+    return ;
+}

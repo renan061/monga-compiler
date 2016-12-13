@@ -1,6 +1,8 @@
 #if !defined(ast_h)
 #define ast_h
 
+#include <stdbool.h>
+
 // Aesthetic
 typedef unsigned int LexSymbol;
 
@@ -72,7 +74,6 @@ struct ProgramNode {
 
 struct DefNode {
 	DefE tag;
-	unsigned int temp;
 	DefNode* next;
 	
 	union {
@@ -80,6 +81,8 @@ struct DefNode {
 		struct {
 			TypeNode* type;
 			IdNode* id;
+			bool global;
+			unsigned int temp;
 		} var;
 		// DefFunc
 		struct {

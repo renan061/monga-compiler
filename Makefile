@@ -5,18 +5,6 @@
 # Monga language compiler
 # 
 
-# TODO Remove: clang -S -emit-llvm main.c
-
-# TODO: For the examples
-# @- echo ""
-# @- bin/mongacompiler < exs/ex_1.c > exs/ex_1.ll
-# @- bin/mongacompiler < exs/ex_1.c
-# @- clang exs/ex_1.ll -o prog.o
-# @- echo "\n***"
-# @- ./prog.o
-# @- echo "***\n"
-# @- $(RM) prog.o
-
 CC := gcc -std=c99 -Wall
 
 OBJS := $(wildcard obj/*.o)
@@ -89,6 +77,15 @@ codegen_test: objs
 	@- sh tests/test.sh codegen
 
 test: lex_test parser_test ast_test codegen_test
+
+#
+# Exs
+#
+
+exs: main ast_test
+	@- sh exs/ex.sh arith arith
+	@- sh exs/ex.sh func-array-arith faa
+	@- sh exs/ex.sh strings-array sa
 
 # 
 # Clean

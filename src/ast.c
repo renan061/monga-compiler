@@ -54,10 +54,11 @@ DefNode* ast_def_var(TypeNode* type, IdNode* id) {
 	DefNode* n;
 	MONGA_MALLOC(n, DefNode);
 	n->tag = DEF_VAR;
-	n->temp = 0;
 	n->next = NULL;
 	n->u.var.type = type;
 	n->u.var.id = id;
+	n->u.var.temp = 0;
+	// OBS: n->u.var.global undefined
 	return n;
 }
 
@@ -67,7 +68,6 @@ DefNode* ast_def_func(TypeNode* type, IdNode* id, DefNode* params,
 	DefNode* n;
 	MONGA_MALLOC(n, DefNode);
 	n->tag = DEF_FUNC;
-	n->temp = 0;
 	n->next = NULL;
 	n->u.func.type = type;
 	n->u.func.id = id;
