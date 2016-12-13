@@ -388,7 +388,7 @@ void llvm_print(ExpNode* exp) {
 			llvm_printf(PRINTF_ID_STR, exp->type, exp->temp);
 			break;
 		default:
-			// FIXME: Print address
+			// TODO: Print address
 			MONGA_INTERNAL_ERR("llvm_print: not printing address currently");
 		}
 		break;

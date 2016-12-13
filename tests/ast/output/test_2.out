@@ -21,17 +21,17 @@ float main() {
     f:float = (1.000000:float);
     (intarray1:int[])[((c:char) as int)]:int = (1:int);
     (intarray1:int[])[(0:int)]:int = (1:int);
-    (if(((c:char) as int)) {
+    (if((c:char)) {
     })
     (if((i:int)) {
     })
-    (if(((c:char) as int)) {
+    (if((c:char)) {
     } else {
     })
     (if((i:int)) {
     } else {
     })
-    (while(((c:char) as int)) {
+    (while((c:char)) {
     })
     (while((i:int)) {
     })

@@ -1,9 +1,15 @@
-int a;
-
-void foo() {
-	a = 10;
-}
-
 int main() {
-	a = 5;
+	{
+		char c;
+		c = 65;
+		if (c) {}
+	}
+	
+	{
+		float f;
+		f = 0.1;
+		if (f) {}
+	}
+
+	return 0;	
 }

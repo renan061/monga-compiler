@@ -233,6 +233,18 @@ void print_matrix(int[][] m, int size) {
 	}
 }
 
+void test_nested_conditions() {
+	float a;
+
+	a = 5;
+	a = !((a > 4.9) && (3 == a));
+	@a;
+
+	a = 0.0001;
+	a = (a <= 0) || (!a);
+	@a;	
+}
+
 /*****************************************
 **
 **	Runs all tests
@@ -254,15 +266,24 @@ int main() {
 	@nl;
 
 	/* Wild */
-	@"Factorial\n";
-	@factorial(10);
-	@nl; @nl;
+	{
+		@"Factorial\n";
+		@factorial(10);
+		@nl; @nl;
+	}
 
 	{
 		int size;
 		size = 5;
 		@"Print matrix a(ij) = (i >= j) \n";
 		print_matrix(new_matrix(size), size);
+		@nl;
+	}
+
+	{
+		@"Nested conditions\n";
+		test_nested_conditions();
+		@nl;
 	}
 
 	return 0;

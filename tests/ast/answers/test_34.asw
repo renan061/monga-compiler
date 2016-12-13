@@ -1,1 +1,6 @@
-semantical error line 3 (invalid "if else" expression - cannot use "int[]" as "int")
+void main() {
+    int[] a;
+    (if((a:int[])) {
+    } else {
+    })
+}
