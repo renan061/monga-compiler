@@ -698,40 +698,36 @@ l1:
 l2:
   %t7 = getelementptr i8, i8* @nl, i32 0
   %t8 = load i8, i8* %t7
-  %t9 = sext i8 %t8 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t9)
-  %t10 = alloca i8
-  %t11 = add i32 65, 0
-  %t12 = trunc i32 %t11 to i8
-  store i8 %t12, i8* %t10
-  %t13 = load i8, i8* %t10
-  %t14 = icmp ne i8 %t13, 0
-  br i1 %t14, label %l3, label %l4
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t8)
+  %t9 = alloca i8
+  %t10 = add i32 65, 0
+  %t11 = trunc i32 %t10 to i8
+  store i8 %t11, i8* %t9
+  %t12 = load i8, i8* %t9
+  %t13 = icmp ne i8 %t12, 0
+  br i1 %t13, label %l3, label %l4
 l3:
-  %t15 = load i8, i8* %t10
-  %t16 = sext i8 %t15 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t16)
+  %t14 = load i8, i8* %t9
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t14)
   br label %l4
 l4:
-  %t17 = getelementptr i8, i8* @nl, i32 0
-  %t18 = load i8, i8* %t17
-  %t19 = sext i8 %t18 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t19)
-  %t20 = alloca double
-  %t21 = fadd double 0x3fb99999a0000000, 0x0
-  store double %t21, double* %t20
-  %t22 = load double, double* %t20
-  %t23 = fcmp one double %t22, 0x0
-  br i1 %t23, label %l5, label %l6
+  %t15 = getelementptr i8, i8* @nl, i32 0
+  %t16 = load i8, i8* %t15
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t16)
+  %t17 = alloca double
+  %t18 = fadd double 0x3fb99999a0000000, 0x0
+  store double %t18, double* %t17
+  %t19 = load double, double* %t17
+  %t20 = fcmp one double %t19, 0x0
+  br i1 %t20, label %l5, label %l6
 l5:
-  %t24 = load double, double* %t20
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t24)
+  %t21 = load double, double* %t17
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t21)
   br label %l6
 l6:
-  %t25 = getelementptr i8, i8* @nl, i32 0
-  %t26 = load i8, i8* %t25
-  %t27 = sext i8 %t26 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t27)
+  %t22 = getelementptr i8, i8* @nl, i32 0
+  %t23 = load i8, i8* %t22
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t23)
   ret void
 }
 @.str58 = private unnamed_addr constant [17 x i8] c"Condition types
@@ -1271,12 +1267,11 @@ l5:
 l6:
   %t31 = getelementptr i8, i8* @nl, i32 0
   %t32 = load i8, i8* %t31
-  %t33 = sext i8 %t32 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t33)
-  %t34 = load i32, i32* %t5
-  %t35 = add i32 1, 0
-  %t36 = add i32 %t34, %t35
-  store i32 %t36, i32* %t5
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t32)
+  %t33 = load i32, i32* %t5
+  %t34 = add i32 1, 0
+  %t35 = add i32 %t33, %t34
+  store i32 %t35, i32* %t5
   br label %l1
 l3:
   ret void
@@ -1319,73 +1314,70 @@ l3:
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t20)
   %t21 = getelementptr i8, i8* @nl, i32 0
   %t22 = load i8, i8* %t21
-  %t23 = sext i8 %t22 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t23)
-  %t24 = fadd double 0x3f1a36e2e0000000, 0x0
-  %t25 = fsub double 0x0, %t24
-  store double %t25, double* %t2
-  %t26 = load double, double* %t2
-  %t27 = add i32 0, 0
-  %t28 = sitofp i32 %t27 to double
-  %t29 = fcmp ole double %t26, %t28
-  %t30 = zext i1 %t29 to i32
-  %t31 = icmp ne i32 %t30, 0
-  br i1 %t31, label %l5, label %l8
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t22)
+  %t23 = fadd double 0x3f1a36e2e0000000, 0x0
+  %t24 = fsub double 0x0, %t23
+  store double %t24, double* %t2
+  %t25 = load double, double* %t2
+  %t26 = add i32 0, 0
+  %t27 = sitofp i32 %t26 to double
+  %t28 = fcmp ole double %t25, %t27
+  %t29 = zext i1 %t28 to i32
+  %t30 = icmp ne i32 %t29, 0
+  br i1 %t30, label %l5, label %l8
 l8:
-  %t32 = load double, double* %t2
-  %t33 = fcmp one double %t32, 0x0
-  br i1 %t33, label %l6, label %l5
+  %t31 = load double, double* %t2
+  %t32 = fcmp one double %t31, 0x0
+  br i1 %t32, label %l6, label %l5
 l5:
   br label %l7
 l6:
   br label %l7
 l7:
-  %t34 = phi i32 [1, %l5], [0, %l6]
-  %t35 = sitofp i32 %t34 to double
-  store double %t35, double* %t2
-  %t36 = load double, double* %t2
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t36)
-  %t37 = getelementptr i8, i8* @nl, i32 0
-  %t38 = load i8, i8* %t37
-  %t39 = sext i8 %t38 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t39)
-  %t40 = add i32 0, 0
-  %t41 = trunc i32 %t40 to i8
-  store i8 %t41, i8* %t1
-  %t42 = fadd double 0x4032800000000000, 0x0
-  store double %t42, double* %t2
-  %t43 = fadd double 0x4033800000000000, 0x0
-  %t44 = load double, double* %t2
-  %t45 = fsub double %t43, %t44
-  %t46 = add i32 2, 0
-  %t47 = sitofp i32 %t46 to double
-  %t48 = fdiv double %t45, %t47
-  %t49 = add i32 0, 0
-  %t50 = sitofp i32 %t49 to double
-  %t51 = fcmp ogt double %t48, %t50
-  %t52 = zext i1 %t51 to i32
-  %t53 = icmp ne i32 %t52, 0
-  br i1 %t53, label %l12, label %l10
+  %t33 = phi i32 [1, %l5], [0, %l6]
+  %t34 = sitofp i32 %t33 to double
+  store double %t34, double* %t2
+  %t35 = load double, double* %t2
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t35)
+  %t36 = getelementptr i8, i8* @nl, i32 0
+  %t37 = load i8, i8* %t36
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t37)
+  %t38 = add i32 0, 0
+  %t39 = trunc i32 %t38 to i8
+  store i8 %t39, i8* %t1
+  %t40 = fadd double 0x4032800000000000, 0x0
+  store double %t40, double* %t2
+  %t41 = fadd double 0x4033800000000000, 0x0
+  %t42 = load double, double* %t2
+  %t43 = fsub double %t41, %t42
+  %t44 = add i32 2, 0
+  %t45 = sitofp i32 %t44 to double
+  %t46 = fdiv double %t43, %t45
+  %t47 = add i32 0, 0
+  %t48 = sitofp i32 %t47 to double
+  %t49 = fcmp ogt double %t46, %t48
+  %t50 = zext i1 %t49 to i32
+  %t51 = icmp ne i32 %t50, 0
+  br i1 %t51, label %l12, label %l10
 l12:
-  %t54 = load i8, i8* %t1
-  %t55 = icmp ne i8 %t54, 0
-  br i1 %t55, label %l10, label %l9
+  %t52 = load i8, i8* %t1
+  %t53 = icmp ne i8 %t52, 0
+  br i1 %t53, label %l10, label %l9
 l9:
   br label %l11
 l10:
   br label %l11
 l11:
-  %t56 = phi i32 [1, %l9], [0, %l10]
-  %t57 = sitofp i32 %t56 to double
-  %t58 = fadd double 0x3fc0000000000000, 0x0
-  %t59 = fmul double %t57, %t58
-  store double %t59, double* %t2
-  %t60 = load double, double* %t2
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t60)
-  %t61 = getelementptr i8, i8* @nl, i32 0
-  %t62 = load i8, i8* %t61
-  %t63 = sext i8 %t62 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t63)
+  %t54 = phi i32 [1, %l9], [0, %l10]
+  %t55 = sitofp i32 %t54 to double
+  %t56 = fadd double 0x3fc0000000000000, 0x0
+  %t57 = fmul double %t55, %t56
+  store double %t57, double* %t2
+  %t58 = load double, double* %t2
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t58)
+  %t59 = getelementptr i8, i8* @nl, i32 0
+  %t60 = load i8, i8* %t59
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t60)
   ret void
 }
 @.str93 = private unnamed_addr constant [19 x i8] c"Nested conditions
@@ -1399,62 +1391,81 @@ define i32 @main() {
   call void @test_basic_if()
   %t4 = getelementptr i8, i8* @nl, i32 0
   %t5 = load i8, i8* %t4
-  %t6 = sext i8 %t5 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t6)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t5)
   call void @test_basic_ifelse()
-  %t7 = getelementptr i8, i8* @nl, i32 0
-  %t8 = load i8, i8* %t7
-  %t9 = sext i8 %t8 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t9)
+  %t6 = getelementptr i8, i8* @nl, i32 0
+  %t7 = load i8, i8* %t6
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t7)
   call void @test_basic_while()
+  %t8 = getelementptr i8, i8* @nl, i32 0
+  %t9 = load i8, i8* %t8
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t9)
+  call void @test_basic_conds()
   %t10 = getelementptr i8, i8* @nl, i32 0
   %t11 = load i8, i8* %t10
-  %t12 = sext i8 %t11 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t12)
-  call void @test_basic_conds()
-  %t13 = getelementptr i8, i8* @nl, i32 0
-  %t14 = load i8, i8* %t13
-  %t15 = sext i8 %t14 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t15)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t11)
   call void @test_cond_types()
+  %t12 = getelementptr i8, i8* @nl, i32 0
+  %t13 = load i8, i8* %t12
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t13)
+  call void @test_short_circuit()
+  %t14 = getelementptr i8, i8* @nl, i32 0
+  %t15 = load i8, i8* %t14
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t15)
+  call void @test_nested_conditions()
   %t16 = getelementptr i8, i8* @nl, i32 0
   %t17 = load i8, i8* %t16
-  %t18 = sext i8 %t17 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t18)
-  call void @test_short_circuit()
-  %t19 = getelementptr i8, i8* @nl, i32 0
-  %t20 = load i8, i8* %t19
-  %t21 = sext i8 %t20 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t21)
-  call void @test_nested_conditions()
-  %t22 = getelementptr i8, i8* @nl, i32 0
-  %t23 = load i8, i8* %t22
-  %t24 = sext i8 %t23 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t24)
-  %t25 = getelementptr [11 x i8], [11 x i8]* @.str94 , i32 0, i32 0
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t25)
-  %t26 = add i32 10, 0
-  %t27 = call i32 @factorial(i32 %t26)
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t27)
-  %t28 = getelementptr i8, i8* @nl, i32 0
-  %t29 = load i8, i8* %t28
-  %t30 = sext i8 %t29 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t30)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t17)
+  %t18 = getelementptr [11 x i8], [11 x i8]* @.str94 , i32 0, i32 0
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t18)
+  %t19 = add i32 10, 0
+  %t20 = call i32 @factorial(i32 %t19)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t20)
+  %t21 = getelementptr i8, i8* @nl, i32 0
+  %t22 = load i8, i8* %t21
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t22)
+  %t23 = getelementptr i8, i8* @nl, i32 0
+  %t24 = load i8, i8* %t23
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t24)
+  %t25 = alloca i32
+  %t26 = add i32 5, 0
+  store i32 %t26, i32* %t25
+  %t27 = getelementptr [32 x i8], [32 x i8]* @.str95 , i32 0, i32 0
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t27)
+  %t28 = load i32, i32* %t25
+  %t29 = call i32** @new_matrix(i32 %t28)
+  %t30 = load i32, i32* %t25
+  call void @print_matrix(i32** %t29, i32 %t30)
   %t31 = getelementptr i8, i8* @nl, i32 0
   %t32 = load i8, i8* %t31
-  %t33 = sext i8 %t32 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t33)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t32)
+  %t33 = alloca i8
   %t34 = alloca i32
-  %t35 = add i32 5, 0
-  store i32 %t35, i32* %t34
-  %t36 = getelementptr [32 x i8], [32 x i8]* @.str95 , i32 0, i32 0
-  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t36)
-  %t37 = load i32, i32* %t34
-  %t38 = call i32** @new_matrix(i32 %t37)
-  %t39 = load i32, i32* %t34
-  call void @print_matrix(i32** %t38, i32 %t39)
-  %t40 = add i32 0, 0
-  ret i32 %t40
+  %t35 = alloca double
+  %t36 = add i32 65, 0
+  %t37 = trunc i32 %t36 to i8
+  store i8 %t37, i8* %t33
+  %t38 = add i32 125, 0
+  store i32 %t38, i32* %t34
+  %t39 = fadd double 0x4039e66660000000, 0x0
+  store double %t39, double* %t35
+  %t40 = load i8, i8* %t33
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t40)
+  %t41 = getelementptr i8, i8* @nl, i32 0
+  %t42 = load i8, i8* %t41
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t42)
+  %t43 = load i32, i32* %t34
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t43)
+  %t44 = getelementptr i8, i8* @nl, i32 0
+  %t45 = load i8, i8* %t44
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t45)
+  %t46 = load double, double* %t35
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t46)
+  %t47 = getelementptr i8, i8* @nl, i32 0
+  %t48 = load i8, i8* %t47
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t48)
+  %t49 = add i32 0, 0
+  ret i32 %t49
   ret i32 0
 }
 @.str94 = private unnamed_addr constant [11 x i8] c"Factorial

@@ -382,44 +382,39 @@ void llvm_func_end() {
 	temp = label = 0;
 }
 
-// FIXME: Rework look llvm_print
-static void llvm_printf(const char* id, TypeNode* type, LLVMTemp t) {
+void llvm_print(ExpNode* exp) {
 	write_tabs();
 	printf("call i32 (i8*, ...) @printf(i8* getelementptr ");
-	printf("([3 x i8], [3 x i8]* @.%s, i32 0, i32 0), ", id);
-	write_type(type);
-	printf(" ");
-	write_temp(t);
-	printf(")\n");
-}
+	printf("([3 x i8], [3 x i8]* @.");
 
-void llvm_print(ExpNode* exp) {
-	// FIXME: Rewrite this when char<->int cast is removed
 	switch (exp->type->tag) {
-	case TYPE_CHAR:
-		// FIXME: Remove cast
-		llvm_printf(PRINTF_ID_CHAR, ast_type(TYPE_INT), 
-			llvm_cast(exp->type, exp->temp, ast_type(TYPE_INT)));
+	case TYPE_CHAR:		
+		printf(PRINTF_ID_CHAR);
 		break;
 	case TYPE_INT:
-		llvm_printf(PRINTF_ID_INT, exp->type, exp->temp);
+		printf(PRINTF_ID_INT);
 		break;
 	case TYPE_FLOAT:
-		llvm_printf(PRINTF_ID_FLOAT, exp->type, exp->temp);
+		printf(PRINTF_ID_FLOAT);
 		break;
 	case TYPE_INDEXED:
 		switch (exp->type->indexed->tag) {
 		case TYPE_CHAR:
-			llvm_printf(PRINTF_ID_STR, exp->type, exp->temp);
+			printf(PRINTF_ID_STR);
 			break;
 		default:
-			llvm_printf(PRINTF_ID_INT, exp->type, exp->temp);
-			break;
+			printf(PRINTF_ID_INT);
 		}
 		break;
 	case TYPE_VOID:
 		MONGA_INTERNAL_ERR("llvm_print: void type");
 	}
+
+	printf(", i32 0, i32 0), ");
+	write_type(exp->type);
+	printf(" ");
+	write_temp(exp->temp);
+	printf(")\n");
 }
 
 void llvm_ret_exp(TypeNode* type, LLVMTemp t) {

@@ -410,6 +410,22 @@ int main() {
 		size = 5;
 		@"Print matrix a(ij) = (i >= j) \n";
 		print_matrix(new_matrix(size), size);
+		@nl;
+	}
+
+	{
+		char c;
+		int i;
+		float f;
+		c = 65;
+		i = 125;
+		f = 25.9;
+		@c;
+		@nl;
+		@i;
+		@nl;
+		@f;
+		@nl;
 	}
 
 	return 0;
