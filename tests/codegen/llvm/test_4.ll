@@ -2009,4 +2009,4 @@ define i32 @main() {
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t999)
   %t1000 = getelementptr [5 x i8], [5 x i8]* @.str999 , i32 0, i32 0
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t1000)
-  %t1001 = getelementptr [9 x i8], [9 x i8]* @.str1000 , i32 0, i32 0
+  %t1001 = getelementptr [18 x i8], [18 x i8]* @.str1000 , i32 0, i32 0

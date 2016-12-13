@@ -200,5 +200,5 @@ int main() {
 	@"str\n"; @"str\n"; @"str\n"; @"str\n"; @"str\n";
 	@"str\n"; @"str\n"; @"str\n"; @"str\n"; @"str\n";
 	
-	@"one more";
+	@"sorry max is 1001";
 }

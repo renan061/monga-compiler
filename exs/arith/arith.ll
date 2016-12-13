@@ -1,4 +1,3 @@
-target triple = "x86_64-apple-macosx10.11.0"
 declare i32 @putchar(i32)
 declare i32 @printf(i8*, ...)
 declare i8* @malloc(i64)
@@ -33,7 +32,7 @@ define void @main() {
   %t19 = fsub double %t16, %t18
   store double %t19, double* %t3
   %t20 = load double, double* %t3
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t20)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pfloat, i32 0, i32 0), double %t20)
   ret void
   ret void
 }

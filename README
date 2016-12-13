@@ -1,17 +1,10 @@
 /*
 	PUC-RJ - INF1715
-	Trabalho 5 - Geração de código (parte 2)
+	Trabalho 6 - Geração de código (parte 2)
 	
 	Renan Almeida de Miranda Santos
 	Matrícula: 1211055
 */
-
-
-O que está faltando na geração de código?
-	- Print "not-char-array" as address
-	- Remove "casts" char->int / int->char
-	- Global DefVar
-
 
 Gerar binário do compilador monga:	make
 Testar:								make test

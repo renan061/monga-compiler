@@ -4,6 +4,8 @@ void main() {
     char[][] array_of_strings;
     str:char[] = ("string":char[]);
     @(str:char[]);
+    @("
+":char[]);
     @((str:char[])[(0:int)]:char);
     @("
 ":char[]);
@@ -13,6 +15,8 @@ void main() {
     ((array_of_strings:char[][])[(1:int)]:char[])[(0:int)]:char = ((79:int) as char);
     ((array_of_strings:char[][])[(1:int)]:char[])[(1:int)]:char = ((105:int) as char);
     @((array_of_strings:char[][])[(0:int)]:char[]);
+    @("
+":char[]);
     @((array_of_strings:char[][])[(1:int)]:char[]);
     return ;
 }

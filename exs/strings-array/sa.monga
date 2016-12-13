@@ -6,6 +6,7 @@ void main() {
 	str = "string";
 
 	@str;
+	@"\n";
 	@str[0];
 	@"\n";
 
@@ -17,6 +18,7 @@ void main() {
 	array_of_strings[1][1] = 105;	/* i */
 
 	@array_of_strings[0];
+	@"\n";
 	@array_of_strings[1];
 
 	return;

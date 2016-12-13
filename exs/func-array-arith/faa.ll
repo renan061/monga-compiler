@@ -1,4 +1,3 @@
-target triple = "x86_64-apple-macosx10.11.0"
 declare i32 @putchar(i32)
 declare i32 @printf(i8*, ...)
 declare i8* @malloc(i64)
@@ -24,21 +23,22 @@ define i32* @arrayfy(i32 %t1, i32 %t2, i32 %t3) {
   store i32* %t12, i32** %t7
   %t13 = load i32*, i32** %t7
   %t14 = add i32 0, 0
-  %t15 = getelementptr inbounds i32, i32* %t13, i32 %t14
+  %t15 = getelementptr i32, i32* %t13, i32 %t14
   %t16 = load i32, i32* %t4
   store i32 %t16, i32* %t15
   %t17 = load i32*, i32** %t7
   %t18 = add i32 1, 0
-  %t19 = getelementptr inbounds i32, i32* %t17, i32 %t18
+  %t19 = getelementptr i32, i32* %t17, i32 %t18
   %t20 = load i32, i32* %t5
   store i32 %t20, i32* %t19
   %t21 = load i32*, i32** %t7
   %t22 = add i32 2, 0
-  %t23 = getelementptr inbounds i32, i32* %t21, i32 %t22
+  %t23 = getelementptr i32, i32* %t21, i32 %t22
   %t24 = load i32, i32* %t6
   store i32 %t24, i32* %t23
   %t25 = load i32*, i32** %t7
   ret i32* %t25
+  ret i32* null
 }
 define void @main() {
   %t1 = alloca i32*
@@ -68,25 +68,23 @@ define void @main() {
   store i32* %t20, i32** %t1
   %t21 = load i32*, i32** %t1
   %t22 = add i32 0, 0
-  %t23 = getelementptr inbounds i32, i32* %t21, i32 %t22
+  %t23 = getelementptr i32, i32* %t21, i32 %t22
   %t24 = load i32, i32* %t23
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t24)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t24)
   %t25 = load i8, i8* %t5
-  %t26 = sext i8 %t25 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t26)
-  %t27 = load i32*, i32** %t1
-  %t28 = add i32 1, 0
-  %t29 = getelementptr inbounds i32, i32* %t27, i32 %t28
-  %t30 = load i32, i32* %t29
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t30)
-  %t31 = load i8, i8* %t5
-  %t32 = sext i8 %t31 to i32
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i32 %t32)
-  %t33 = load i32*, i32** %t1
-  %t34 = add i32 2, 0
-  %t35 = getelementptr inbounds i32, i32* %t33, i32 %t34
-  %t36 = load i32, i32* %t35
-  call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t36)
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t25)
+  %t26 = load i32*, i32** %t1
+  %t27 = add i32 1, 0
+  %t28 = getelementptr i32, i32* %t26, i32 %t27
+  %t29 = load i32, i32* %t28
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t29)
+  %t30 = load i8, i8* %t5
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pchar, i32 0, i32 0), i8 %t30)
+  %t31 = load i32*, i32** %t1
+  %t32 = add i32 2, 0
+  %t33 = getelementptr i32, i32* %t31, i32 %t32
+  %t34 = load i32, i32* %t33
+  call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pint, i32 0, i32 0), i32 %t34)
   ret void
   ret void
 }
