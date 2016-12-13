@@ -19,13 +19,13 @@ main: objs
 	src/main.c -ll
 
 quicktest: main
-	# @- bin/mongacompiler < monga.in > monga.ll
+	@- bin/mongacompiler < monga.in > monga.ll
 	@- bin/mongacompiler < monga.in
-	# @- clang monga.ll
-	# @- echo "\n***"
-	# @- ./a.out
-	# @- echo "***\n"
-	# @- $(RM) a.out
+	@- clang monga.ll
+	@- echo "\n***"
+	@- ./a.out
+	@- echo "***\n"
+	@- $(RM) a.out
 
 # 
 # Objs

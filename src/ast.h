@@ -74,7 +74,6 @@ struct ProgramNode {
 
 struct DefNode {
 	DefE tag;
-	unsigned int temp; // FIXME: Temp only for vars
 	DefNode* next;
 	
 	union {
@@ -83,6 +82,7 @@ struct DefNode {
 			TypeNode* type;
 			IdNode* id;
 			bool global;
+			unsigned int temp;
 		} var;
 		// DefFunc
 		struct {

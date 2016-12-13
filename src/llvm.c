@@ -155,7 +155,6 @@ static void write_zero(TypeNode* type) {
 
 // Required headers
 void llvm_setup() {
-	printf("target triple = \"x86_64-apple-macosx10.11.0\"\n"); // TODO: Remove
 	printf("declare i32 @putchar(i32)\n");
 	printf("declare i32 @printf(i8*, ...)\n");
 	printf("declare i8* @malloc(i64)\n");
@@ -348,7 +347,7 @@ void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
 		write_type(aux->u.var.type);
 		printf(" ");
 		write_temp(++temp);
-		aux->temp = temp;
+		aux->u.var.temp = temp;
 		if (aux->next == NULL) { // FIXME: This is horrible.
 			break;
 		}
@@ -360,8 +359,8 @@ void llvm_func_start(TypeNode* type, IdNode* id, DefNode* params) {
 
 	for (DefNode* aux = params; aux != NULL; aux = aux->next) {
 		int t = llvm_alloca(aux->u.var.type);
-		llvm_store(aux->u.var.type, aux->temp, t);
-		aux->temp = temp;
+		llvm_store(aux->u.var.type, aux->u.var.temp, t);
+		aux->u.var.temp = temp;
 	}
 }
 

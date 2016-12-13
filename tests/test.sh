@@ -34,9 +34,9 @@ do
 	then
 		LLVM_FILE="test_"$i".ll"
 		mv $OUTPUT_FILE $LLVM_FILE
-		clang $LLVM_FILE -o prog.o
+		clang $LLVM_FILE -o prog.o 2>$OUTPUT_FILE
 		./prog.o > $OUTPUT_FILE 2>&1
-		rm prog.o
+		rm prog.o 2> /dev/null
 		mv $LLVM_FILE "llvm/"$LLVM_FILE
 	fi
 

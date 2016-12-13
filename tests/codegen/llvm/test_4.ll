@@ -1,4 +1,3 @@
-target triple = "x86_64-apple-macosx10.11.0"
 declare i32 @putchar(i32)
 declare i32 @printf(i8*, ...)
 declare i8* @malloc(i64)
@@ -1972,8 +1971,8 @@ define i32 @main() {
   %t981 = getelementptr [5 x i8], [5 x i8]* @.str980 , i32 0, i32 0
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t981)
   %t982 = getelementptr [5 x i8], [5 x i8]* @.str981 , i32 0, i32 0
-  cinternal error: too many strings
-all i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t982)
+  call i32 (i8*, ...) @printf(i8* getelementptr error: too many strings
+([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t982)
   %t983 = getelementptr [5 x i8], [5 x i8]* @.str982 , i32 0, i32 0
   call i32 (i8*, ...) @printf(i8* getelementptr ([3 x i8], [3 x i8]* @.pstr, i32 0, i32 0), i8* %t983)
   %t984 = getelementptr [5 x i8], [5 x i8]* @.str983 , i32 0, i32 0

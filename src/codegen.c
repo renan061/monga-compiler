@@ -47,7 +47,7 @@ static void code_cmd(CmdNode* cmd) {
 		// For local variable definitions
 		for (DefNode* aux = cmd->u.block.defs; aux != NULL; aux = aux->next) {
 			aux->u.var.global = false;
-			aux->temp = llvm_alloca(aux->u.var.type);
+			aux->u.var.temp = llvm_alloca(aux->u.var.type);
 		}
 		if (cmd->u.block.cmds != NULL) {
 			code_cmd(cmd->u.block.cmds);
@@ -128,7 +128,7 @@ static void code_var(VarNode* var) {
 	case VAR_ID:
 		var->temp = (var->u.id->u.def->u.var.global)
 			? llvm_global_address(var->type, var->u.id->u.def->u.var.id)
-			: var->u.id->u.def->temp;
+			: var->u.id->u.def->u.var.temp;
 		break;
 	case VAR_INDEXED:
 		code_exp(var->u.indexed.array);
@@ -263,7 +263,6 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 		ExpNode* exp1 = exp->u.binary.exp1;
 		ExpNode* exp2 = exp->u.binary.exp2;
 
-		// TODO: Ask Roberto: code_exp or code_cont in ==, <, >, <=, >= ?
 		switch (exp->u.binary.symbol) {
 		case TK_EQUAL: {
 			code_exp(exp1);
