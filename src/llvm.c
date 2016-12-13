@@ -5,6 +5,8 @@
 #include "llvm.h"
 #include "ast.h"
 
+#define MAX_STRS 1000
+
 #define LLVM_EQ 	"eq"
 #define LLVM_ADD 	"add"
 #define LLVM_FADD	"fadd"
@@ -73,7 +75,7 @@ static unsigned int tablvl = 0, temp = 0, label = 0;
 
 // Length and accumulator for strs
 static unsigned int lenstrs = 0, accstrs = 0;
-static const char* strs[1000]; // TODO: Error when out of bounds
+static const char* strs[MAX_STRS];
 
 // Used by llvm_new
 static int sizeof_char = sizeof(char);
@@ -251,15 +253,26 @@ void llvm_br3(TypeNode* type, LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
 	write_temp(++temp);
 	printf(" = ");
 	switch (type->tag) {
-		case TYPE_INDEXED: case TYPE_CHAR: case TYPE_INT:	printf("i"); break;
-		case TYPE_FLOAT:									printf("f"); break;
-		default: MONGA_INTERNAL_ERR("llvm_br3: invalid type");
+		case TYPE_CHAR: // Fallthrough
+		case TYPE_INT:
+			printf("i");
+			break;
+		case TYPE_FLOAT:
+			printf("f");
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_br3: invalid type");
 	}
 	printf("cmp ");
 	switch (type->tag) {
-		case TYPE_INDEXED: case TYPE_CHAR: case TYPE_INT:				 break;
-		case TYPE_FLOAT:									printf("o"); break;
-		default: MONGA_INTERNAL_ERR("llvm_br3: invalid type");
+		case TYPE_CHAR: // Fallthrough
+		case TYPE_INT:
+			break;
+		case TYPE_FLOAT:
+			printf("o");
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_br3: invalid type");
 	}
 	printf("ne ");
 	write_type(type);
@@ -401,8 +414,8 @@ void llvm_print(ExpNode* exp) {
 			llvm_printf(PRINTF_ID_STR, exp->type, exp->temp);
 			break;
 		default:
-			// TODO: Print address
-			MONGA_INTERNAL_ERR("llvm_print: not printing address currently");
+			llvm_printf(PRINTF_ID_INT, exp->type, exp->temp);
+			break;
 		}
 		break;
 	case TYPE_VOID:
@@ -467,6 +480,9 @@ LLVMTemp llvm_kval(TypeNode* type, LLVMValue val) {
 			int len = strlen(val.str) + 1;
 			printf(" = getelementptr [%d x i8], [%d x i8]*", len, len);
 			printf(" @.str%d , i32 0, i32 0", lenstrs + accstrs);
+			if (lenstrs >= MAX_STRS) {
+				MONGA_ERR("error: too many strings\n");
+			}
 			strs[lenstrs++] = val.str;
 			break;
 		}

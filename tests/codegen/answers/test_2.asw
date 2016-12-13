@@ -35,18 +35,24 @@ Ok GreaterEqual
 Ok LessEqual
 Ok LessEqual
 
+Condition types
+10
 A
 0.100000
-Ok Empty Array
 
-Ok And short-circuit
-Ok And short-circuit
-Ok And short-circuit
-Ok And short-circuit
-Ok Or short-circuit
-Ok Or short-circuit
-Ok Or short-circuit
-Ok Or short-circuit
+Ok And F X F short-circuit
+Ok And T X T short-circuit
+Ok And T X F short-circuit
+Ok And F X T short-circuit
+Ok Or T X T short-circuit
+Ok Or F X F short-circuit
+Ok Or T X F short-circuit
+Ok Or F X T short-circuit
+
+Nested conditions
+1.000000
+1.000000
+0.125000
 
 Factorial
 3628800
@@ -57,7 +63,3 @@ Print matrix a(ij) = (i >= j)
 [1] [1] [1] [0] [0] 
 [1] [1] [1] [1] [0] 
 [1] [1] [1] [1] [1] 
-
-Nested conditions
-1.000000
-1.000000

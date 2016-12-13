@@ -370,7 +370,7 @@ static int tp_equatable(TypeNode* type) {
 
 static int tp_testable(TypeNode* type) {
 	return (type->tag == TYPE_CHAR || type->tag == TYPE_INT ||
-		type->tag == TYPE_FLOAT || type->tag == TYPE_INDEXED);
+		type->tag == TYPE_FLOAT);
 }
 
 // ==================================================

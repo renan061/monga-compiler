@@ -27,7 +27,7 @@ do
 	OUTPUT_FILE="test_"$i".out"
 
 	# TODO: Remove >>
-	../../bin/"$1""test" < $INPUT_FILE >> $OUTPUT_FILE 2>&1
+	../../bin/"$1""test" < $INPUT_FILE > $OUTPUT_FILE 2>&1
 
 	# Specific to codegen tests
 	if [ "$1" = "codegen" ]
@@ -35,7 +35,7 @@ do
 		LLVM_FILE="test_"$i".ll"
 		mv $OUTPUT_FILE $LLVM_FILE
 		clang $LLVM_FILE -o prog.o
-		./prog.o > $OUTPUT_FILE
+		./prog.o > $OUTPUT_FILE 2>&1
 		rm prog.o
 		mv $LLVM_FILE "llvm/"$LLVM_FILE
 	fi

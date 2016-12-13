@@ -1,5 +1,1 @@
-void main() {
-    int[] a;
-    int b;
-    b:int = (!(a:int[]):int);
-}
+semantical error line 4 (invalid type for unary not)

@@ -1,6 +1,1 @@
-void main() {
-    int[] a;
-    (if((a:int[])) {
-    } else {
-    })
-}
+semantical error line 3 (invalid type for "if else" expression)

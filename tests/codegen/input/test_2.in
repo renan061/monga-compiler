@@ -149,6 +149,15 @@ void test_basic_conds() {
 *****************************************/
 
 void test_cond_types() {
+	@"Condition types\n";
+
+	{
+		int i;
+		i = 10;
+		if (i) { @i; }
+		@nl;
+	}
+
 	{
 		char c;
 		c = 65;
@@ -162,15 +171,6 @@ void test_cond_types() {
 		if (f) { @f; }
 		@nl;
 	}
-
-
-	{
-		int[] array;
-		array = new int[10];
-		if (array) { @"Ok Empty Array"; }
-		@nl;
-	}
-
 }
 
 /*****************************************
@@ -194,73 +194,105 @@ int increment_and_return_false() {
 void test_short_circuit() {
 	/* And */
 	short_circuit_var = 0; /* F X F */
-	if (increment_and_return_false() && increment_and_return_false()) {}
+	if (increment_and_return_false() && increment_and_return_false()) {
+		@"Error";
+	} else {
+		@"Ok";
+	}
 	if (short_circuit_var == -5) {
-		@"Ok And short-circuit\n";
+		@" And F X F short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error And short-circuit\n";
 	}
 
 	short_circuit_var = 0; /* T X T */
-	if (increment_and_return_true() && increment_and_return_true()) {}
+	if (increment_and_return_true() && increment_and_return_true()) {
+		@"Ok";
+	} else {
+		@"Error";
+	}
 	if (short_circuit_var == 6) {
-		@"Ok And short-circuit\n";
+		@" And T X T short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error And short-circuit\n";
 	}
 
 	short_circuit_var = 0; /* T X F */
-	if (increment_and_return_true() && increment_and_return_false()) {}
+	if (increment_and_return_true() && increment_and_return_false()) {
+		@"Error";
+	} else {
+		@"Ok";
+	}
 	if (short_circuit_var == -2) {
-		@"Ok And short-circuit\n";
+		@" And T X F short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error And short-circuit\n";
 	}
 
 	short_circuit_var = 0;  /* F X T */
-	if (increment_and_return_false() && increment_and_return_true()) {}
+	if (increment_and_return_false() && increment_and_return_true()) {
+		@"Error";
+	} else {
+		@"Ok";
+	}
 	if (short_circuit_var == -5) {
-		@"Ok And short-circuit\n";
+		@" And F X T short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error And short-circuit\n";
 	}
 
 	/* Or */
-	short_circuit_var = 0; /* T X t */
-	if (increment_and_return_true() || increment_and_return_true()) {}
+	short_circuit_var = 0; /* T X T */
+	if (increment_and_return_true() || increment_and_return_true()) {
+		@"Ok";
+	} else {
+		@"Error";
+	}
 	if (short_circuit_var == 3) {
-		@"Ok Or short-circuit\n";
+		@" Or T X T short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error Or short-circuit\n";
 	}
 
 	short_circuit_var = 0; /* F X F */
-	if (increment_and_return_false() || increment_and_return_false()) {}
+	if (increment_and_return_false() || increment_and_return_false()) {
+		@"Error";
+	} else {
+		@"Ok";
+	}
 	if (short_circuit_var == -10) {
-		@"Ok Or short-circuit\n";
+		@" Or F X F short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error Or short-circuit\n";
 	}
 
 	short_circuit_var = 0; /* T X F */
-	if (increment_and_return_true() || increment_and_return_false()) {}
+	if (increment_and_return_true() || increment_and_return_false()) {
+		@"Ok";
+	} else {
+		@"Error";
+	}
 	if (short_circuit_var == 3) {
-		@"Ok Or short-circuit\n";
+		@" Or T X F short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error Or short-circuit\n";
 	}
 
 	short_circuit_var = 0; /* F X T */
-	if (increment_and_return_false() || increment_and_return_true()) {}
+	if (increment_and_return_false() || increment_and_return_true()) {
+		@"Ok";
+	} else {
+		@"Error";
+	}
 	if (short_circuit_var == -2) {
-		@"Ok Or short-circuit\n";
+		@" Or F X T short-circuit\n";
 	} else {
 		@short_circuit_var;
 		@" - Error Or short-circuit\n";
@@ -319,7 +351,11 @@ void print_matrix(int[][] m, int size) {
 }
 
 void test_nested_conditions() {
+	char c;
 	float a;
+	int[] array;
+
+	@"Nested conditions\n";
 
 	a = 5;
 	a = !((a > 4.9) && (3 == a));
@@ -328,7 +364,14 @@ void test_nested_conditions() {
 
 	a = -0.0001;
 	a = (a <= 0) || (!a);
-	@a;	
+	@a;
+	@nl;
+
+	c = 0;
+	a = 18.5;
+	a = (((19.5 - a) / 2) > 0 && !c) * 0.125;
+	@a;
+	@nl;
 }
 
 /*****************************************
@@ -352,6 +395,8 @@ int main() {
 	@nl;
 	test_short_circuit();
 	@nl;
+	test_nested_conditions();
+	@nl;
 
 	/* Wild */
 	{
@@ -365,13 +410,6 @@ int main() {
 		size = 5;
 		@"Print matrix a(ij) = (i >= j) \n";
 		print_matrix(new_matrix(size), size);
-		@nl;
-	}
-
-	{
-		@"Nested conditions\n";
-		test_nested_conditions();
-		@nl;
 	}
 
 	return 0;

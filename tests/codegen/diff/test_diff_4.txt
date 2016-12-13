@@ -1,0 +1,2 @@
+5												   |	tests/test.sh: line 38: ./prog.o: No such file or directory
+10												   <
