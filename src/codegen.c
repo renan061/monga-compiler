@@ -269,7 +269,7 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 			code_exp(exp1);
 			code_exp(exp2);
 			exp->temp = llvm_cmp_eq(exp1->type, exp1->temp, exp2->temp);
-			llvm_br3(exp->temp, lt, lf);
+			llvm_br3(exp->type, exp->temp, lt, lf);
 			break;
 		}
 		case TK_AND: {
@@ -290,28 +290,28 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 			code_exp(exp1);
 			code_exp(exp2);
 			exp->temp = llvm_cmp_gt(exp1->type, exp1->temp, exp2->temp);
-			llvm_br3(exp->temp, lt, lf);
+			llvm_br3(exp->type, exp->temp, lt, lf);
 			break;
 		}
 		case '<': {
 			code_exp(exp1);
 			code_exp(exp2);
 			exp->temp = llvm_cmp_lt(exp1->type, exp1->temp, exp2->temp);
-			llvm_br3(exp->temp, lt, lf);
+			llvm_br3(exp->type, exp->temp, lt, lf);
 			break;
 		}
 		case TK_GEQUAL: {
 			code_exp(exp1);
 			code_exp(exp2);
 			exp->temp = llvm_cmp_ge(exp1->type, exp1->temp, exp2->temp);
-			llvm_br3(exp->temp, lt, lf);
+			llvm_br3(exp->type, exp->temp, lt, lf);
 			break;
 		}
 		case TK_LEQUAL: {
 			code_exp(exp1);
 			code_exp(exp2);
 			exp->temp = llvm_cmp_le(exp1->type, exp1->temp, exp2->temp);
-			llvm_br3(exp->temp, lt, lf);
+			llvm_br3(exp->type, exp->temp, lt, lf);
 			break;
 		}
 		default:
@@ -322,7 +322,7 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 	default:
 	DEFAULT_COND:
 		code_exp(exp);
-		llvm_br3(exp->temp, lt, lf);
+		llvm_br3(exp->type, exp->temp, lt, lf);
 		break;
 	}
 }

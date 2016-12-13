@@ -127,6 +127,24 @@ static void write_int(int i) {
 	printf("%d", i);
 }
 
+static void write_zero(TypeNode* type) {
+	switch (type->tag) {
+	case TYPE_CHAR:
+		// Fallthrough
+	case TYPE_INT:
+		write_int(0);
+		break;
+	case TYPE_FLOAT:
+		write_float(0);
+		break;
+	case TYPE_INDEXED:
+		printf("null");
+		break;
+	default:
+		MONGA_INTERNAL_ERR("write_zero: invalid type")
+	}
+}
+
 // ==================================================
 //
 //	LLVM
@@ -226,14 +244,30 @@ void llvm_br1(LLVMLabel l) {
 	printf("\n");
 }
 
-// %b = icmp ne i32 %t, 0
+// %b = <type>cmp <type>ne <type> %t, <zerovalue>
 // br i1 %b label %lt, label %lf
-void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
+void llvm_br3(TypeNode* type, LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
 	write_tabs();
 	write_temp(++temp);
-	printf(" = icmp ne i32 ");
+	printf(" = ");
+	switch (type->tag) {
+		case TYPE_INDEXED: case TYPE_CHAR: case TYPE_INT:	printf("i"); break;
+		case TYPE_FLOAT:									printf("f"); break;
+		default: MONGA_INTERNAL_ERR("llvm_br3: invalid type");
+	}
+	printf("cmp ");
+	switch (type->tag) {
+		case TYPE_INDEXED: case TYPE_CHAR: case TYPE_INT:				 break;
+		case TYPE_FLOAT:									printf("o"); break;
+		default: MONGA_INTERNAL_ERR("llvm_br3: invalid type");
+	}
+	printf("ne ");
+	write_type(type);
+	printf(" ");
 	write_temp(t);
-	printf(", 0\n");
+	printf(", ");
+	write_zero(type);
+	printf("\n");
 
 	write_tabs();
 	printf("br i1 ");
@@ -285,30 +319,9 @@ void llvm_def_global(TypeNode* type, IdNode* id) {
 	printf("@");
 	printf("%s", id->u.str);
 	printf(" = global ");
-	switch (type->tag) {
-	case TYPE_CHAR:
-		write_type_char();
-		printf(" ");
-		write_int(0);
-		break;
-	case TYPE_INT:
-		write_type_int();
-		printf(" ");
-		write_int(0);
-		break;
-	case TYPE_FLOAT:
-		write_type_float();
-		printf(" ");
-		write_float(0);
-		break;
-	case TYPE_INDEXED:
-		write_type(type); // FIXME: write_type_indexed
-		printf(" null");
-		break;
-	default:
-		MONGA_INTERNAL_ERR("llvm_var_global: invalid type");
-	}
-
+	write_type(type);	
+	printf(" ");
+	write_zero(type);
 	printf("\n");
 }
 

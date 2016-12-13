@@ -21,7 +21,7 @@ extern void llvm_store(TypeNode* type, LLVMTemp from, LLVMTemp to);
 extern LLVMTemp llvm_load(TypeNode* type, LLVMTemp t);
 extern LLVMTemp llvm_getelementptr(LLVMTemp t, TypeNode* type, ExpNode* index);
 extern void llvm_br1(LLVMLabel l);
-extern void llvm_br3(LLVMTemp t, LLVMLabel lt, LLVMLabel lf);
+extern void llvm_br3(TypeNode* type, LLVMTemp t, LLVMLabel lt, LLVMLabel lf);
 extern LLVMTemp llvm_phi2(TypeNode* type, LLVMValue v1, LLVMLabel l1,
 	LLVMValue v2, LLVMLabel l2);
 extern LLVMTemp llvm_global_address(TypeNode* type, IdNode* id);

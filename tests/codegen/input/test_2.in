@@ -144,6 +144,37 @@ void test_basic_conds() {
 
 /*****************************************
 **
+**	Condition types
+**
+*****************************************/
+
+void test_cond_types() {
+	{
+		char c;
+		c = 65;
+		if (c) { @c; }
+		@nl;
+	}
+
+	{
+		float f;
+		f = 0.1;
+		if (f) { @f; }
+		@nl;
+	}
+
+
+	{
+		int[] array;
+		array = new int[10];
+		if (array) { @"Ok Empty Array"; }
+		@nl;
+	}
+
+}
+
+/*****************************************
+**
 **	Short-circuit evaluation
 **
 *****************************************/
@@ -151,20 +182,47 @@ void test_basic_conds() {
 int short_circuit_var;
 
 int increment_and_return_true() {
-	short_circuit_var = short_circuit_var + 1;
+	short_circuit_var = short_circuit_var + 3;
 	return 1;
 }
 
 int increment_and_return_false() {
-	short_circuit_var = short_circuit_var + 1;
+	short_circuit_var = short_circuit_var - 5;
 	return 0;
 }
 	
 void test_short_circuit() {
 	/* And */
-	short_circuit_var = 0;
+	short_circuit_var = 0; /* F X F */
 	if (increment_and_return_false() && increment_and_return_false()) {}
-	if (short_circuit_var == 1) {
+	if (short_circuit_var == -5) {
+		@"Ok And short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error And short-circuit\n";
+	}
+
+	short_circuit_var = 0; /* T X T */
+	if (increment_and_return_true() && increment_and_return_true()) {}
+	if (short_circuit_var == 6) {
+		@"Ok And short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error And short-circuit\n";
+	}
+
+	short_circuit_var = 0; /* T X F */
+	if (increment_and_return_true() && increment_and_return_false()) {}
+	if (short_circuit_var == -2) {
+		@"Ok And short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error And short-circuit\n";
+	}
+
+	short_circuit_var = 0;  /* F X T */
+	if (increment_and_return_false() && increment_and_return_true()) {}
+	if (short_circuit_var == -5) {
 		@"Ok And short-circuit\n";
 	} else {
 		@short_circuit_var;
@@ -172,9 +230,36 @@ void test_short_circuit() {
 	}
 
 	/* Or */
-	short_circuit_var = 0;
+	short_circuit_var = 0; /* T X t */
 	if (increment_and_return_true() || increment_and_return_true()) {}
-	if (short_circuit_var == 1) {
+	if (short_circuit_var == 3) {
+		@"Ok Or short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error Or short-circuit\n";
+	}
+
+	short_circuit_var = 0; /* F X F */
+	if (increment_and_return_false() || increment_and_return_false()) {}
+	if (short_circuit_var == -10) {
+		@"Ok Or short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error Or short-circuit\n";
+	}
+
+	short_circuit_var = 0; /* T X F */
+	if (increment_and_return_true() || increment_and_return_false()) {}
+	if (short_circuit_var == 3) {
+		@"Ok Or short-circuit\n";
+	} else {
+		@short_circuit_var;
+		@" - Error Or short-circuit\n";
+	}
+
+	short_circuit_var = 0; /* F X T */
+	if (increment_and_return_false() || increment_and_return_true()) {}
+	if (short_circuit_var == -2) {
 		@"Ok Or short-circuit\n";
 	} else {
 		@short_circuit_var;
@@ -239,8 +324,9 @@ void test_nested_conditions() {
 	a = 5;
 	a = !((a > 4.9) && (3 == a));
 	@a;
+	@nl;
 
-	a = 0.0001;
+	a = -0.0001;
 	a = (a <= 0) || (!a);
 	@a;	
 }
@@ -261,6 +347,8 @@ int main() {
 	test_basic_while();
 	@nl;
 	test_basic_conds();
+	@nl;
+	test_cond_types();
 	@nl;
 	test_short_circuit();
 	@nl;

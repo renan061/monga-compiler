@@ -35,7 +35,17 @@ Ok GreaterEqual
 Ok LessEqual
 Ok LessEqual
 
+A
+0.100000
+Ok Empty Array
+
 Ok And short-circuit
+Ok And short-circuit
+Ok And short-circuit
+Ok And short-circuit
+Ok Or short-circuit
+Ok Or short-circuit
+Ok Or short-circuit
 Ok Or short-circuit
 
 Factorial

@@ -2,13 +2,21 @@ int main() {
 	{
 		char c;
 		c = 65;
-		if (c) {}
+		if (c) { @"Yes\n"; }
 	}
 	
+	@"\n";
+
 	{
 		float f;
 		f = 0.1;
-		if (f) {}
+		if (f) { @"Yes\n"; }
+	}
+
+	{
+		int[] array;
+		array = new int[10];
+		if (array) { @"Yes\n"; }
 	}
 
 	return 0;	
