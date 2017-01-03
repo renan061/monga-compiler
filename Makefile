@@ -5,7 +5,7 @@
 # Monga language compiler
 # 
 
-CC := gcc -std=c99 -Wall
+CC := gcc-5 -std=c99 -Wall
 
 OBJS := $(wildcard obj/*.o)
 EXES := $(wildcard bin/*)
@@ -22,18 +22,19 @@ main: objs
 
 objs: lex parser sem codegen
 
+arraylist:
+	@- $(CC) $(CFLAGS) -c src/arraylist.c -o obj/arraylist.o
+
 parser:
 	@- bison -v -d src/monga.y
 	@- mv monga.tab.c src/yacc.c
 	@- mv monga.tab.h src/yacc.h
 	@- $(CC) $(CFLAGS) -c src/yacc.c -o obj/parser.o
 	@- $(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
-	@- $(RM) src/yacc.c
 
 lex: parser
 	@- flex src/monga.lex
 	@- $(CC) $(CFLAGS) -c lex.yy.c -o obj/lex.o -Isrc/
-	@- $(RM) lex.yy.c
 
 sem: parser
 	@- $(CC) $(CFLAGS) -c src/symtable.c -o obj/symtable.o
@@ -46,6 +47,13 @@ codegen: sem
 # 
 # Tests
 # 
+
+arraylist_test: arraylist
+	@- $(CC) $(CFLAGS) -o bin/arraylisttest 					\
+	obj/arraylist.o 											\
+	src/arraylist_test.c
+	
+	@- ./bin/arraylisttest
 
 lex_test: objs
 	@- $(CC) $(CFLAGS) -o bin/lextest 							\
@@ -76,7 +84,7 @@ codegen_test: objs
 
 	@- sh tests/test.sh codegen
 
-test: lex_test parser_test ast_test codegen_test
+test: arraylist_test lex_test parser_test ast_test codegen_test
 
 #
 # Exs
@@ -93,6 +101,8 @@ exs: main ast_test
 
 clean:
 	@- $(RM) src/yacc.h
+	@- $(RM) src/yacc.c
+	@- $(RM) lex.yy.c
 	@- $(RM) monga.output
 	@- $(RM) $(OBJS)
 	@- $(RM) $(EXES)
