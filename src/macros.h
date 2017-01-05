@@ -21,7 +21,7 @@
 		MONGA_ERR("error: insufficient memory\n");	\
 	}												\
 
-#define ARRAY_MALLOC(n, elem_type, len)					\
+#define MALLOC_ARRAY(n, elem_type, len)					\
 	n = (elem_type*)malloc(len * sizeof(elem_type));	\
 	if (n == NULL) {									\
 		MONGA_ERR("error: insufficient memory\n");		\

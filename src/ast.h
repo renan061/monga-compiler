@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 // Aesthetic
-typedef unsigned int LexSymbol;
+typedef unsigned int ScannerSymbol;
 
 // ==================================================
 //
@@ -185,12 +185,12 @@ struct ExpNode {
 		ExpNode* cast;
 		// ExpUnary
 		struct {
-			LexSymbol symbol;
+			ScannerSymbol symbol;
 			ExpNode* exp;
 		} unary;
 		// ExpMul, ExpAdd, ExpComp, ExpAnd and ExpOr
 		struct {
-			LexSymbol symbol;
+			ScannerSymbol symbol;
 			ExpNode *exp1, *exp2;
 		} binary;
 	} u;
@@ -239,9 +239,9 @@ extern VarNode* ast_var(IdNode* id);
 extern VarNode* ast_var_indexed(int line, ExpNode* array, ExpNode* index);
 
 // Exp
-extern ExpNode* ast_exp_binary(int line, LexSymbol symbol, ExpNode *exp1,
+extern ExpNode* ast_exp_binary(int line, ScannerSymbol symbol, ExpNode *exp1,
 	ExpNode *exp2);
-extern ExpNode* ast_exp_unary(int line, LexSymbol symbol, ExpNode *exp);
+extern ExpNode* ast_exp_unary(int line, ScannerSymbol symbol, ExpNode *exp);
 extern ExpNode* ast_exp_int(int value);
 extern ExpNode* ast_exp_float(float value);
 extern ExpNode* ast_exp_str(const char* value);

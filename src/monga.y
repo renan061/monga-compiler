@@ -2,7 +2,7 @@
 	#include <stdio.h>
 
 	#include "macros.h"
-	#include "lex.h"
+	#include "scanner.h"
 	#include "ast.h"
 
 	// Auxiliary macro to use with ids
@@ -20,7 +20,7 @@
 		}													\
 
 	void yyerror(const char* err) {
-		MONGA_ERR("syntax error line %d\n", current_line());
+		MONGA_ERR("syntax error line %d\n", scanner_line());
 	}
 %}
 

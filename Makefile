@@ -1,7 +1,6 @@
 # 
 # PUC-RJ - INF1715
 # Renan Almeida de Miranda Santos
-#
 # Monga language compiler
 # 
 
@@ -12,15 +11,23 @@ EXES := $(wildcard bin/*)
 
 main: objs
 	@- $(CC) $(CFLAGS) -o bin/mongacompiler 						\
-	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 		\
-	obj/llvm.o obj/codegen.o										\
+	obj/arraylist.o obj/scanner.o obj/parser.o obj/ast.o 			\
+	obj/symtable.o obj/sem.o obj/llvm.o obj/codegen.o				\
 	src/main.c -ll
+
+# make run INPUT=input.monga
+run: main
+	@- ./bin/mongacompiler < $(INPUT) > "a.ll"
+	@- clang "a.ll" -o a.o
+	@- ./a.o
+	@- $(RM) a.ll
+	@- $(RM) a.o
 
 # 
 # Objs
 # 
 
-objs: lex parser sem codegen
+objs: scanner parser sem codegen
 
 arraylist:
 	@- $(CC) $(CFLAGS) -c src/arraylist.c -o obj/arraylist.o
@@ -32,9 +39,9 @@ parser:
 	@- $(CC) $(CFLAGS) -c src/yacc.c -o obj/parser.o
 	@- $(CC) $(CFLAGS) -c src/ast.c -o obj/ast.o
 
-lex: parser
-	@- flex src/monga.lex
-	@- $(CC) $(CFLAGS) -c lex.yy.c -o obj/lex.o -Isrc/
+scanner: arraylist parser
+	@- flex src/scanner.lex
+	@- $(CC) $(CFLAGS) -c lex.yy.c -o obj/scanner.o -Isrc/
 
 sem: parser
 	@- $(CC) $(CFLAGS) -c src/symtable.c -o obj/symtable.o
@@ -55,36 +62,37 @@ arraylist_test: arraylist
 	
 	@- ./bin/arraylisttest
 
-lex_test: objs
-	@- $(CC) $(CFLAGS) -o bin/lextest 							\
-	obj/lex.o obj/parser.o obj/ast.o 							\
-	src/lex_test.c -ll
+scanner_test: scanner
+	@- $(CC) $(CFLAGS) -o bin/scannertest						\
+	obj/arraylist.o obj/scanner.o obj/parser.o obj/ast.o 		\
+	src/scanner_test.c -ll
 
-	@- sh tests/test.sh lex
+	@- sh tests/test.sh scanner
 
 parser_test: objs
 	@- $(CC) $(CFLAGS) -o bin/parsertest 						\
-	obj/lex.o obj/parser.o obj/ast.o 							\
+	obj/arraylist.o obj/scanner.o obj/parser.o obj/ast.o 		\
 	src/parser_test.c -ll
 
 	@- sh tests/test.sh parser
 
 ast_test: objs
 	@- $(CC) $(CFLAGS) -o bin/asttest 							\
-	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
+	obj/arraylist.o obj/scanner.o obj/parser.o obj/ast.o 		\
+	obj/symtable.o obj/sem.o 									\
 	src/ast_test.c -ll
 
 	@- sh tests/test.sh ast
 
 codegen_test: objs
 	@- $(CC) $(CFLAGS) -o bin/codegentest						\
-	obj/lex.o obj/parser.o obj/ast.o obj/symtable.o obj/sem.o 	\
-	obj/llvm.o obj/codegen.o									\
+	obj/arraylist.o  obj/scanner.o obj/parser.o obj/ast.o 		\
+	obj/symtable.o obj/sem.o obj/llvm.o obj/codegen.o			\
 	src/main.c -ll
 
 	@- sh tests/test.sh codegen
 
-test: arraylist_test lex_test parser_test ast_test codegen_test
+test: arraylist_test scanner_test parser_test ast_test codegen_test
 
 #
 # Exs
@@ -104,5 +112,5 @@ clean:
 	@- $(RM) src/yacc.c
 	@- $(RM) lex.yy.c
 	@- $(RM) monga.output
-	@- $(RM) $(OBJS)
-	@- $(RM) $(EXES)
+	@- $(RM) -rf $(OBJS)
+	@- $(RM) -rf $(EXES)

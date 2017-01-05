@@ -6,7 +6,7 @@
 #include "ast.h"
 #include "yacc.h"
 #include "sem.h"
-#include "lex.h"
+#include "scanner.h"
 
 #define DEBUGGING 0
 
@@ -31,11 +31,12 @@ static void print_exp(ExpNode* exp);
 static void print_call(CallNode* call);
 
 int main() {
+	scanner_setup();
 	yyparse();
+	scanner_clean();
 	ProgramNode* program = ast_get_program();
 	sem_type_check_program(program);
 	print_program(program);
-
     return 0;
 }
 
@@ -280,14 +281,14 @@ void print_exp(ExpNode* exp) {
 		print_type(exp->type);
 		break;
 	case EXP_UNARY:
-		printf("%s", lex_symbol(exp->u.unary.symbol));
+		printf("%s", scanner_symbol(exp->u.unary.symbol));
 		print_exp(exp->u.unary.exp);
 		printf(":");
 		print_type(exp->type);
 		break;
 	case EXP_BINARY:
 		print_exp(exp->u.binary.exp1);
-		printf("%s", lex_symbol(exp->u.binary.symbol));
+		printf("%s", scanner_symbol(exp->u.binary.symbol));
 		printf(":");
 		print_type(exp->type);
 		print_exp(exp->u.binary.exp2);

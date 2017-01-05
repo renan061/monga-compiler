@@ -6,7 +6,7 @@
 #include "ast.h"
 #include "symtable.h"
 #include "yacc.h"
-#include "lex.h"
+#include "scanner.h"
 
 // Decisions
 static int tp_equatable(TypeNode* type);
@@ -24,7 +24,7 @@ static void err(int line, const char* msg);
 static void err_id(int line, const char* msg, const char* id);
 static void err_type(int line, const char* err, TypeNode* desirable,
 	TypeNode* obtained);
-static void err_binop(int line, int expnum, LexSymbol symbol);
+static void err_binop(int line, int expnum, ScannerSymbol symbol);
 
 // Base types
 TypeNode *type_int, *type_float, *type_char, *type_void;
@@ -239,7 +239,7 @@ static void type_check_exp(SymbolTable* table, ExpNode* exp) {
 
 		TypeNode* type1 = exp->u.binary.exp1->type;
 		TypeNode* type2 = exp->u.binary.exp2->type;
-		LexSymbol symbol = exp->u.binary.symbol;
+		ScannerSymbol symbol = exp->u.binary.symbol;
 
 		switch (symbol) {
 		case TK_EQUAL:
@@ -503,8 +503,8 @@ static void err_type(int line, const char* err, TypeNode* desirable,
 	exit(1);
 }
 
-static void err_binop(int line, int expnum, LexSymbol symbol) {
-	const char *msg, *order, *sym = lex_symbol(symbol);
+static void err_binop(int line, int expnum, ScannerSymbol symbol) {
+	const char *msg, *order, *sym = scanner_symbol(symbol);
 	msg = "semantical error line %d (invalid type for %s expression in \"%s\")";
 	order = (expnum == 1) ? "first" : (expnum == 2) ? "second" : "";
 	MONGA_ERR(msg, line, order, sym);

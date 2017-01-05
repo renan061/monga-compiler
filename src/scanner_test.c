@@ -1,10 +1,11 @@
 #include <stdio.h>
-#include "lex.h"
+#include "scanner.h"
 #include "yacc.h"
 
 int main() {
-	setbuf(stdout, NULL); // FIXME: Possible side effects?
-	
+	scanner_setup();
+	setbuf(stdout, NULL); // FIXME: Possible side effects?	
+
 	int token;
 	do {
 		token = yylex();
@@ -43,5 +44,7 @@ int main() {
 
 		printf("\n");
 	} while(token != 0);
+
+	scanner_clean();
     return 0;
 }

@@ -55,8 +55,8 @@ int main(void) {
 	al_replace(list, 6, val10);
 	assert(al_get(list, 6) == val10);
 
-	// al_destroy
-	al_destroy(list);
+	// al_free
+	al_free(list);
 
 	printf("OK arraylist test 1\n");
 	return 0;

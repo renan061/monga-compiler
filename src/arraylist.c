@@ -24,7 +24,7 @@ static void grow_list(ArrayList* list) {
 	// Doubles the capacity
 	list->capacity *= 2;
 	ArrayListValue* values;
-	ARRAY_MALLOC(values, ArrayListValue, list->capacity);
+	MALLOC_ARRAY(values, ArrayListValue, list->capacity);
 
 	// Copies values to new array
 	for (int i = 0; i < list->size; i++) {
@@ -45,7 +45,7 @@ ArrayList* al_new(void) {
 	MONGA_MALLOC(list, ArrayList);
 	list->capacity = DEFAULT_CAPACITY;
 	list->size = 0;
-	ARRAY_MALLOC(list->values, ArrayListValue, list->capacity);
+	MALLOC_ARRAY(list->values, ArrayListValue, list->capacity);
 	return list;
 }
 
@@ -84,7 +84,7 @@ void al_replace(ArrayList* list, ArrayListIndex index, ArrayListValue value) {
 	list->values[index] = value;
 }
 
-void al_destroy(ArrayList* list) {
+void al_free(ArrayList* list) {
 	assert(list != NULL);
 	free(list->values);
 	free(list);

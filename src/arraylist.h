@@ -23,6 +23,6 @@ extern ArrayListValue al_get(ArrayList* list, ArrayListIndex index);
 extern void al_replace(ArrayList* list, ArrayListIndex index,
 	ArrayListValue value);
 
-extern void al_destroy(ArrayList* list);
+extern void al_free(ArrayList* list);
 
 #endif

@@ -6,7 +6,7 @@ Monga is a subset of C, with Java-like arrays.
 | --- | --- |
 | Create binary | make |
 | Test | make test |
-| Test lex | make lex_test |
+| Test scanner | make scanner_test |
 | Test parser | make parser_test |
 | Test AST / types | make ast_test |
 | Test code generation | make codegen_test |

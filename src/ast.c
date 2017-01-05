@@ -17,7 +17,7 @@
 	}								\
 
 // Auxiliary
-static int in_array(LexSymbol symbol, LexSymbol *arr)  {
+static int in_array(ScannerSymbol symbol, ScannerSymbol *arr)  {
 	int len = sizeof(arr)/sizeof(arr[0]);
 	for (int i = 0; i < len; i++)
 		if (symbol != arr[i])
@@ -234,10 +234,10 @@ VarNode* ast_var_indexed(int line, ExpNode* array, ExpNode* index) {
 }
 
 // Exp
-ExpNode* ast_exp_binary(int line, LexSymbol symbol,
+ExpNode* ast_exp_binary(int line, ScannerSymbol symbol,
 	ExpNode *exp1, ExpNode *exp2) {
 
-	LexSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL,
+	ScannerSymbol symbols[] = {'*', '/', '+', '-', TK_EQUAL, TK_LEQUAL,
 		TK_GEQUAL, '<', '>', TK_AND, TK_OR};
 	assert(in_array(symbol, symbols));
 
@@ -254,8 +254,8 @@ ExpNode* ast_exp_binary(int line, LexSymbol symbol,
 	return n;
 }
 
-ExpNode* ast_exp_unary(int line, LexSymbol symbol, ExpNode *exp) {
-	LexSymbol symbols[] = {'-', '!'};
+ExpNode* ast_exp_unary(int line, ScannerSymbol symbol, ExpNode *exp) {
+	ScannerSymbol symbols[] = {'-', '!'};
 	assert(in_array(symbol, symbols));
 
 	ExpNode* n;
