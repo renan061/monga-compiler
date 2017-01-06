@@ -245,42 +245,8 @@ void llvm_br1(LLVMLabel l) {
 	printf("\n");
 }
 
-// %b = <type>cmp <type>ne <type> %t, <zerovalue>
 // br i1 %b label %lt, label %lf
 void llvm_br3(TypeNode* type, LLVMTemp t, LLVMLabel lt, LLVMLabel lf) {
-	write_tabs();
-	write_temp(++temp);
-	printf(" = ");
-	switch (type->tag) {
-		case TYPE_CHAR: // Fallthrough
-		case TYPE_INT:
-			printf("i");
-			break;
-		case TYPE_FLOAT:
-			printf("f");
-			break;
-		default:
-			MONGA_INTERNAL_ERR("llvm_br3: invalid type");
-	}
-	printf("cmp ");
-	switch (type->tag) {
-		case TYPE_CHAR: // Fallthrough
-		case TYPE_INT:
-			break;
-		case TYPE_FLOAT:
-			printf("o");
-			break;
-		default:
-			MONGA_INTERNAL_ERR("llvm_br3: invalid type");
-	}
-	printf("ne ");
-	write_type(type);
-	printf(" ");
-	write_temp(t);
-	printf(", ");
-	write_zero(type);
-	printf("\n");
-
 	write_tabs();
 	printf("br i1 ");
 	write_temp(temp);
@@ -654,7 +620,6 @@ LLVMTemp llvm_div(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
 }
 
 // %b = <type>cmp <op> <type> %t1, %t2
-// %ret = zext i1 %b to i32
 static LLVMTemp llvm_cmp(const char* op, TypeNode* type, LLVMTemp t1,
 	LLVMTemp t2) {
 
@@ -669,12 +634,6 @@ static LLVMTemp llvm_cmp(const char* op, TypeNode* type, LLVMTemp t1,
 	printf(", ");
 	write_temp(t2);
 	printf("\n");
-
-	write_tabs();
-	write_temp(++temp);
-	printf(" = zext i1 ");
-	write_temp(temp - 1);
-	printf(" to i32\n");
 	
 	return temp;
 }
@@ -697,4 +656,43 @@ LLVMTemp llvm_cmp_lt(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
 
 LLVMTemp llvm_cmp_le(TypeNode* type, LLVMTemp t1, LLVMTemp t2) {
 	LLVM_CMP_AUX("s" LLVM_LE, "o" LLVM_LE, type, t1, t2);
+}
+
+// %ret = <type>cmp <type>ne <type> %t, <zerovalue>
+LLVMTemp llvm_cmp_notzero(TypeNode* type, LLVMTemp t) {
+	write_tabs();
+	write_temp(++temp);
+	printf(" = ");
+	switch (type->tag) {
+		case TYPE_CHAR:
+			// Fallthrough
+		case TYPE_INT:
+			printf("i");
+			break;
+		case TYPE_FLOAT:
+			printf("f");
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_cmp_ne: invalid type");
+	}
+	printf("cmp ");
+	switch (type->tag) {
+		case TYPE_CHAR:
+			// Fallthrough
+		case TYPE_INT:
+			break;
+		case TYPE_FLOAT:
+			printf("o");
+			break;
+		default:
+			MONGA_INTERNAL_ERR("llvm_cmp_ne: invalid type");
+	}
+	printf("ne ");
+	write_type(type);
+	printf(" ");
+	write_temp(t);
+	printf(", ");
+	write_zero(type);
+	printf("\n");
+	return temp;
 }

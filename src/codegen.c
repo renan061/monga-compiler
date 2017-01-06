@@ -228,6 +228,7 @@ static void code_exp(ExpNode* exp) {
 		DEFAULT_EXP: { // exp ? 1 : 0
 			LLVMLabel lt = llvm_label_temp(), lf = llvm_label_temp();
 			LLVMLabel phi = llvm_label_temp();
+
 			LLVMValue v1, v2;
 			v1.i = 1;
 			v2.i = 0;
@@ -319,10 +320,11 @@ static void code_cond(ExpNode* exp, LLVMLabel lt, LLVMLabel lf) {
 		break;
 	}
 	default:
-	DEFAULT_COND:
-		code_exp(exp);
-		llvm_br3(exp->type, exp->temp, lt, lf);
-		break;
+		DEFAULT_COND: {
+			code_exp(exp);
+			llvm_br3(exp->type, llvm_cmp_notzero(exp->type, exp->temp), lt, lf);
+			break;
+		}
 	}
 }
 

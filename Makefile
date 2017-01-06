@@ -1,5 +1,4 @@
 # 
-# PUC-RJ - INF1715
 # Renan Almeida de Miranda Santos
 # Monga language compiler
 # 
@@ -15,9 +14,10 @@ main: objs
 	obj/symtable.o obj/sem.o obj/llvm.o obj/codegen.o				\
 	src/main.c -ll
 
-# make run INPUT=input.monga
+# Ex.: make run INPUT=input.monga
 run: main
 	@- ./bin/mongacompiler < $(INPUT) > "a.ll"
+	@- cat "a.ll"
 	@- clang "a.ll" -o a.o
 	@- ./a.o
 	@- $(RM) a.ll

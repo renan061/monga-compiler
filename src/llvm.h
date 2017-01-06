@@ -56,5 +56,6 @@ extern LLVMTemp llvm_cmp_gt(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
 extern LLVMTemp llvm_cmp_ge(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
 extern LLVMTemp llvm_cmp_lt(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
 extern LLVMTemp llvm_cmp_le(TypeNode* type, LLVMTemp t1, LLVMTemp t2);
+extern LLVMTemp llvm_cmp_notzero(TypeNode* type, LLVMTemp t);
 
 #endif
