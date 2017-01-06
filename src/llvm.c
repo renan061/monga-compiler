@@ -616,7 +616,7 @@ static LLVMTemp llvm_arith(const char* op, TypeNode* type,
 	printf(" = ");
 	switch (type->tag) {
 	case TYPE_INT:
-		if (op == LLVM_DIV) { // OBS: Comparing pointers
+		if (strcmp(op, LLVM_DIV) == 0) { // FIXME: Remove strcmp
 			printf("s");
 		}
 		break;
