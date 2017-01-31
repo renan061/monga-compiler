@@ -2,7 +2,7 @@
 
 Monga is a subset of C, with Java-like arrays.
 
-| Command | Description |
+| Description | Command |
 | --- | --- |
 | Create binary | make |
 | Test | make test |
